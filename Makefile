@@ -16,11 +16,7 @@ OPT += -DCHECK  # slow assersions
 # Define OPENMP to enable MPI+OpenMP hybrid parallelization
 # OPENMP  = -fopenmp # -openmp for Intel, -fopenmp for gcc, llvm doesn't support
 
-ifeq (,$(findstring -DMPI, $(OPT)))
-CC       = c++
-else
 CC       = mpic++
-endif
 
 WOPT    ?= -Wall
 CFLAGS  := -O3 $(WOPT) $(OPENMP) $(OPT)
@@ -28,11 +24,10 @@ LIBS    := -lm
 
 # Define paths of FFTW3 & GSL libraries if necessary.
 
-LUA_DIR   ?= #e.g. /opt/local
 FFTW3_DIR ?= #e.g. /Users/jkoda/Research/opt/gcc/fftw3
 GSL_DIR   ?= #e.g. /Users/jkoda/Research/opt/gcc/gsl
 
-DIR_PATH = $(FFTW3_DIR) $(GSL_DIR) $(LUA_DIR)
+DIR_PATH = $(FFTW3_DIR) $(GSL_DIR)
 
 CFLAGS += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
 LIBS   += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
@@ -41,6 +36,7 @@ EXEC = fs libfs.a
 all: $(EXEC)
 
 OBJS := main.o #power.o #comm.o msg.o power.o
+OBJS += comm.o msg.o
 
 #
 # Linking libraries
