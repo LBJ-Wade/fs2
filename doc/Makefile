@@ -7,7 +7,7 @@ $(HTML): Makefile doc.css
 
 %.html: %.md
 	@echo $<
-	pandoc --no-highlight --mathjax -c doc.css $< -o $@
+	pandoc --no-highlight --mathjax -c doc.css -c syntax.css $< -o $@
 
 .PHONY: clean
 
