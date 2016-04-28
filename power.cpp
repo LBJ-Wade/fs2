@@ -1,0 +1,140 @@
+///
+/// \file  power.c
+/// \brief Input power spectrum for initial condition
+///
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <assert.h>
+#include <gsl/gsl_spline.h>
+#include "comm.h"
+#include "msg.h"
+#include "power.h"
+
+//static void read_power_spectrum_file(const char filename[], const double sigma8_check, PowerSpectrum* const ps);
+
+
+PowerSpectrum::PowerSpectrum(const char filename[]) :
+  log_k_(0), interp_(0), acc_(0)
+{
+  if(comm_this_node() == 0)
+    read_file_(filename);
+
+  comm_bcast_int(&n_, 1);
+
+  if(comm_this_node() != 0) {
+    log_k_= (double*) malloc(sizeof(double)*2*n_);
+    log_P_= log_k_ + n_;
+  }
+
+  comm_bcast_double(log_k_, 2*n_);
+
+  
+  interp_= gsl_interp_alloc(gsl_interp_cspline, n_);
+  acc_= gsl_interp_accel_alloc();
+
+  const int n_required= (int) gsl_interp_min_size(interp_);
+  if(n_ < n_required)
+    msg_printf(msg_fatal, "Error: Not enough power spectrum data points for cubic spline; %d data points < %d required\n", n_, n_required);
+
+  gsl_interp_init(interp_, log_k_, log_P_, n_);
+}
+
+PowerSpectrum::~PowerSpectrum()
+{
+  if(interp_) gsl_interp_free(interp_);
+  if(acc_) gsl_interp_accel_free(acc_);
+  if(log_k_) free(log_k_);
+}
+
+double PowerSpectrum::P(const double k)
+{
+  double log_P= gsl_interp_eval(interp_, log_k_, log_P_, log(k), acc_);
+  return exp(log_P);
+}
+
+
+void PowerSpectrum::read_file_(const char filename[])
+{
+  // Input:  filename of power spectrum (space separated ascii file)
+  // Output: ps -- Arrays of log(k) and log(P) as ps->log_k, p->log_P
+  
+  // File format, requirements, and assumptions
+  //   - #: comment if first character is #
+  //   - k P -- space spearated. OK to have 3 or more columns (neglected).
+  //   - k must be in increasing order [1/h Mpc]
+  //   - one line must be less than 128 characters, including \n.
+  //   - no requirements for the number of lines.
+  
+  FILE* fp= fopen(filename, "r");
+  if(fp == 0) {
+    msg_printf(msg_fatal, "Error: Unable to open input power spectrum file: %s\n",filename);
+    throw ErrorPowerFile();
+  }
+
+  int nalloc= 1000;
+    // Initial guess of number of data lines. Best if it is the number of the
+    // power spectrum data entries, but works for any number.
+  double* buf= (double*) malloc(sizeof(double)*2*nalloc);
+
+  char line[128];
+  int nlines= 0;
+  double k, P;
+  double k_prev= 0.0;
+
+  // Read lines and push to buf as k1,P1,k2,P2, ...
+  // Doubles the length of buf when the length of the array is not enough
+  while(fgets(line, 127, fp)) {
+    if(nlines == nalloc) {
+      msg_printf(msg_debug, "reallocating power spectrum table %d -> %d\n",
+		 nalloc, 2*nalloc);
+      nalloc *= 2;
+      buf= (double*) realloc(buf, sizeof(double)*2*nalloc); assert(buf);
+    }
+    
+    if(line[0] == '#')
+      continue;
+
+    int ret= sscanf(line, "%lg %lg", &k, &P);
+    if(ret != 2) {
+      msg_printf(msg_warn, "Warning: Unable to understand a line in the power spectrum file; following data are ignored: %s", line);
+      break;
+    }
+
+    if(k <= 0.0) {
+      msg_printf(msg_warn, "Skipped power k= %f\n", k);
+      continue;
+    }
+      
+    if(k < k_prev) {
+      msg_printf(msg_fatal, "Error: wavenumber k in the power spectrum file must be sorted in increasing order. %dth data k=%e > previous k= %e\n", nlines, k_prev, k);
+      throw ErrorPowerFile();
+    }
+      
+    buf[2*nlines    ]= k;
+    buf[2*nlines + 1]= P;
+
+    k_prev= k;
+    nlines++;
+  }
+
+  int ret= fclose(fp); assert(ret == 0);
+  
+  msg_printf(msg_verbose, "Read %d pairs of k P(k) from %s\n", nlines,filename);
+
+  // Allocate ps->log_k, ps->log_P and fill the arrays
+  double* const v_logk= (double*) malloc(2*nlines*sizeof(double));
+  assert(v_logk);
+  double* const v_logP= v_logk + nlines;
+
+  for(int j=0; j<nlines; j++) {
+    v_logk[j]= log(buf[2*j    ]);
+    v_logP[j]= log(buf[2*j + 1]);
+  }
+  free(buf);
+  
+  log_k_ = v_logk;
+  log_P_ = v_logP;
+  n_     = nlines;
+}
