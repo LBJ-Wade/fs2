@@ -29,14 +29,14 @@ GSL_DIR   ?= #e.g. /Users/jkoda/Research/opt/gcc/gsl
 
 DIR_PATH = $(FFTW3_DIR) $(GSL_DIR)
 
-CFLAGS += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
-LIBS   += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
+CFLAGS  += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
+LIBS    += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
 
-EXEC = fs libfs.a
-all: $(EXEC)
+LIB      = libfs.a
+all: $(LIB)
 
-OBJS := main.o #power.o #comm.o msg.o power.o
-OBJS += comm.o msg.o power.o
+OBJS := comm.o msg.o power.o
+
 
 #
 # Linking libraries
@@ -60,8 +60,8 @@ ifdef OPENMP
 endif
 
 # Compiling rule
-fs: $(OBJS)
-	$(CC) $(OBJS) $(LIBS) -o $@
+#fs: $(OBJS)
+#	$(CC) $(OBJS) $(LIBS) -o $@
 
 # Library libfs.a
 libfs.a: $(OBJS)
