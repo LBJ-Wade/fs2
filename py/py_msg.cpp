@@ -1,8 +1,4 @@
-//
-// wrapping power.cpp
-//
-
-#include "Python.h"
+#include "py_msg.h"
 #include "msg.h"
 
 PyObject* py_msg_set_loglevel(PyObject *self, PyObject* args)

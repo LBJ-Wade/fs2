@@ -16,7 +16,7 @@ OPT += -DCHECK  # slow assersions
 # Define OPENMP to enable MPI+OpenMP hybrid parallelization
 # OPENMP  = -fopenmp # -openmp for Intel, -fopenmp for gcc, llvm doesn't support
 
-CC       = mpic++
+CXX       = mpic++
 
 WOPT    ?= -Wall
 CFLAGS  := -O3 $(WOPT) $(OPENMP) $(OPT)
@@ -32,7 +32,7 @@ DIR_PATH = $(FFTW3_DIR) $(GSL_DIR)
 CFLAGS  += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
 LIBS    += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
 
-LIB      = libfs.a
+LIB      = libfs.a libfs.dylib
 all: $(LIB)
 
 OBJS := comm.o msg.o power.o
@@ -66,6 +66,10 @@ endif
 # Library libfs.a
 libfs.a: $(OBJS)
 	ar r $@ $(OBJS)
+
+libfs.dylib: $(OBJS)
+	$(CXX) -dynamiclib $(LIBS) $(OBJS) -o $@
+
 
 .PHONY: clean run dependence
 clean:
