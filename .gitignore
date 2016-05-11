@@ -1,5 +1,5 @@
 *~
 *.o
-fs
 libfs.a
 libfs.dylib
+*.so
