@@ -16,8 +16,7 @@ class PowerSpectrum {
   gsl_interp *interp_;
   gsl_interp_accel *acc_;
 
-  void read_file_(const char filename[]);
-    
+  void read_file_(const char filename[]);    
 };
 
 class ErrorPowerFile {

@@ -1,7 +1,6 @@
-///
-/// \file  power.c
-/// \brief Input power spectrum for initial condition
-///
+//
+// Power spectrum for initial condition
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,9 +10,6 @@
 #include "comm.h"
 #include "msg.h"
 #include "power.h"
-
-//static void read_power_spectrum_file(const char filename[], const double sigma8_check, PowerSpectrum* const ps);
-
 
 PowerSpectrum::PowerSpectrum(const char filename[]) :
   log_k_(0), interp_(0), acc_(0)
@@ -58,7 +54,7 @@ double PowerSpectrum::P(const double k)
 void PowerSpectrum::read_file_(const char filename[])
 {
   // Input:  filename of power spectrum (space separated ascii file)
-  // Output: ps -- Arrays of log(k) and log(P) as ps->log_k, p->log_P
+  // Output: Arrays of log(k) and log(P) as this->log_k, this->log_P
   
   // File format, requirements, and assumptions
   //   - #: comment if first character is #

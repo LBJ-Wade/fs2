@@ -36,7 +36,7 @@ LIB      = libfs.a libfs.dylib
 all: $(LIB)
 
 OBJS := comm.o msg.o config.o fft.o mem.o
-OBJS += power.o
+OBJS += power.o cosmology.o lpt.o
 
 
 #
