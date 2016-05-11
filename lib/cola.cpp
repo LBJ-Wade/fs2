@@ -1,5 +1,6 @@
-#include <math.h>
-#include <assert.h>
+#include <cstdio>
+#include <cmath>
+#include <cassert>
 #include <mpi.h>
 
 #include <gsl/gsl_integration.h>
@@ -23,10 +24,13 @@ void cola_kick(Particles* const particles, const double avel1)
   const double af=  avel1;           // t + 0.5*dt
 
   const double om= cosmology_omega_m();
+  printf("omega= %e\n", om);
   msg_printf(msg_info, "Kick %lg -> %lg\n", ai, avel1);
 
   const float_t kick_factor= (pow(af, nLPT) - pow(ai, nLPT))/
                              (nLPT*pow(a, nLPT)*sqrt(om/a + (1.0 - om)*a*a));
+  printf("kick_factor= %e\n", kick_factor);
+  
   const double growth1= cosmology_D_growth(a);
   const double growth2= cosmology_D2_growth(a, growth1);
 	
@@ -40,6 +44,7 @@ void cola_kick(Particles* const particles, const double avel1)
   const int np= particles->np_local;
   float3* const f= particles->force;
 
+  
   // Kick using acceleration at scale factor a
   // Assume forces at a is in particles->force
 #ifdef _OPENMP

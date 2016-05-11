@@ -1,6 +1,8 @@
-#include <math.h>
-#include <assert.h>
+#include <cstdio>
+#include <cmath>
+#include <cassert>
 #include <gsl/gsl_rng.h>
+
 #include "msg.h"
 #include "mem.h"
 #include "config.h"
@@ -8,6 +10,9 @@
 #include "comm.h"
 #include "particle.h"
 #include "fft.h"
+#include "util.h"
+#include "error.h"
+#include "pm.h"
 
 static double pm_factor;
 static size_t nc, nzpad;
@@ -67,6 +72,9 @@ void pm_compute_force(Particles* const particles)
 {
   // Main routine of this source file
   msg_printf(msg_verbose, "PM force computation...\n");
+
+  //for(int i=64*64; i<64*64+10; i++)
+  //  printf("%e\n", particles->p[i].x[0]);
   
   size_t np_plus_buffer= send_buffer_positions(particles);
   pm_assign_cic_density(particles, np_plus_buffer);
@@ -93,6 +101,7 @@ size_t send_buffer_positions(Particles* const particles)
   assert(boxsize > 0);
   // ToDo !!! send with MPI !!!
   const size_t np= particles->np_local;
+  printf("np= %lu\n", np);
   Particle* const p= particles->p;
   const int nbuf= particles->np_allocated;
   
@@ -100,23 +109,21 @@ size_t send_buffer_positions(Particles* const particles)
   const float_t x_left= eps;
   const float_t x_right= boxsize - eps;
 
+  fprintf(stderr, "x-buffer %f %f\n", x_left, x_right);
+
   size_t ibuf= np;
 
   // Periodic wrap up and make a buffer copy near x-edges
   for(size_t i=0; i<np; i++) {
-    if(p[i].x[0] < 0) p[i].x[0] += boxsize;
-    else if(p[i].x[0] >= boxsize) p[i].x[0] -= boxsize;
-
-    if(p[i].x[1] < 0) p[i].x[1] += boxsize;
-    else if(p[i].x[1] >= boxsize) p[i].x[1] -= boxsize;
-    
-    if(p[i].x[2] < 0) p[i].x[2] += boxsize;
-    else if(p[i].x[2] >= boxsize) p[i].x[2] -= boxsize;
+    periodic_wrapup_p(p[i], boxsize);
     
     if(p[i].x[0] < x_left) {
-      if(ibuf >= nbuf)
-	msg_abort("Error: not enough space for buffer particles. "
+      //printf("%e\n", p[i].x[0]);
+      if(ibuf >= nbuf) {
+	msg_printf(msg_fatal, "Error: not enough space for buffer particles. "
 		  "%lu %lu\n", ibuf, nbuf);
+	throw RuntimeError();
+      }
       
       p[ibuf].x[0]= p[i].x[0] + boxsize;
       p[ibuf].x[1]= p[i].x[1];
@@ -126,9 +133,11 @@ size_t send_buffer_positions(Particles* const particles)
       ibuf++;
     }
     else if(p[i].x[0] > x_right) {
-      if(ibuf >= nbuf)
-	msg_abort("Error: not enough space for buffer particles. "
+      if(ibuf >= nbuf) {
+	msg_printf(msg_fatal, "Error: not enough space for buffer particles. "
 		  "%ud %ud\n", ibuf, nbuf);
+	throw RuntimeError();
+      }
 
       p[ibuf].x[0]= p[i].x[0] - boxsize;
       p[ibuf].x[1]= p[i].x[1];
@@ -256,9 +265,12 @@ void check_total_density(float_t const * const density)
   if(comm_this_node() == 0) {
     double tol= FLOAT_EPS*nc*nc*nc;
 
-    if(fabs(sum_global) > tol)
-      msg_abort("Error: total CIC density error is large: %le > %le\n", 
-		sum_global, tol);
+    if(fabs(sum_global) > tol) {
+      msg_printf(msg_error,
+		 "Error: total CIC density error is  too large: %le > %le\n", 
+		 sum_global, tol);
+      throw AssertionError();
+    }
 
     msg_printf(msg_debug, 
 	      "Total CIC density OK within machine precision: %lf (< %.2lf).\n",

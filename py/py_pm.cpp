@@ -1,15 +1,18 @@
 #include "fft.h"
+#include "error.h"
 #include "pm.h"
 #include "py_assert.h"
 
+static bool pm_initialised= false;
+
 PyObject* py_pm_init(PyObject* self, PyObject* args)
 {
-  // _pm_init(nc_pm, pm_factor, boxsize)
+  // pm_init(nc_pm, pm_factor, boxsize)
 
   int nc_pm;
   double pm_factor, boxsize;
   
-  if(!PyArg_ParseTuple(args, "id", &nc_pm, &pm_factor, &boxsize)) {
+  if(!PyArg_ParseTuple(args, "idd", &nc_pm, &pm_factor, &boxsize)) {
     return NULL;
   }
 
@@ -19,6 +22,8 @@ PyObject* py_pm_init(PyObject* self, PyObject* args)
 
   pm_init(nc_pm, pm_factor, mem1, mem2, boxsize);
 
+  pm_initialised= true;
+
   Py_RETURN_NONE;
 }
 
@@ -26,6 +31,11 @@ PyObject* py_pm_init(PyObject* self, PyObject* args)
 PyObject* py_pm_compute_force(PyObject* self, PyObject* args)
 {
   // _pm_compute_force(_particles)
+  if(!pm_initialised) {
+    PyErr_SetString(PyExc_RuntimeError, "PM not initialised; call pm_init().");
+    return NULL;
+  }
+  
   PyObject* py_particles;
   
   if(!PyArg_ParseTuple(args, "O", &py_particles))
@@ -35,7 +45,13 @@ PyObject* py_pm_compute_force(PyObject* self, PyObject* args)
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
-  pm_compute_force(particles);
+  try {
+    pm_compute_force(particles);
+  }
+  catch(const RuntimeError e) {
+    PyErr_SetNone(PyExc_RuntimeError);
+    return NULL;
+  }
 
   Py_RETURN_NONE;
 }

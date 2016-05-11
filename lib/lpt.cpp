@@ -664,7 +664,8 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
   
   particles->np_local= np_local; 
   particles->a_x= a;
-  particles->a_v= 0.0;
+  particles->a_v= a;
+
 }
 
 void lpt_set_offset(float_t offset_)
