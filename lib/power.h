@@ -7,19 +7,21 @@ class PowerSpectrum {
  public:
   PowerSpectrum(const char filename[]);
   ~PowerSpectrum();
-  double P(const double k);
-
+  double P(const double k) const;
+  double compute_sigma(const double R) const;
+    
+  int n;
+  double* log_k;
+  double* log_P;
+  
  private:
-  int n_;
-  double* log_k_;
-  double* log_P_;
   gsl_interp *interp_;
   gsl_interp_accel *acc_;
 
   void read_file_(const char filename[]);    
 };
 
-class ErrorPowerFile {
+class PowerFileError {
 
 };
 

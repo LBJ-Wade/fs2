@@ -16,6 +16,7 @@ setup(name='fs',
       ext_modules=[
           Extension('fs._fs',
                     ['py_package.cpp', 'py_msg.cpp', 'py_comm.cpp',
+                     'py_power.cpp',
                     ],
                     include_dirs = ['../lib', np.get_include()],
                     library_dirs =  ['../lib'],

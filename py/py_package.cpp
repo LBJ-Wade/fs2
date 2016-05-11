@@ -6,6 +6,7 @@
 
 #include "py_msg.h"
 #include "py_comm.h"
+#include "py_power.h"
 
 using namespace std;
 
@@ -19,6 +20,12 @@ static PyMethodDef methods[] = {
   {"comm_hello", py_comm_hello, METH_VARARGS,
    "test print statiment with MPI"},
 
+  {"_power_alloc", py_power_alloc, METH_VARARGS,
+   "allocate a new _ps opbject"},
+  {"_power_n", py_power_alloc, METH_VARARGS,
+   "_power_n(_ps); get number of P(k) data"},
+  {"_power_i", py_power_i, METH_VARARGS,
+   "_power_i(_ps, i); get (k[i], P[i])"},
   
   {NULL, NULL, 0, NULL}
 };

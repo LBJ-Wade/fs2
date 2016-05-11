@@ -12,42 +12,42 @@
 #include "power.h"
 
 PowerSpectrum::PowerSpectrum(const char filename[]) :
-  log_k_(0), interp_(0), acc_(0)
+  log_k(0), interp_(0), acc_(0)
 {
   if(comm_this_node() == 0)
     read_file_(filename);
 
-  comm_bcast_int(&n_, 1);
+  comm_bcast_int(&n, 1);
 
   if(comm_this_node() != 0) {
-    log_k_= (double*) malloc(sizeof(double)*2*n_);
-    log_P_= log_k_ + n_;
+    log_k= (double*) malloc(sizeof(double)*2*n);
+    log_P= log_k + n;
   }
 
-  comm_bcast_double(log_k_, 2*n_);
+  comm_bcast_double(log_k, 2*n);
 
   
-  interp_= gsl_interp_alloc(gsl_interp_cspline, n_);
+  interp_= gsl_interp_alloc(gsl_interp_cspline, n);
   acc_= gsl_interp_accel_alloc();
 
   const int n_required= (int) gsl_interp_min_size(interp_);
-  if(n_ < n_required)
-    msg_printf(msg_fatal, "Error: Not enough power spectrum data points for cubic spline; %d data points < %d required\n", n_, n_required);
+  if(n < n_required)
+    msg_printf(msg_fatal, "Error: Not enough power spectrum data points for cubic spline; %d data points < %d required\n", n, n_required);
 
-  gsl_interp_init(interp_, log_k_, log_P_, n_);
+  gsl_interp_init(interp_, log_k, log_P, n);
 }
 
 PowerSpectrum::~PowerSpectrum()
 {
   if(interp_) gsl_interp_free(interp_);
   if(acc_) gsl_interp_accel_free(acc_);
-  if(log_k_) free(log_k_);
+  if(log_k) free(log_k);
 }
 
-double PowerSpectrum::P(const double k)
+double PowerSpectrum::P(const double k) const
 {
-  double log_P= gsl_interp_eval(interp_, log_k_, log_P_, log(k), acc_);
-  return exp(log_P);
+  double logP= gsl_interp_eval(interp_, log_k, log_P, log(k), acc_);
+  return exp(logP);
 }
 
 
@@ -66,7 +66,7 @@ void PowerSpectrum::read_file_(const char filename[])
   FILE* fp= fopen(filename, "r");
   if(fp == 0) {
     msg_printf(msg_fatal, "Error: Unable to open input power spectrum file: %s\n",filename);
-    throw ErrorPowerFile();
+    throw PowerFileError();
   }
 
   int nalloc= 1000;
@@ -105,7 +105,7 @@ void PowerSpectrum::read_file_(const char filename[])
       
     if(k < k_prev) {
       msg_printf(msg_fatal, "Error: wavenumber k in the power spectrum file must be sorted in increasing order. %dth data k=%e > previous k= %e\n", nlines, k_prev, k);
-      throw ErrorPowerFile();
+      throw PowerFileError();
     }
       
     buf[2*nlines    ]= k;
@@ -130,7 +130,34 @@ void PowerSpectrum::read_file_(const char filename[])
   }
   free(buf);
   
-  log_k_ = v_logk;
-  log_P_ = v_logP;
-  n_     = nlines;
+  log_k = v_logk;
+  log_P = v_logP;
+  n     = nlines;
+}
+
+double PowerSpectrum::compute_sigma(const double R) const
+{
+  // Computes sigma (rms amplituede) smoothed on scale R
+  // R: smoothing length [/h Mpc] (8 for sigma_8)
+  // 1/(2*pi^2) \int P(k) W(k*R) k^2 dk
+  
+  const double fac= 1.0/(2.0*M_PI*M_PI);
+
+  double k0= exp(log_k[0]);
+  double f0= 0.0;
+  
+  double sigma2= 0.0;
+  for(int i=0; i<n; i++) {
+    double k= exp(log_k[i]);
+    double x= k*R;
+    double w= 3.0*(sin(x)-x*cos(x))/(x*x*x);
+    double f1= exp(log_P[i])*k*k*w*w;
+    
+    sigma2 += 0.5*(f0 + f1)*(k - k0);
+
+    k0= k;
+    f0= f1;
+  }
+
+  return sqrt(fac*sigma2);
 }
