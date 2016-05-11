@@ -16,14 +16,18 @@ struct Particle {
   uint64_t id;      // Particle index 1,2,3...
 };
 
-struct Particles {
+class Particles {
+ public:
+  Particles(const int nc, const double boxsize);
+  ~Particles();
+  
   Particle* p;
   double a_x, a_v;
   float3* force;
 
   size_t np_local, np_allocated;
   uint64_t np_total;
-  double omega_m, boxsize;
+  double boxsize;
 };
 
 #endif

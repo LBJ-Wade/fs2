@@ -35,7 +35,7 @@ LIBS    += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
 LIB      = libfs.a libfs.dylib
 all: $(LIB)
 
-OBJS := comm.o msg.o config.o fft.o mem.o
+OBJS := comm.o msg.o config.o fft.o mem.o particle.o
 OBJS += power.o cosmology.o lpt.o
 
 
@@ -65,11 +65,24 @@ libfs.a: $(OBJS)
 libfs.dylib: $(OBJS)
 	$(CXX) -dynamiclib $(LIBS) $(OBJS) -o $@
 
+# Dependences
+# g++ -MM -MG *.cpp
+comm.o: comm.cpp
+config.o: config.cpp config.h msg.h
+cosmology.o: cosmology.cpp msg.h cosmology.h
+fft.o: fft.cpp config.h mem.h msg.h util.h particle.h fft.h
+lpt.o: lpt.cpp msg.h mem.h config.h cosmology.h power.h particle.h fft.h \
+  lpt.h
+mem.o: mem.cpp config.h msg.h util.h particle.h mem.h fft.h
+msg.o: msg.cpp comm.h msg.h
+particle.o: particle.cpp msg.h util.h particle.h config.h fft.h mem.h
+power.o: power.cpp comm.h msg.h power.h
+
 
 .PHONY: clean run dependence
 clean:
 	rm -f $(EXEC) $(OBJS)
 
 dependence:
-	gcc -MM -MG *.c
+	g++ -MM -MG *.cpp
 

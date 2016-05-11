@@ -23,9 +23,8 @@ class FFT {
   bool        allocated;
 };
 
-//size_t fft_mem_size_working(const int nc, const int transposed);
-//size_t fft_mem_size_fk(const int nc, const int transposed);
-//size_t fft_local_nx(const int nc);
+size_t fft_mem_size(const int nc, const int transposed);
+size_t fft_local_nx(const int nc);
   
 void fft_finalize();
 void* fft_malloc(size_t size);

@@ -143,3 +143,7 @@ double growth_unnormalised(const double a)
   return cosmology_hubble_function(a) * result;
 }
 
+double cosmology_omega_m()
+{
+  return omega_m0;
+}

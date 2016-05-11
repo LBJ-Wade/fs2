@@ -17,4 +17,5 @@ double cosmology_f_growth_rate(const double a);
 double cosmology_hubble_function(const double a);
 double cosmology_omega(const double a);
 
+double cosmology_omega_m();
 #endif

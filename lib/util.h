@@ -23,4 +23,16 @@ static inline void periodic_wrapup_p(Particle* const p, const float_t boxsize)
   }
 }
 
+static inline float_t periodic_wrapup(float_t x, const float_t boxsize)
+{
+  if(x < 0) x += boxsize;
+  if(x >= boxsize) x -= boxsize;
+
+#ifdef CHECK
+  assert(0 <= x && x < boxsize);
+#endif
+
+  return x;
+}
+
 #endif

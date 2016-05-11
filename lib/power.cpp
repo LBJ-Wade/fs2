@@ -2,10 +2,10 @@
 // Power spectrum for initial condition
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cassert>
 #include <gsl/gsl_spline.h>
 #include "comm.h"
 #include "msg.h"

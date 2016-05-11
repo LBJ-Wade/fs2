@@ -11,12 +11,13 @@ os.environ["CXX"] = "mpic++"
 setup(name='fs',
       version='0.0.1',
       author='Jun Koda',
-      py_modules=['fs.power',
+      py_modules=['fs.power', 'fs.particles', 'fs.functions'
       ],
       ext_modules=[
           Extension('fs._fs',
                     ['py_package.cpp', 'py_msg.cpp', 'py_comm.cpp',
-                     'py_power.cpp',
+                     'py_cosmology.cpp', 'py_power.cpp', 'py_particles.cpp',
+                     'py_lpt.cpp'
                     ],
                     include_dirs = ['../lib', np.get_include()],
                     library_dirs =  ['../lib'],

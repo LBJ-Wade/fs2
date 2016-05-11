@@ -22,6 +22,7 @@ static double boxsize;
 static size_t nc;
 static size_t local_nx;
 static size_t local_ix0;
+static float_t offset= 0.5f;
 
 FFT* fft_psi[3];    // Zeldovichi displacement Psi_i
 FFT* fft_psi_ij[6]; // derivative Psi_i,j= dPsi_i/dq_j
@@ -627,7 +628,6 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
 
   double sum2= 0.0;
 
-  const float_t offset= 0.5f; // debug!! 0.5 for test
   float_t x[3];
   for(size_t ix=0; ix<local_nx; ix++) {
    x[0]= (local_ix0 + ix + offset)*dx;
@@ -665,4 +665,9 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
   particles->np_local= np_local; 
   particles->a_x= a;
   particles->a_v= 0.0;
+}
+
+void lpt_set_offset(float_t offset_)
+{
+  offset= offset_;
 }

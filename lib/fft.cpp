@@ -25,12 +25,12 @@ FFT::FFT(const char name[], const int nc_, Mem* mem, const int transposed) :
   // Allocates memory for FFT real and Fourier space and initilise fftw_plans
 
   if(transposed) {
-    ncomplex= FFTW(mpi_local_size_3d_transposed)(nc, nc, nc, MPI_COMM_WORLD,
+    ncomplex= FFTW(mpi_local_size_3d_transposed)(nc, nc, nc/2+1, MPI_COMM_WORLD,
 	                 &local_nx, &local_ix0,
 			 &local_nky, &local_iky0);
   }
   else {
-    ncomplex= FFTW(mpi_local_size_3d)(nc, nc, nc, MPI_COMM_WORLD,
+    ncomplex= FFTW(mpi_local_size_3d)(nc, nc, nc/2+1, MPI_COMM_WORLD,
 			    &local_nx, &local_ix0);
     local_nky= local_iky0= 0;
   }
@@ -91,7 +91,7 @@ size_t fft_mem_size(const int nc, const int transposed)
 
   ptrdiff_t n= 0;
   if(transposed)
-    n= FFTW(mpi_local_size_3d_transposed)(nc, nc, nc/2+2, MPI_COMM_WORLD,
+    n= FFTW(mpi_local_size_3d_transposed)(nc, nc, nc/2+1, MPI_COMM_WORLD,
 	           &local_nx, &local_ix0, &local_nky, &local_iky0);
   else
     n= FFTW(mpi_local_size_3d)(nc, nc, nc/2+1, MPI_COMM_WORLD,
@@ -101,15 +101,15 @@ size_t fft_mem_size(const int nc, const int transposed)
   return size_align(sizeof(complex_t)*n);
 }
 
-/*
+
 size_t fft_local_nx(const int nc)
 {
   ptrdiff_t local_nx, local_ix0; 
-  FFTW(mpi_local_size_3d)(nc, nc, nc, MPI_COMM_WORLD, &local_nx, &local_ix0);
+  FFTW(mpi_local_size_3d)(nc, nc, nc/2+1, MPI_COMM_WORLD, &local_nx, &local_ix0);
 
   return local_nx;
 }
-*/
+
 
 void fft_finalise()
 {

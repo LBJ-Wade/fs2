@@ -1,5 +1,6 @@
 *~
 *.o
-libfs.a
-libfs.dylib
+*.a
 *.so
+*.dylib
+build
