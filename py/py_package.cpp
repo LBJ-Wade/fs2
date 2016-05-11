@@ -10,6 +10,7 @@
 #include "py_power.h"
 #include "py_particles.h"
 #include "py_lpt.h"
+#include "py_pm.h"
 #include "py_cola.h"
 
 using namespace std;
@@ -47,6 +48,11 @@ static PyMethodDef methods[] = {
   {"_lpt", py_lpt, METH_VARARGS,
    "_lpt(nc, boxsize, a, _ps, rando_seed); setup 2LPT displacements"},
 
+  {"_pm_init", py_pm_init, METH_VARARGS,
+   "_pm_init(nc_pm, pm_factor, boxsize); initialise pm module"},
+  {"_pm_compute_force", py_pm_compute_force, METH_VARARGS,
+   "_pm_compute_force(_particles)"},   
+  
   {"_cola_kick", py_cola_kick, METH_VARARGS,
    "_cola_kick(_particles, a_pos); update particle velocities to a_vel"},
   {"_cola_drift", py_cola_drift, METH_VARARGS,
