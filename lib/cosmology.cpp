@@ -49,7 +49,7 @@ double cosmology_D2_growth(const double a, const double D)
 
 double cosmology_Dv_growth(const double a, const double D)
 {
-  assert(a > 0);
+  if(a == 0.0) return 1.0;
 
   double H= cosmology_hubble_function(a);
   double f= cosmology_f_growth_rate(a);

@@ -37,7 +37,7 @@ PyObject* py_particles_alloc(PyObject* self, PyObject* args)
 
 void py_particles_free(PyObject *obj)
 {
-  Particles* particles=
+  Particles* const particles=
     (Particles *) PyCapsule_GetPointer(obj, "_Particles");
   py_assert_void(particles);
 
@@ -51,7 +51,7 @@ PyObject* py_particles_len(PyObject* self, PyObject* args)
   if(!PyArg_ParseTuple(args, "O", &py_particles))
      return NULL;
 
-  Particles* particles=
+  Particles* const particles=
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
@@ -68,13 +68,13 @@ PyObject* py_particles_slice(PyObject* self, PyObject* args)
   if(!PyArg_ParseTuple(args, "Od", &py_particles, &frac))
      return NULL;
 
-  Particles* particles=
+  Particles* const particles=
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
   const float_t boxsize= particles->boxsize;
   const float_t x_max= frac*boxsize;
-  Particle* p= particles->p;
+  Particle* const p= particles->p;
   const size_t n= particles->np_local;
 
   if(v == 0) v= new vector<Particle>();
@@ -88,8 +88,8 @@ PyObject* py_particles_slice(PyObject* self, PyObject* args)
   }
 
   // Return vector<Particle> as np.array
-  int nd=2;
-  int ncol= sizeof(Particle)/sizeof(float_t);
+  const int nd=2;
+  const int ncol= sizeof(Particle)/sizeof(float_t);
   npy_intp dims[]= {(npy_intp) v->size(), ncol};
 
   return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT, &(v->front()));
@@ -105,11 +105,11 @@ PyObject* py_particles_getitem(PyObject* self, PyObject* args)
   if(!PyArg_ParseTuple(args, "OO", &py_particles, &py_index))
     return NULL;
 
-  Particles* particles=
+  Particles* const particles=
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
   Particle* const p= particles->p;
-  size_t n= particles->np_local;
+  const size_t n= particles->np_local;
 
   if(PyNumber_Check(py_index)) {
     // particles[i]; return ith particle
@@ -129,11 +129,11 @@ PyObject* py_particles_getitem(PyObject* self, PyObject* args)
     // particles[i:j:k]; return i to j with step k
     cout << "Slice object given\n";
     Py_ssize_t start, stop, step, length;
-    int ret= PySlice_GetIndicesEx(py_index, n, &start, &stop, &step, &length);
+    const int ret=
+      PySlice_GetIndicesEx(py_index, n, &start, &stop, &step, &length);
     if(ret)
       return NULL;
 
-    int index=0;
     for(int i=start; i<stop; i+=step) {
       if(0 <= i && i < (int) particles->np_local)
 	v->push_back(p[i]);
@@ -143,8 +143,8 @@ PyObject* py_particles_getitem(PyObject* self, PyObject* args)
     return NULL;
   }
 
-  int nd=2;
-  int ncol= sizeof(Particle)/sizeof(float_t);
+  const int nd=2;
+  const int ncol= sizeof(Particle)/sizeof(float_t);
   npy_intp dims[]= {(npy_intp) v->size(), ncol};
 
   return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT, &(v->front()));
