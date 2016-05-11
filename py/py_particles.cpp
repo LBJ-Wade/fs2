@@ -82,7 +82,7 @@ PyObject* py_particles_slice(PyObject* self, PyObject* args)
 
   for(size_t i=0; i<n; ++i) {
     Particle pp = p[i];
-    periodic_wrapup_p(&pp, boxsize);
+    periodic_wrapup_p(pp, boxsize);
     if(pp.x[2] < x_max)   
       v->push_back(pp);
   }

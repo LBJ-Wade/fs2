@@ -12,6 +12,7 @@
 #include "py_lpt.h"
 #include "py_pm.h"
 #include "py_cola.h"
+#include "py_leapfrog.h"
 
 using namespace std;
 
@@ -57,7 +58,14 @@ static PyMethodDef methods[] = {
    "_cola_kick(_particles, a_vel); update particle velocities to a_vel"},
   {"_cola_drift", py_cola_drift, METH_VARARGS,
    "_cola_drift(_particles, a_pos); update particle positions to a_pos"},
-  
+
+  {"_leapfrog_initial_velocity", py_leapfrog_initial_velocity, METH_VARARGS,
+   "_leapfrog_initial_velocity(_particles, a_pos"},
+  {"_leapfrog_kick", py_leapfrog_kick, METH_VARARGS,
+   "_leapfrog_kick(_particles, a_vel); update particle velocities to a_vel"},
+  {"_leapfrog_drift", py_leapfrog_drift, METH_VARARGS,
+   "_leapfrog_drift(_particles, a_pos); update particle positions to a_pos"},
+
   
   {NULL, NULL, 0, NULL}
 };
