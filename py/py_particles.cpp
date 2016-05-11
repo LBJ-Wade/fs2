@@ -44,6 +44,20 @@ void py_particles_free(PyObject *obj)
   delete particles;
 }
 
+PyObject* py_particles_len(PyObject* self, PyObject* args)
+{
+  PyObject* py_particles;
+  
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+     return NULL;
+
+  Particles* particles=
+    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  return Py_BuildValue("k", (unsigned long) particles->np_local);
+}
+
 PyObject* py_particles_slice(PyObject* self, PyObject* args)
 {
   // _particles_slice(_particles, frac)

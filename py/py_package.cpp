@@ -38,6 +38,8 @@ static PyMethodDef methods[] = {
    "allocate a new _particles object"},
   {"_particles_slice", py_particles_slice, METH_VARARGS,
    "return a slice of particles as np.array"},
+  {"_particles_len", py_particles_len, METH_VARARGS,
+   "return the number particles"},
   {"_particles_getitem", py_particles_getitem, METH_VARARGS,
    "_particles_getitem(_particles, row, col)"},
   

@@ -7,6 +7,9 @@ class Particles:
     def __getitem__(self, i):
         print(i)
         return c._particles_getitem(self._particles, i)
+
+    def __len__(self):
+        return c._particles_len(self._particles)
     
     def slice(self, frac):
         return c._particles_slice(self._particles, frac)
