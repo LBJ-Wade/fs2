@@ -11,7 +11,7 @@ os.environ["CXX"] = "mpic++"
 setup(name='fs',
       version='0.0.1',
       author='Jun Koda',
-      py_modules=[
+      py_modules=['fs.power',
       ],
       ext_modules=[
           Extension('fs._fs',

@@ -13,6 +13,7 @@ using namespace std;
 static PyMethodDef methods[] = {
   {"set_loglevel", py_msg_set_loglevel, METH_VARARGS,
    "set loglevel: 0=debug, 1=verbose, ..."},
+
   {"comm_mpi_init", py_comm_mpi_init, METH_VARARGS,
    "initialize MPI"},
   {"comm_mpi_finalise", py_comm_mpi_finalise, METH_VARARGS,
