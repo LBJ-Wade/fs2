@@ -1,8 +1,6 @@
 //
 // wrapping power.cpp
 //
-#include "Python.h"
-
 #include "power.h"
 #include "py_power.h"
 #include "py_assert.h"

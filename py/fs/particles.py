@@ -14,5 +14,8 @@ class Particles:
     def slice(self, frac):
         return c._particles_slice(self._particles, frac)
 
+    def save_gadget_binary(self, filename, use_longid=False):
+        c._write_gadget_binary(self._particles, filename, use_longid)
+
     
 

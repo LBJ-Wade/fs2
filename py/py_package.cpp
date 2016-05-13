@@ -13,6 +13,7 @@
 #include "py_pm.h"
 #include "py_cola.h"
 #include "py_leapfrog.h"
+#include "py_write.h"
 
 using namespace std;
 
@@ -66,6 +67,8 @@ static PyMethodDef methods[] = {
   {"_leapfrog_drift", py_leapfrog_drift, METH_VARARGS,
    "_leapfrog_drift(_particles, a_pos); update particle positions to a_pos"},
 
+  {"_write_gadget_binary", py_write_gadget_binary, METH_VARARGS,
+   "_write_gadget_binary(_particles, filename, use_long_id"},   
   
   {NULL, NULL, 0, NULL}
 };
