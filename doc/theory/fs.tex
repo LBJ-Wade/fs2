@@ -2,9 +2,17 @@
 \usepackage{amsmath,amssymb}
 \usepackage{bm}
 \usepackage{graphicx}
+\usepackage{makeidx}
+\usepackage{hyperref}
 
-\title{\textsc{fs}}
+\setlength\parindent{0cm}
+
+\title{\textsc{fs}\\The Fast Simulation system}
 \date{}
+
+\makeindex
+
+
 \begin{document}
 
 \maketitle
@@ -17,7 +25,7 @@
 \section{Background cosmology}
 
 We only consider flat $\Lambda$CDM Universe, with matter density
-$\Omega_m$ and dark energy density $\Omega_\Lambda = 1 - \Omega_m$ in units of the critical density,
+$\Omega_m$ and dark energy density $\Omega_\Lambda = 1 - \Omega_m$ in units of the critical density\index{critical density},
 \begin{equation}
   \rho_\mathrm{crit}(a) = \frac{3H(a)}{8\pi G}
 \end{equation}
@@ -25,15 +33,33 @@ where Hubble parameter is,
 \begin{equation}
   H(a) = H_0 \left( \Omega_m a^{-3} + \Omega_\Lambda \right).
 \end{equation}
+%
+\begin{equation}
+  \texttt{cosmology\_hubble\_function(a)} = \Omega_m a^{-3} + \Omega_\Lambda
+\end{equation}
 
-\section{Equation of motion}
+\section{Equations of motion}
+
+\index{equations of motion}
+\begin{align}
+  &\bm{v} = a^2 \dot{\bm{x}},\\
+  &\dot{\bm{v}} = - \bm{\nabla} \phi(\bm{x}, t)\\
+  &\nabla^2 \phi(\bm{x}, t) =
+  \frac{3}{2} H_0^2 \Omega_{m,0} \, a^{-1} \delta(\bm{x}, t)
+\end{align}
+
 Let $\bm{x}(t)$ be a comoving position of a particle at time $t$, $m$
 the particle mass, and $\phi(\bm{x}, t)$ the peculiar gravitational
 potential field. The Lagrangian of a particle is,
 \begin{equation}
   L= \frac{1}{2} m (a\dot{x})^2 - m \phi(\bm{x}, t).
 \end{equation}
-and, Euler-Lagrange equation gives,
+and, the Euler-Lagrange equation,
+\begin{equation}
+  \frac{d}{dt} \left( \frac{\partial L}{\partial \dot{x}} \right)
+  - \frac{\partial L}{\partial x} = 0,
+\end{equation}
+gives,
 \begin{equation}
   \label{eq:motion}
   \frac{d}{dt}(a^2 \dot{\bm{x}}) + \bm{\nabla} \phi(\bm{x}, t) = 0,
@@ -43,7 +69,7 @@ or,
   \bm{v} &= a^2 \dot{\bm{x}},\\
   \dot{\bm{v}} &= - \bm{\nabla} \phi(\bm{x}, t)
 \end{align}
-where $\bm{v}$ is the \textit{canonical velocity}. 
+where $\bm{v}$ is the \textit{canonical velocity}. \\
 
 
 The gravitational potential satisfies the Poisson equation,
@@ -137,7 +163,7 @@ The solution is
 \begin{equation}
   \bm{\Psi}(\bm{q}, t) = D_1(t) \bm{\Psi}(\bm{q})
 \end{equation}
-for any displacement field $\bm{\Psi}(\bm{q})$ with the \textit{linear growth factor} $D_1(a)$ that satisfies,
+for any displacement field $\bm{\Psi}(\bm{q})$ with the \textit{linear growth factor}\index{linear growth factor} $D_1(a)$ that satisfies,
 \begin{equation}
   \label{eq:linear-growth-factor}
   \frac{d}{dt}\left( a^2 \dot{D}_1 \right)
@@ -155,7 +181,7 @@ and the growth factor is normalised to be 1 at present as a convention,
   D(a) = \tilde{D}(a)/\tilde{D}(1).
 \end{equation}
 %
-The \textit{linear growth rate} $f$ is the logatithmic derivative of $D_1$,
+The \textit{linear growth rate}\index{linear growth rate} $f$\index{$f$} is the logatithmic derivative of $D_1$,
 \begin{equation}
   f := \frac{d\ln D_1}{d\ln a}.
 \end{equation}
@@ -164,6 +190,7 @@ $\Omega^{0.55}$, are often used, but analytical derivative is also easy,
 \begin{equation}
   f = \left[ (aH)^2 \tilde{D}(a) \right]^{-1} - \frac{3}{2} \Omega(a).
 \end{equation}
+
 %Peculiar velocity
 %\begin{align}
 %  \bm{v}_\mathrm{pec} &= a \dot{\bm{\Psi}}(\bm{q}, t)
@@ -326,5 +353,6 @@ with,
   D_{2a}(a) = \texttt{cosmology\_D2a\_growth}(a, D_1)
 \end{equation}
 
+\printindex
 
 \end{document}

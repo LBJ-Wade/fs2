@@ -4,9 +4,12 @@ SPELL       = aspell --lang=en_GB -t -c
 
 all: $(PDF)
 
-fs.pdf: fs.tex
+fs.pdf: fs.tex fs.idx
 	pdflatex $<
 	@grep -e 'may have changed' $(basename $<).log && rm $@; $(MAKE) $@ || echo "done."
+
+%.idx: %.tex
+	makeindex $*
 
 PHONY: check clean
 
