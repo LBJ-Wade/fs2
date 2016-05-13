@@ -3,9 +3,8 @@
 /// \brief Functions for MPI communications
 ///
 
-#include <assert.h>
-
-#include <mpi.h>
+#include <cassert>
+#include "comm.h"
 
 static int this_node= -1;
 static int n_nodes= 0;
@@ -67,3 +66,4 @@ int comm_n_nodes(void)
 {
   return n_nodes;
 }
+

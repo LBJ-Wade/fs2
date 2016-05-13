@@ -18,4 +18,6 @@ double cosmology_hubble_function(const double a);
 double cosmology_omega(const double a);
 
 double cosmology_omega_m();
+double cosmology_h();
+double cosmology_rho_m();
 #endif

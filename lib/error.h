@@ -7,5 +7,6 @@ class RuntimeError: Error {};
 
 class AssertionError: RuntimeError{};
 
+class IOError: RuntimeError {};
 
 #endif
