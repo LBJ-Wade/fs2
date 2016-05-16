@@ -1,5 +1,6 @@
 import fs._fs as c
 
+
 class PowerSpectrum:
     def __init__(self, filename):
         self._ps = c._power_alloc(filename)
