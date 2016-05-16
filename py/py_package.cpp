@@ -14,6 +14,7 @@
 #include "py_cola.h"
 #include "py_leapfrog.h"
 #include "py_write.h"
+#include "py_hdf5_io.h"
 
 using namespace std;
 
@@ -69,6 +70,9 @@ static PyMethodDef methods[] = {
 
   {"_write_gadget_binary", py_write_gadget_binary, METH_VARARGS,
    "_write_gadget_binary(_particles, filename, use_long_id"},   
+
+  {"_hdf5_write_particles", py_hdf5_write_particles, METH_VARARGS,
+   "_hdf5_write_particles(_particles, filename)"},
   
   {NULL, NULL, 0, NULL}
 };

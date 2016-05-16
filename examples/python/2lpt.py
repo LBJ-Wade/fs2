@@ -1,7 +1,7 @@
 #
 # Generate a 2LPT initial condition at a and save as gadget binary files
 #
-# mpirun -n <number of nodes> 2lpt.py
+# mpirun -n 4 2lpt.py
 
 import fs
 

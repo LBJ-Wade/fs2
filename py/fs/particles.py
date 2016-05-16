@@ -17,5 +17,7 @@ class Particles:
     def save_gadget_binary(self, filename, use_longid=False):
         c._write_gadget_binary(self._particles, filename, use_longid)
 
+    def save_hdf5(self, filename):
+        c._hdf5_write_particles(self._particles, filename)
     
 

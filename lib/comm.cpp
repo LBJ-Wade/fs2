@@ -1,7 +1,6 @@
-///
-/// \file  comm.c
-/// \brief Functions for MPI communications
-///
+//
+// Functions for MPI communications
+//
 
 #include <cassert>
 #include "comm.h"
@@ -41,9 +40,24 @@ void comm_mpi_finalise(void)
   MPI_Finalize();
 }
 
+int comm_this_node(void)
+{
+  return this_node;
+}
+
+int comm_n_nodes(void)
+{
+  return n_nodes;
+}
+
 void comm_abort(void)
 {
   MPI_Abort(MPI_COMM_WORLD, 1);
+}
+
+void comm_barrier()
+{
+  MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
@@ -57,13 +71,4 @@ void comm_bcast_double(double* p_double, int count)
   MPI_Bcast(p_double, count, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
-int comm_this_node(void)
-{
-  return this_node;
-}
-
-int comm_n_nodes(void)
-{
-  return n_nodes;
-}
 

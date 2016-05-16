@@ -20,7 +20,7 @@ CXX      = mpic++
 
 WOPT    ?= -Wall
 CFLAGS  := -O3 $(WOPT) $(OPENMP) $(OPT)
-LIBS    := -lm
+LIBS    := -lm -lhdf5
 
 # Define paths of FFTW3 & GSL libraries if necessary.
 
@@ -37,7 +37,7 @@ all: $(LIB)
 
 OBJS := comm.o msg.o config.o fft.o mem.o particle.o
 OBJS += power.o cosmology.o lpt.o pm.o cola.o leapfrog.o
-OBJS += gadget_file.o
+OBJS += gadget_file.o hdf5_write.o
 
 #
 # Linking libraries
