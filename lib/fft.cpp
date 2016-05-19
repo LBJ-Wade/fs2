@@ -20,7 +20,7 @@
 
 
 FFT::FFT(const char name[], const int nc_, Mem* mem, const int transposed) :
-  nc(nc_), mode(fft_unknown)
+  nc(nc_), mode(fft_mode_unknown)
 {
   // Allocates memory for FFT real and Fourier space and initilise fftw_plans
 
@@ -77,7 +77,7 @@ void FFT::execute_forward()
 
 void FFT::execute_inverse()
 {
-  if(mode != fft_k) throw FFTError();
+  if(mode != fft_mode_k) throw FFTError();
   FFTW(mpi_execute_dft_c2r)(inverse_plan, fk, fx);
 }
 

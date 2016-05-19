@@ -42,11 +42,7 @@ void lpt_init(const int nc_, const double boxsize_, Mem* mem)
 
   msg_printf(msg_debug, "lpt_init(nc= %d, boxsize= %.1lf)\n", nc, boxsize);
   
-  //if(mem == 0)
-  //  mem= mem_init("mem_lpt");
-
-  if(mem != NULL)
-    mem->use_from_zero(0);
+  mem->use_from_zero(0);
   
   for(int i=0; i<3; i++)
     fft_psi[i]= new FFT("Psi_i", nc, mem, 0);
@@ -266,7 +262,9 @@ FFT* lpt_generate_phi(const unsigned long seed, PowerSpectrum* const ps)
 
   gsl_rng_free(random_generator);
 
+  fft_psi[0]->mode= fft_mode_k;
   fft_psi[0]->execute_inverse();
+  
   return fft_psi[0];
 }
 
@@ -425,6 +423,10 @@ void lpt_generate_psi_k(const unsigned long seed, PowerSpectrum* const ps)
     }
   }
 
+  for(int i=0; i<3; ++i) {
+    fft_psi[i]->mode= fft_mode_k;
+  }
+  
   gsl_rng_free(random_generator);  
 }
 
@@ -453,9 +455,6 @@ void lpt_compute_psi2_k(void)
     assert(fft_psi_ij[i]);
     psi_ij_k[i]= fft_psi_ij[i]->fk;
   }
-
-  //for(int i=0; i<64; i++)
-  //  printf("debug-pre %e\n", fft_psi[0]->fk[i][0]);
 
   // Take derivative dPsi_i/dq_j in Fourier space
   for(size_t ix=0; ix<local_nx; ix++) {
@@ -500,9 +499,8 @@ void lpt_compute_psi2_k(void)
     }
   }
 
-  //for(int i=0; i<64; i++)
-  //  printf("debug %e\n", fft_psi[0]->fk[i][0]);
-  //abort();
+  for(int i=0; i<6; i++) 
+    fft_psi_ij[i]->mode= fft_mode_k;
 
   // Second-order displacement Psi(2)
   // div.Psi(2) = Sum_{i<j} [ Psi_i,j Psi_i,j - Psi_i,i Psi_j,j ]
@@ -531,6 +529,8 @@ void lpt_compute_psi2_k(void)
     }
   }
 
+  fft_div_psi2->mode= fft_mode_x;
+
   // Solve Poisson eq. for div.Psi(2) in Fourier space
   msg_printf(msg_verbose, "Fourier transforming second order source...\n");
   
@@ -543,7 +543,8 @@ void lpt_compute_psi2_k(void)
       psi2_k[i][0][0]= psi2_k[i][0][1] = 0.0;
     // avoid zero division kmag2 = 0
   }
-	    
+
+  // Set 2nd-order Psi(2)
   for(size_t ix=0; ix<local_nx; ix++) {
     for(size_t iy=0; iy<nc; iy++) {
       int iz0= (ix + local_ix0 == 0) && (iy == 0); // skip kvec=(0,0,0)
@@ -578,6 +579,11 @@ void lpt_compute_psi2_k(void)
       }
     }
   }
+
+  for(int i=0; i<3; i++) {
+    fft_psi2[i]->mode= fft_mode_k;
+  }
+
 }
 
 void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
@@ -592,10 +598,7 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
 	      particles->np_allocated, np_local);
  
   lpt_generate_psi_k(seed, ps);
-  //for(int i=0; i<64*64; i++)
-  //  printf("fk %e\n", fft_psi[0]->fk[i][0]);
 
-  
   lpt_compute_psi2_k();
 
   // precondition: psi_k in fft_psi[]->fk and psi2_k in fft_psi2[]->fk

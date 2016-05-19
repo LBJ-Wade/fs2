@@ -251,6 +251,7 @@ void pm_assign_cic_density(Particles* particles, size_t np)
     }
   }
 
+  fft_pm->mode= fft_x;
   msg_printf(msg_verbose, "CIC density assignment finished.\n");
 }
 

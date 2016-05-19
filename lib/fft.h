@@ -5,7 +5,7 @@
 #include "config.h"
 #include "mem.h"
 
-enum FFTMode {fft_unknown, fft_x, fft_k};
+enum FFTMode {fft_mode_unknown, fft_mode_x, fft_mode_k};
 
 class FFT {
  public:
