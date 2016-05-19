@@ -27,13 +27,13 @@ static inline void grid_assign(float_t * const d,
 #ifdef _OPENMP
   #pragma omp atomic
 #endif
-  d[(ix*nc + iy)*nzpad + iz] += f;
+  d[(ix*nc + iy)*ncz + iz] += f;
 }
 
 static inline float_t grid_val(float_t const * const d,
 			const size_t ix, const size_t iy, const size_t iz)
 {
-  return d[(ix*nc + iy)*nzpad + iz];
+  return d[(ix*nc + iy)*ncz + iz];
 }
 
 
@@ -56,7 +56,7 @@ void pm_init(const int nc_pm, const double pm_factor_,
   msg_printf(msg_verbose, "PM module init\n");
   nc= nc_pm;
   pm_factor= pm_factor_;
-  nzpad= 2*(nc/2 + 1);
+  ncz= 2*(nc/2 + 1);
   boxsize= boxsize_;
 
   const size_t nckz= nc/2 + 1;
@@ -168,7 +168,7 @@ size_t send_buffer_positions(Particles* const particles)
 }
 
 
-  
+
 void pm_assign_cic_density(Particles* particles, size_t np) 
 {
   // Input:  particle positions in particles->p.x
@@ -196,7 +196,7 @@ void pm_assign_cic_density(Particles* particles, size_t np)
   for(size_t ix = 0; ix < local_nx; ix++)
     for(size_t iy = 0; iy < nc; iy++)
       for(size_t iz = 0; iz < nc; iz++)
-	density[(ix*nc + iy)*nzpad + iz] = -1;
+	density[(ix*nc + iy)*ncz + iz] = -1;
 
 #ifdef _OPENMP
   #pragma omp parallel for default(shared)
@@ -211,12 +211,12 @@ void pm_assign_cic_density(Particles* particles, size_t np)
     int iz0= (int) z;
 
     // CIC weight on left grid
-    float_t wx1= x - ix0; // D1 D2 D3
+    float_t wx1= x - ix0;
     float_t wy1= y - iy0;
     float_t wz1= z - iz0;
 
     // CIC weight on right grid
-    float_t wx0= 1 - wx1;    // T1 T2 T3
+    float_t wx0= 1 - wx1;
     float_t wy0= 1 - wy1;
     float_t wz0= 1 - wz1;
 
@@ -265,7 +265,7 @@ void check_total_density(float_t const * const density)
   for(size_t ix = 0; ix < local_nx; ix++)
     for(size_t iy = 0; iy < nc; iy++)
       for(size_t iz = 0; iz < nc; iz++)
-	sum += density[(ix*nc + iy)*nzpad + iz];
+	sum += density[(ix*nc + iy)*ncz + iz];
 
   double sum_global;
   MPI_Reduce(&sum, &sum_global, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
