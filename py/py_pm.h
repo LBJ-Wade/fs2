@@ -5,5 +5,6 @@
 
 PyObject* py_pm_init(PyObject* self, PyObject* args);
 PyObject* py_pm_compute_force(PyObject* self, PyObject* args);
+PyObject* py_pm_compute_density(PyObject* self, PyObject* args);
 
 #endif

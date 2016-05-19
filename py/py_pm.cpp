@@ -2,6 +2,7 @@
 #include "error.h"
 #include "pm.h"
 #include "py_assert.h"
+#include "py_fft.h"
 
 static bool pm_initialised= false;
 
@@ -56,5 +57,25 @@ PyObject* py_pm_compute_force(PyObject* self, PyObject* args)
   Py_RETURN_NONE;
 }
 
+PyObject* py_pm_compute_density(PyObject* self, PyObject* args)
+{
+  // _pm_compute_force(_particles)
+  if(!pm_initialised) {
+    PyErr_SetString(PyExc_RuntimeError, "PM not initialised; call pm_init().");
+    return NULL;
+  }
+  
+  PyObject* py_particles;
+  
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
 
+  Particles* const particles=
+    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+  
+  FFT* fft= pm_compute_density(particles);
+
+  return fft_fx_as_array(fft);
+}
 

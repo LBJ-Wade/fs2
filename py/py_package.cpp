@@ -15,6 +15,7 @@
 #include "py_leapfrog.h"
 #include "py_write.h"
 #include "py_hdf5_io.h"
+#include "py_fft.h"
 
 using namespace std;
 
@@ -28,9 +29,13 @@ static PyMethodDef methods[] = {
    "finalise MPI"},
   {"comm_hello", py_comm_hello, METH_VARARGS,
    "test print statiment with MPI"},
+  {"comm_this_node", py_comm_this_node, METH_VARARGS,
+   "return index (rank) of this node"},
+  {"comm_n_nodes", py_comm_n_nodes, METH_VARARGS,
+   "return number of MPI nodes (size)"}, 
 
-  {"cosmology_init", py_cosmology_init, METH_VARARGS,
-   "cosmology_init(omega_m0); set omega_m"},   
+  {"_cosmology_init", py_cosmology_init, METH_VARARGS,
+   "cosmology_init(omega_m0, h=0.7); set omega_m and h"},   
   
   {"_power_alloc", py_power_alloc, METH_VARARGS,
    "allocate a new _ps opbject"},
@@ -90,6 +95,7 @@ PyMODINIT_FUNC
 PyInit__fs(void) {
   //py_power_module_init();
   py_particles_module_init();
+  py_fft_module_init();
   
   return PyModule_Create(&module);
 }

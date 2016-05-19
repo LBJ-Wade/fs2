@@ -1,6 +1,8 @@
 import fs._fs as c
 from fs.particles import Particles
 
+def cosmology_init(omega_m, h=1):
+    c._cosmology_init(omega_m, h)
 
 def lpt(nc, boxsize, a, ps, seed):
     return Particles(c._lpt(nc, boxsize, a, seed, ps._ps))
@@ -8,6 +10,9 @@ def lpt(nc, boxsize, a, ps, seed):
 
 def pm_compute_force(particles):
     c._pm_compute_force(particles._particles)
+
+def pm_compute_density(particles):
+    c._pm_compute_density(particles._particles)
 
 
 def cola_kick(particles, a_vel):
