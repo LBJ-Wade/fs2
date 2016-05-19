@@ -12,7 +12,7 @@ def pm_compute_force(particles):
     c._pm_compute_force(particles._particles)
 
 def pm_compute_density(particles):
-    c._pm_compute_density(particles._particles)
+    return c._pm_compute_density(particles._particles)
 
 
 def cola_kick(particles, a_vel):

@@ -60,6 +60,8 @@ static PyMethodDef methods[] = {
    "_pm_init(nc_pm, pm_factor, boxsize); initialise pm module"},
   {"_pm_compute_force", py_pm_compute_force, METH_VARARGS,
    "_pm_compute_force(_particles)"},   
+  {"_pm_compute_density", py_pm_compute_density, METH_VARARGS,
+   "_pm_compute_density(_particles); returns density mesh as np.array."},
   
   {"_cola_kick", py_cola_kick, METH_VARARGS,
    "_cola_kick(_particles, a_vel); update particle velocities to a_vel"},
