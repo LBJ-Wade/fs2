@@ -73,13 +73,13 @@ void pm_compute_force(Particles* const particles)
   // Main routine of this source file
   msg_printf(msg_verbose, "PM force computation...\n");
 
-  //for(int i=64*64; i<64*64+10; i++)
-  //  printf("%e\n", particles->p[i].x[0]);
-  
   size_t np_plus_buffer= send_buffer_positions(particles);
   pm_assign_cic_density(particles, np_plus_buffer);
-  check_total_density(fft_pm->fx);
 
+#ifdef CHECK
+  check_total_density(fft_pm->fx);
+#endif
+  
   compute_delta_k();
 
   for(int axis=0; axis<3; axis++) {
@@ -91,6 +91,16 @@ void pm_compute_force(Particles* const particles)
   add_buffer_forces(particles, np_plus_buffer);
 }
 
+FFT* pm_compute_density(Particles* const particles)
+{
+  // Compute density only
+  msg_printf(msg_verbose, "PM force computation...\n");
+
+  size_t np_plus_buffer= send_buffer_positions(particles);
+  pm_assign_cic_density(particles, np_plus_buffer);
+
+  return fft_pm;
+}
 
 //
 // Private (static) functions
@@ -101,15 +111,13 @@ size_t send_buffer_positions(Particles* const particles)
   assert(boxsize > 0);
   // ToDo !!! send with MPI !!!
   const size_t np= particles->np_local;
-  printf("np= %lu\n", np);
+
   Particle* const p= particles->p;
   const int nbuf= particles->np_allocated;
   
   const float_t eps= boxsize/nc;
   const float_t x_left= eps;
   const float_t x_right= boxsize - eps;
-
-  fprintf(stderr, "x-buffer %f %f\n", x_left, x_right);
 
   size_t ibuf= np;
 
@@ -118,7 +126,6 @@ size_t send_buffer_positions(Particles* const particles)
     periodic_wrapup_p(p[i], boxsize);
     
     if(p[i].x[0] < x_left) {
-      //printf("%e\n", p[i].x[0]);
       if(ibuf >= nbuf) {
 	msg_printf(msg_fatal, "Error: not enough space for buffer particles. "
 		  "%lu %lu\n", ibuf, nbuf);
@@ -289,7 +296,6 @@ void compute_delta_k(void)
   fft_pm->execute_forward();
 
   // Copy density(k) in fft_pm to density_k
-  // because FFT requires twice larger RAM for working memory
   const size_t nckz= nc/2 + 1;
   const size_t local_nky= fft_pm->local_nky;
 
@@ -303,9 +309,7 @@ void compute_delta_k(void)
       for(size_t iz=0; iz<nckz; iz++){
 	size_t index= (nc*iy + ix)*nckz + iz;
 	delta_k[index][0]= pm_k[index][0];
-	delta_k[index][1]= pm_k[index][1];
-	
-	//printf("%e %e\n", pm_k[index][0], pm_k[index][1]);
+	delta_k[index][1]= pm_k[index][1];	
       }
     }
   }
@@ -381,24 +385,24 @@ void force_at_particle_locations(Particles* const particles, const int np,
     float_t y=p[i].x[1]*dx_inv;
     float_t z=p[i].x[2]*dx_inv;
             
-    int ix0= (int) floorf(x); /// iI !!! floor for double?
-    int iy0= (int) y; //J
-    int iz0= (int) z;   //K
+    int ix0= (int) floor(x);
+    int iy0= (int) y;
+    int iz0= (int) z;
     
-    float_t wx1= x - ix0; //D1
-    float_t wy1= y - iy0; //D2
-    float_t wz1= z - iz0; //D3
+    float_t wx1= x - ix0;
+    float_t wy1= y - iy0;
+    float_t wz1= z - iz0;
 
-    float_t wx0= 1 - wx1; // T1
-    float_t wy0= 1 - wy1; // T2
-    float_t wz0= 1 - wz1; // T3
+    float_t wx0= 1 - wx1;
+    float_t wy0= 1 - wy1;
+    float_t wz0= 1 - wz1;
 
     if(iy0 >= nc) iy0= 0;
     if(iz0 >= nc) iz0= 0;
             
-    int ix1= ix0 + 1;  // I1
-    int iy1= iy0 + 1; if(iy1 >= nc) iy1= 0; // J1
-    int iz1= iz0 + 1; if(iz1 >= nc) iz1= 0; // K1
+    int ix1= ix0 + 1;
+    int iy1= iy0 + 1; if(iy1 >= nc) iy1= 0;
+    int iz1= iz0 + 1; if(iz1 >= nc) iz1= 0;
 
     ix0 -= local_ix0;
     ix1 -= local_ix0;
@@ -420,7 +424,6 @@ void force_at_particle_locations(Particles* const particles, const int np,
 	grid_val(fx, ix1, iy1, iz1)*wx1*wy1*wz1;
     }
   }
-  
 }
 
 void add_buffer_forces(Particles* const particles, const size_t np)
@@ -440,5 +443,7 @@ void add_buffer_forces(Particles* const particles, const size_t np)
   }
 }
 
-
-
+FFT* pm_get_fft()
+{
+  return fft_pm;
+}
