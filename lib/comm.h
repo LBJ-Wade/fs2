@@ -18,7 +18,7 @@ void comm_barrier();
 void comm_bcast_int(int* p_int, int count);
 void comm_bcast_double(double* p_double, int count);
 
-static MPI_Datatype mpi_datatype(const std::type_info& type_id)
+static inline MPI_Datatype mpi_datatype(const std::type_info& type_id)
 {
   if(type_id == typeid(int))
     return MPI_INT;

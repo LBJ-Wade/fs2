@@ -1,11 +1,14 @@
+#include "hdf5_io.h"
+#include "error.h"
 #include "py_hdf5_io.h"
+#include "py_assert.h"
 
 PyObject* py_hdf5_write_particles(PyObject* self, PyObject* args)
 {
   // _hdf5_write_particles(_particles, filename)
-  PyObject *bytes, *particles;
+  PyObject *bytes, *py_particles;
 
-  if(!PyArg_ParseTuple(args, "O&O", PyUnicode_FSConverter, &bytes, py_particles)) {
+  if(!PyArg_ParseTuple(args, "O&O", PyUnicode_FSConverter, &bytes, &py_particles)) {
     return NULL;
   }
 

@@ -15,11 +15,10 @@
 static double SqStd(double ai, double af);
 static double SphiStd(double ai, double af);
 
-void leapfrog_set_initial_velocity(Particles* const particles)
+void leapfrog_set_initial_velocity(Particles* const particles, const double a)
 {
   Particle* const p= particles->p;
   const int np= particles->np_local;
-  const float a= particles->a_v;
 
   const float_t da1= cosmology_D_growth(a);
   const float_t da2= cosmology_D2_growth(a, da1);
@@ -33,7 +32,8 @@ void leapfrog_set_initial_velocity(Particles* const particles)
     p[i].v[2]= p[i].dx1[2]*Dv + p[i].dx2[2]*D2v;
   }
 
-
+  particles->a_v= a;
+  
   msg_printf(msg_info, "Leapfrog (non-cola) initial velocity set at a= %.3f\n", a);
   msg_printf(msg_debug, "Dv= %e, Dv2= %e\n", Dv, D2v);
 }

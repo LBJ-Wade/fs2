@@ -26,8 +26,9 @@ LIBS    := -lm -lhdf5
 
 FFTW3_DIR ?= #e.g. /Users/jkoda/Research/opt/gcc/fftw3
 GSL_DIR   ?= #e.g. /Users/jkoda/Research/opt/gcc/gsl
+HDF5P_DIR ?= # parallel HDF5 library; e.g., brew install hdf5 --with-mpi
 
-DIR_PATH = $(FFTW3_DIR) $(GSL_DIR)
+DIR_PATH = $(FFTW3_DIR) $(GSL_DIR) $(HDF5P_DIR)
 
 CFLAGS  += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
 LIBS    += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)

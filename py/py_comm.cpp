@@ -20,6 +20,17 @@ PyObject* py_comm_hello(PyObject *self, PyObject* args)
   Py_RETURN_NONE;
 }
 
+PyObject* py_comm_this_node(PyObject *self, PyObject* args)
+{
+  return Py_BuildValue("i", comm_this_node());
+}
+
+PyObject* py_comm_n_nodes(PyObject *self, PyObject* args)
+{
+  return Py_BuildValue("i", comm_n_nodes());
+}
+
+
 
 
 

@@ -1,7 +1,7 @@
 #ifndef COSMOLOGY_H
 #define COSMOLOGY_H 1
 
-void   cosmology_init(const double omega_m0);
+void   cosmology_init(const double omega_m0, const double h);
 void   cosmology_check(void);
 
 double cosmology_D_growth(const double a);

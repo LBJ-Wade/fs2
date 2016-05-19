@@ -6,5 +6,6 @@
 PyObject* py_comm_mpi_init(PyObject *self, PyObject* args);
 PyObject* py_comm_mpi_finalise(PyObject *self, PyObject* args);
 PyObject* py_comm_hello(PyObject *self, PyObject* args);
-
+PyObject* py_comm_this_node(PyObject *self, PyObject* args);
+PyObject* py_comm_n_nodes(PyObject *self, PyObject* args);
 #endif
