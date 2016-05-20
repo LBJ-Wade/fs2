@@ -15,7 +15,7 @@
 #include "pm.h"
 
 static double pm_factor;
-static size_t nc, nzpad;
+static size_t nc, ncz;
 static float_t boxsize;
 
 static FFT* fft_pm;
@@ -251,7 +251,7 @@ void pm_assign_cic_density(Particles* particles, size_t np)
     }
   }
 
-  fft_pm->mode= fft_x;
+  fft_pm->mode= fft_mode_x;
   msg_printf(msg_verbose, "CIC density assignment finished.\n");
 }
 
