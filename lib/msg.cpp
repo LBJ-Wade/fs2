@@ -18,6 +18,8 @@ static char prefix[8]= "";
 void msg_set_loglevel(const enum LogLevel lv)
 {
   log_level= lv;
+
+  comm_mpi_msg();
 }
 
 void msg_set_prefix(const char prefix_[])

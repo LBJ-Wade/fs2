@@ -14,16 +14,18 @@ using namespace std;
 //static void write_data_int(hid_t loc, const char name[], const int val);
 //static void write_data_float(hid_t loc, const char name[], const float val);
 //static void write_data_double(hid_t loc, const char name[], const double val);
+/*
 static void write_data_table(hid_t loc, const char name[],
 		float const * const val,
 		const int nrow, const int ncol, const hsize_t stride);
+*/
 
 void hdf5_write_header(const char filename[])
 {
 
 }
 
-void write_data_table(hid_t loc, const char name[], 
+static void write_data_table(hid_t loc, const char name[], 
 		      const hsize_t nrow, const hsize_t ncol,
 		      const hsize_t stride, void const * const data)
 {
@@ -31,7 +33,7 @@ void write_data_table(hid_t loc, const char name[],
   long long offset_ll= comm_partial_sum<long long>(nrow);
   printf("%d %lld %lld\n", comm_this_node(), nrow, offset_ll);
 
-  long long nrow_total= comm_sum<long long>(nrow);
+  //long long nrow_total= comm_sum<long long>(nrow);
 
   // Data structure in memory
   const hsize_t data_size_mem= nrow*stride;

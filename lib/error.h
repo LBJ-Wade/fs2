@@ -9,4 +9,6 @@ class AssertionError: RuntimeError{};
 
 class IOError: RuntimeError {};
 
+class MemoryError: RuntimeError {};
+
 #endif

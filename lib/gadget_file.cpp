@@ -42,7 +42,7 @@ void gadget_file_write_particles(const char filebase[],
   else
     msg_printf(msg_info, "ID is %d-byte unsigned int\n", sizeof(unsigned int));
 
-  long long np_total= comm_sum<long long>(np, MPI_LONG_LONG);
+  long long np_total= comm_sum<long long>(np);
 
   GadgetHeader header; assert(sizeof(GadgetHeader) == 256);
   memset(&header, 0, sizeof(GadgetHeader));

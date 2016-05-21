@@ -76,6 +76,6 @@ PyObject* py_pm_compute_density(PyObject* self, PyObject* args)
   
   FFT* fft= pm_compute_density(particles);
 
-  return fft_fx_as_array(fft);
+  return PyCapsule_New(fft, "_FFT", py_fft_free);
 }
 

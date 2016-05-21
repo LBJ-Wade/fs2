@@ -19,7 +19,7 @@ OPT += -DCHECK  # slow assersions
 CXX      = mpic++
 
 WOPT    ?= -Wall
-CFLAGS  := -O3 $(WOPT) $(OPENMP) $(OPT)
+CPPFLAGS  := -O3 $(WOPT) $(OPENMP) $(OPT)
 LIBS    := -lm -lhdf5
 
 # Define paths of FFTW3 & GSL libraries if necessary.
@@ -28,12 +28,12 @@ FFTW3_DIR ?= #e.g. /Users/jkoda/Research/opt/gcc/fftw3
 GSL_DIR   ?= #e.g. /Users/jkoda/Research/opt/gcc/gsl
 HDF5P_DIR ?= # parallel HDF5 library; e.g., brew install hdf5 --with-mpi
 
-DIR_PATH = $(FFTW3_DIR) $(GSL_DIR) $(HDF5P_DIR)
+DIR_PATH   = $(FFTW3_DIR) $(GSL_DIR) $(HDF5P_DIR)
 
-CFLAGS  += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
-LIBS    += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
+CPPFLAGS  += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
+LIBS      += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
 
-LIB      = libfs.a libfs.dylib
+LIB        = libfs.a libfs.dylib
 all: $(LIB)
 
 OBJS := comm.o msg.o config.o fft.o mem.o particle.o

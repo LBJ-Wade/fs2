@@ -8,6 +8,7 @@
 
 void comm_mpi_init(int* pargc, char*** pargv);
 void comm_mpi_finalise();
+void comm_mpi_msg();
 
 int  comm_this_node();
 int  comm_n_nodes();

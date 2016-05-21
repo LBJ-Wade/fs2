@@ -80,6 +80,13 @@ static PyMethodDef methods[] = {
 
   {"_hdf5_write_particles", py_hdf5_write_particles, METH_VARARGS,
    "_hdf5_write_particles(_particles, filename)"},
+
+  {"_fft_alloc", py_fft_alloc, METH_VARARGS,
+   "_fft_alloc(nc)"},
+  {"_fft_set_test_data", py_fft_set_test_data, METH_VARARGS,
+   "_fft_set_test_data(_fft)"},
+  {"_fft_fx_global_as_array", py_fft_fx_global_as_array, METH_VARARGS,
+   "_fft_fx_global_as_array(_fft); return fft->fx as nc^3 np.array"},
   
   {NULL, NULL, 0, NULL}
 };

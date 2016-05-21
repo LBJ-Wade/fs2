@@ -2,14 +2,17 @@
 // Interface for FFTW
 //
 
-#include <stdlib.h>
-#include <assert.h>
+#include <iostream>
+#include <cstdlib>
+#include <cassert>
 #include <fftw3-mpi.h>
 #include "config.h"
 #include "mem.h"
 #include "msg.h"
 #include "util.h"
 #include "fft.h"
+
+using namespace std;
 
 // FFTW() adds fftw_ or fftwf_ prefix depending on DOUBLEPRECISION
 #ifdef DOUBLEPRECISION
@@ -19,11 +22,12 @@
 #endif
 
 
-FFT::FFT(const char name[], const int nc_, Mem* mem, const int transposed) :
+FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
   nc(nc_), mode(fft_mode_unknown)
 {
   // Allocates memory for FFT real and Fourier space and initilise fftw_plans
-
+  assert(nc > 0);
+  
   if(transposed) {
     ncomplex= FFTW(mpi_local_size_3d_transposed)(nc, nc, nc/2+1, MPI_COMM_WORLD,
 	                 &local_nx, &local_ix0,

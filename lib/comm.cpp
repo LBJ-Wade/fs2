@@ -3,6 +3,7 @@
 //
 
 #include <cassert>
+#include "msg.h"
 #include "comm.h"
 
 static int this_node= -1;
@@ -35,8 +36,17 @@ void comm_mpi_init(int* p_argc, char*** p_argv)
   MPI_Comm_size(MPI_COMM_WORLD, &n_nodes);
 }
 
-void comm_mpi_finalise(void)
+void comm_mpi_msg()
 {
+  msg_printf(msg_verbose,
+	     "MPI initialised with n_nodes= %d, parallel_level= %d.\n",
+	     n_nodes, parallel_level);
+
+}
+
+void comm_mpi_finalise()
+{
+  msg_printf(msg_verbose, "Finishing program with MPI_Finalize()\n");
   MPI_Finalize();
 }
 

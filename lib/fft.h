@@ -9,7 +9,7 @@ enum FFTMode {fft_mode_unknown, fft_mode_x, fft_mode_k};
 
 class FFT {
  public:
-  FFT(const char name[], const int nc, Mem* mem, const int transposed);
+  FFT(const char name[], const int nc, Mem* mem, const bool transposed);
   ~FFT();
   void execute_forward();
   void execute_inverse();
