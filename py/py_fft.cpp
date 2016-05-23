@@ -79,8 +79,8 @@ PyObject* py_fft_set_test_data(PyObject* self, PyObject* args)
 PyObject* py_fft_fx_global_as_array(PyObject* self, PyObject* args)
 {
   // _fft_fx_global_as_array(_fft)
-  // return whole nc^3 fft->fx grid as an np.array at node 0
-  // return None for node != 0
+  //   return whole nc^3 fft->fx grid as an np.array at node 0
+  //   return None for node != 0
 
   PyObject* py_fft;
   if(!PyArg_ParseTuple(args, "O", &py_fft))
@@ -92,18 +92,24 @@ PyObject* py_fft_fx_global_as_array(PyObject* self, PyObject* args)
 
   const size_t nc= fft->nc;
   const size_t ncz= 2*(nc/2 + 1);
-  const size_t nsend= fft->local_nx*nc*nc;
   const size_t nx= fft->local_nx;
-
-  // output np.array
-  const int nd= 3;
-  npy_intp dims[]= {nc, nc, nc};
-
-  PyObject* arr= PyArray_ZEROS(nd, dims, NPY_FLOAT, 0);
-  py_assert_ptr(arr);
   
-  float_t* const recvbuf= (float_t*) PyArray_DATA((PyArrayObject*) arr);
-  py_assert_ptr(recvbuf);
+  //
+  // Allocate a new np.array
+  //
+  PyObject* arr= 0;
+  float_t* recvbuf= 0;
+    
+  if(comm_this_node() == 0) {
+    const int nd= 3;
+    npy_intp dims[]= {nc, nc, nc};
+
+    arr= PyArray_ZEROS(nd, dims, NPY_FLOAT, 0);
+    py_assert_ptr(arr);
+  
+    recvbuf= (float_t*) PyArray_DATA((PyArrayObject*) arr);
+    py_assert_ptr(recvbuf);
+  }
 
   if(comm_n_nodes() == 1) {
     size_t i=0;
@@ -119,6 +125,8 @@ PyObject* py_fft_fx_global_as_array(PyObject* self, PyObject* args)
   //
   // Gather global grid data if n_nodes > 1
   //
+  const int nsend= fft->local_nx*nc*nc;
+
   const int n= comm_n_nodes();
   float_t* const sendbuf= (float_t*) malloc(sizeof(float_t)*nsend);
 
@@ -130,7 +138,6 @@ PyObject* py_fft_fx_global_as_array(PyObject* self, PyObject* args)
 
   int* nrecv= 0;
   int* displ=0;
-    
 
   if(comm_this_node() == 0) {
 
@@ -143,16 +150,9 @@ PyObject* py_fft_fx_global_as_array(PyObject* self, PyObject* args)
     }
 
     displ= nrecv + n;
-    
-    //recvbuf= (float_t*) malloc(sizeof(float_t)*nc*nc*nc);
-    //if(recvbuf == 0) {
-    //  PyErr_SetString(PyExc_MemoryError,
-    //"Unable to allocate memory for nrecvbuf");
-    //  return NULL;
-    //}
   }
     
-  MPI_Gather(&nsend, 1, MPI_INT, nrecv, n, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Gather(&nsend, 1, MPI_INT, nrecv, 1, MPI_INT, 0, MPI_COMM_WORLD);
   if(comm_this_node() == 0) {
     int displ_sum= 0;
     for(int i=0; i<n; ++i) {

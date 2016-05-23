@@ -69,8 +69,8 @@ FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
 
 FFT::~FFT()
 {
-  FFTW(destroy_plan)(forward_plan);
-  FFTW(destroy_plan)(inverse_plan);
+  //FFTW(destroy_plan)(forward_plan);
+  //FFTW(destroy_plan)(inverse_plan);
 }
 
 void FFT::execute_forward()
@@ -115,7 +115,7 @@ size_t fft_local_nx(const int nc)
 
 void fft_finalise()
 {
-  FFTW(mpi_cleanup)();
+  //Fftw(mpi_cleanup)();
 }
 
 void* fft_malloc(size_t size)
