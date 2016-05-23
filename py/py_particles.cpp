@@ -149,3 +149,29 @@ PyObject* py_particles_getitem(PyObject* self, PyObject* args)
 
   return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT, &(v->front()));
 }
+
+PyObject* py_particles_one(PyObject* self, PyObject* args)
+{
+  // _particles_add(_particles, x, y, z)
+  PyObject* py_particles;
+  double x, y, z;
+  
+  if(!PyArg_ParseTuple(args, "Oddd", &py_particles, &x, &y, &z))
+     return NULL;
+
+  Particles* const particles=
+    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  if(particles->np_allocated < 1) {
+    PyErr_SetString(PyExc_RuntimeError, "Particle no space for one particle");
+    return NULL;
+  }
+  
+  Particle* const p= particles->p;
+  p->x[0]= x; p->x[1]= y; p->x[2]= z;
+  particles->np_local= 1;
+
+  
+  Py_RETURN_NONE;
+}

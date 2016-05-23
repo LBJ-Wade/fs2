@@ -94,7 +94,7 @@ void pm_compute_force(Particles* const particles)
 FFT* pm_compute_density(Particles* const particles)
 {
   // Compute density only
-  msg_printf(msg_verbose, "PM force computation...\n");
+  msg_printf(msg_verbose, "PM density computation...\n");
 
   size_t np_plus_buffer= send_buffer_positions(particles);
   pm_assign_cic_density(particles, np_plus_buffer);

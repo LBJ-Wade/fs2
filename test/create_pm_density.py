@@ -5,32 +5,35 @@
 import h5py
 import fs
 
-# parameters
-omega_m = 0.308
-h = 0.67
-nc = 64
-pm_nc_factor = 1
-boxsize = 64
-a = 1.0
-seed = 1
+def create_pm_density():
+    # parameters
+    omega_m = 0.308
+    h = 0.67
+    nc = 64
+    pm_nc_factor = 1
+    boxsize = 64
+    a = 1.0
+    seed = 1
 
-# initial setup
-fs.set_loglevel(1)
-fs.cosmology_init(omega_m)
-ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
-fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize)
+    # initial setup
+    fs.set_loglevel(1)
+    fs.cosmology_init(omega_m)
+    ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
+    fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 
-# Set 2LPT displacements at scale factor a
-particles = fs.lpt(nc, boxsize, a, ps, seed)
+    # Set 2LPT displacements at scale factor a
+    particles = fs.lpt(nc, boxsize, a, ps, seed)
 
+    
+    fft = fs.pm_compute_density(particles)
+    return fft.asarray()
 
-fft = fs.pm_compute_density(particles)
-a = fft.asarray()
+if __name__ == '__main__':
+    create_pm_density()
+    filename = 'pm_density.h5'
+    file = h5py.File(filename, 'w')
 
-filename = 'pm_density.h5'
-file = h5py.File(filename, 'w')
+    file['delta'] = a
+    file.close()
 
-file.close()
-file['delta'] = a
-
-print("%s written\n" % filename)
+    print("%s written\n" % filename)

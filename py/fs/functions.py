@@ -6,7 +6,7 @@ def cosmology_init(omega_m, h=1):
     c._cosmology_init(omega_m, h)
 
 def lpt(nc, boxsize, a, ps, seed):
-    return Particles(c._lpt(nc, boxsize, a, seed, ps._ps))
+    return Particles(_particles=c._lpt(nc, boxsize, a, seed, ps._ps))
 
 
 def pm_compute_force(particles):

@@ -5,16 +5,17 @@
 #include "fft.h"
 #include "particle.h"
 
-Particles::Particles(const int nc, const double boxsize_)
+Particles::Particles(const int nc, const double boxsize_) :
+  np_local(0)
 {
   size_t nx= fft_local_nx(nc);
   
   size_t np_alloc= (size_t)((1.25*(nx + 1)*nc*nc));
 
-  p= (Particle*) malloc(np_alloc*sizeof(Particle)); assert(p);
-  force= (float3*) calloc(3*np_alloc, sizeof(float)); assert(force);
-  np_allocated= np_alloc;
-  boxsize= boxsize_;
+  this->p= (Particle*) malloc(np_alloc*sizeof(Particle)); assert(p);
+  this->force= (float3*) calloc(3*np_alloc, sizeof(float)); assert(force);
+  this->np_allocated= np_alloc;
+  this->boxsize= boxsize_;
 
   
   msg_printf(msg_verbose, "%lu Mbytes allocated for %lu particles\n",

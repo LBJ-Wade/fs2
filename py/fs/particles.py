@@ -2,14 +2,21 @@ import fs._fs as c
 
 
 class Particles:
-    def __init__(self, _particles):
-        self._particles = _particles
+    def __init__(self, nc=0, boxsize=0.0, **kwargs):
+        # Particles(nc, boxsize) or Particles(_particles=particles)
+        if '_particles' in kwargs:
+            self._particles = _particles
+        else:
+            self._particles = c._particles_alloc(nc, boxsize)
 
     def __getitem__(self, i):
         return c._particles_getitem(self._particles, i)
 
     def __len__(self):
         return c._particles_len(self._particles)
+
+    def set_one(self, x, y, z):
+        c._particles_one(self._particles, x, y, z)
 
     def slice(self, frac):
         return c._particles_slice(self._particles, frac)

@@ -59,7 +59,7 @@ PyObject* py_pm_compute_force(PyObject* self, PyObject* args)
 
 PyObject* py_pm_compute_density(PyObject* self, PyObject* args)
 {
-  // _pm_compute_force(_particles)
+  // _pm_compute_density(_particles)
   if(!pm_initialised) {
     PyErr_SetString(PyExc_RuntimeError, "PM not initialised; call pm_init().");
     return NULL;
@@ -74,8 +74,8 @@ PyObject* py_pm_compute_density(PyObject* self, PyObject* args)
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
   
-  FFT* fft= pm_compute_density(particles);
+  FFT* const fft= pm_compute_density(particles);
 
-  return PyCapsule_New(fft, "_FFT", py_fft_free);
+  return PyCapsule_New(fft, "_FFT", NULL);
 }
 
