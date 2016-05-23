@@ -1,5 +1,6 @@
 import fs._fs as c
 from fs.particles import Particles
+from fs.fft import FFT
 
 def cosmology_init(omega_m, h=1):
     c._cosmology_init(omega_m, h)
@@ -12,7 +13,8 @@ def pm_compute_force(particles):
     c._pm_compute_force(particles._particles)
 
 def pm_compute_density(particles):
-    return c._pm_compute_density(particles._particles)
+    _fft= c._pm_compute_density(particles._particles)
+    return FFT(_fft)
 
 
 def cola_kick(particles, a_vel):

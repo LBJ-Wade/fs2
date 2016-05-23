@@ -2,7 +2,6 @@
 # Test FFT
 #
 
-import sys
 import unittest
 import fs
 
