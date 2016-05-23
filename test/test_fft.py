@@ -6,16 +6,16 @@ import sys
 import unittest
 import fs
 
+
 class TestFFT(unittest.TestCase):
     def setUp(self):
-        self.nc= 4
+        self.nc = 4
         fs.set_loglevel(0)
         self.fft = fs.FFT(self.nc)
         self.fft.set_test_data()
 
     def tearDown(self):
         fs.comm_mpi_finalise()
-
 
     def test_fft(self):
         nc = self.nc
