@@ -1,9 +1,9 @@
 #
 # Create test data 'pm_density.h5' for test_pm_density.py
 #
-
 import h5py
 import fs
+
 
 def create_pm_density():
     # parameters
@@ -24,7 +24,6 @@ def create_pm_density():
     # Set 2LPT displacements at scale factor a
     particles = fs.lpt(nc, boxsize, a, ps, seed)
 
-    
     fft = fs.pm_compute_density(particles)
     return fft.asarray()
 
