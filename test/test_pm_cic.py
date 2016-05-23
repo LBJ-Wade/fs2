@@ -20,7 +20,7 @@ class TestFFT(unittest.TestCase):
         fs.comm_mpi_finalise()
 
     def test_one(self):
-        xs = [0.0, 0.5, 1.0, nc/2, nc]
+        xs = [0.0, 0.25, 0.5, 1.0, nc/2, nc-0.25, nc]
         for x in xs:
             for y in xs:
                 for z in xs:
@@ -31,8 +31,13 @@ class TestFFT(unittest.TestCase):
         self.particles.set_one(x*dx, y*dx, z*dx)
         fft = fs.pm_compute_density(self.particles)
         a = fft.asarray() + 1.0
+
+        # Test Total = 1
         total= np.sum(a)
         self.assertTrue(abs(total - 1.0) < 1.0e-15)
+
+        # ToDo? Test array 'a'
+        # Test tes
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ class Particles:
     def __init__(self, nc=0, boxsize=0.0, **kwargs):
         # Particles(nc, boxsize) or Particles(_particles=particles)
         if '_particles' in kwargs:
-            self._particles = _particles
+            self._particles = kwargs['_particles']
         else:
             self._particles = c._particles_alloc(nc, boxsize)
 
