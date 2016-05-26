@@ -7,6 +7,7 @@ PyObject* py_msg_set_loglevel(PyObject *self, PyObject* args)
   if(!PyArg_ParseTuple(args, "i", &level)) {
     return NULL;
   }
+
   msg_set_loglevel((LogLevel) level);
   Py_RETURN_NONE;
 }

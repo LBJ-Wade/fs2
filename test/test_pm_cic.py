@@ -39,6 +39,7 @@ class TestFFT(unittest.TestCase):
 
         # ToDo? Test array 'a'
         # Test tes
+        # tearDown can be called many times
 
 
 if __name__ == '__main__':

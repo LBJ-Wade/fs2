@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdio>
 #include <cmath>
 #include <cassert>
@@ -13,6 +14,7 @@
 #include "util.h"
 #include "error.h"
 #include "pm.h"
+#include "pm_domain.h"
 
 static double pm_factor;
 static size_t nc, ncz;
@@ -37,166 +39,38 @@ static inline float_t grid_val(float_t const * const d,
 }
 
 
-static size_t send_buffer_positions(Particles* const particles);
-static void pm_assign_cic_density(Particles* particles, size_t np);
 static void check_total_density(float_t const * const density);
 static void compute_delta_k(void);
 static void compute_force_mesh(const int k);
 static void force_at_particle_locations(
 		 Particles* const particles, const int np, const int axis);
 static void add_buffer_forces(Particles* const particles, const size_t np);
+static void clear_density();
 
 //
-// Public functions
+// Template functions
 //
-void pm_init(const int nc_pm, const double pm_factor_,
-	     Mem* const mem_pm, Mem* const mem_density,
-	     const float_t boxsize_)
+template<class T>
+void pm_assign_cic_density(T const * const p, size_t np) 
 {
-  msg_printf(msg_verbose, "PM module init\n");
-  nc= nc_pm;
-  pm_factor= pm_factor_;
-  ncz= 2*(nc/2 + 1);
-  boxsize= boxsize_;
+  // Assign CIC density to fft_pm using np particles P* p.x
 
-  const size_t nckz= nc/2 + 1;
-  
-  mem_pm->use_from_zero(0);
-  fft_pm= new FFT("PM", nc, mem_pm, 1);
-
-  size_t size_density_k= nc*(fft_pm->local_nky)*nckz*sizeof(complex_t);
-  delta_k= (complex_t*) mem_density->use_from_zero(size_density_k);
-}
-
-void pm_compute_force(Particles* const particles)
-{
-  // Main routine of this source file
-  msg_printf(msg_verbose, "PM force computation...\n");
-
-  size_t np_plus_buffer= send_buffer_positions(particles);
-  pm_assign_cic_density(particles, np_plus_buffer);
-
-#ifdef CHECK
-  check_total_density(fft_pm->fx);
-#endif
-  
-  compute_delta_k();
-
-  for(int axis=0; axis<3; axis++) {
-    // delta(k) -> f(x_i)
-    compute_force_mesh(axis);
-
-    force_at_particle_locations(particles, np_plus_buffer, axis);
-  }
-  add_buffer_forces(particles, np_plus_buffer);
-}
-
-FFT* pm_compute_density(Particles* const particles)
-{
-  // Compute density only
-  msg_printf(msg_verbose, "PM density computation...\n");
-
-  size_t np_plus_buffer= send_buffer_positions(particles);
-  pm_assign_cic_density(particles, np_plus_buffer);
-
-  return fft_pm;
-}
-
-//
-// Private (static) functions
-//
-
-size_t send_buffer_positions(Particles* const particles)
-{
-  assert(boxsize > 0);
-  // ToDo !!! send with MPI !!!
-  const size_t np= particles->np_local;
-
-  Particle* const p= particles->p;
-  const int nbuf= particles->np_allocated;
-  
-  const float_t eps= boxsize/nc;
-  const float_t x_left= eps;
-  const float_t x_right= boxsize - eps;
-
-  size_t ibuf= np;
-
-  // Periodic wrap up and make a buffer copy near x-edges
-  for(size_t i=0; i<np; i++) {
-    periodic_wrapup_p(p[i], boxsize);
-    
-    if(p[i].x[0] < x_left) {
-      if(ibuf >= nbuf) {
-	msg_printf(msg_fatal, "Error: not enough space for buffer particles. "
-		  "%lu %lu\n", ibuf, nbuf);
-	throw RuntimeError();
-      }
-      
-      p[ibuf].x[0]= p[i].x[0] + boxsize;
-      p[ibuf].x[1]= p[i].x[1];
-      p[ibuf].x[2]= p[i].x[2];
-      p[ibuf].id= p[i].id;
-
-      ibuf++;
-    }
-    else if(p[i].x[0] > x_right) {
-      if(ibuf >= nbuf) {
-	msg_printf(msg_fatal, "Error: not enough space for buffer particles. "
-		  "%ud %ud\n", ibuf, nbuf);
-	throw RuntimeError();
-      }
-
-      p[ibuf].x[0]= p[i].x[0] - boxsize;
-      p[ibuf].x[1]= p[i].x[1];
-      p[ibuf].x[2]= p[i].x[2];
-      p[ibuf].id= p[i].id;
-      ibuf++;
-    }
-
-
-#ifdef CHECK
-    if(!(p[i].x[0] >= 0 && p[i].x[0] <= boxsize))
-      printf("%lu %e\n", i, p[i].x[0]);
-    assert(p[i].x[0] >= 0 && p[i].x[0] <= boxsize);
-    assert(p[i].x[1] >= 0 && p[i].x[1] <= boxsize);
-    assert(p[i].x[2] >= 0 && p[i].x[2] <= boxsize);
-#endif
-
-  }
-
-  return ibuf;
-}
-
-
-
-void pm_assign_cic_density(Particles* particles, size_t np) 
-{
-  // Input:  particle positions in particles->p.x
+  // Input:  particle positions in p[i].x for 0 <= i < np
   // Result: density field delta(x) in fft_pm->fx
 
   // particles are assumed to be periodiclly wraped up in y,z direction
-  // and np is the number of particles including buffer particles
-  
 
+  msg_printf(msg_verbose, "Computing PM density with %lu particles\n", np);
+	     
+  
   float_t* const density= (float*) fft_pm->fx;
-  Particle* p= particles->p;
   const size_t local_nx= fft_pm->local_nx;
   const size_t local_ix0= fft_pm->local_ix0;
  
   msg_printf(msg_verbose, "particle position -> density mesh\n");
 
   const float_t dx_inv= nc/boxsize;
-  
   const float_t fac= pm_factor*pm_factor*pm_factor;
-
-
-#ifdef _OPENMP
-  #pragma omp parallel for default(shared)
-#endif
-  for(size_t ix = 0; ix < local_nx; ix++)
-    for(size_t iy = 0; iy < nc; iy++)
-      for(size_t iz = 0; iz < nc; iz++)
-	density[(ix*nc + iy)*ncz + iz] = -1;
 
 #ifdef _OPENMP
   #pragma omp parallel for default(shared)
@@ -206,8 +80,8 @@ void pm_assign_cic_density(Particles* particles, size_t np)
     float y=p[i].x[1]*dx_inv;
     float z=p[i].x[2]*dx_inv;
 
-    int ix0= (int) floorf(x); // without floor, -1 < X < 0 is mapped to iI=0
-    int iy0= (int) y;         // assuming y,z are positive
+    int ix0= (int) floor(x); // without floor, -1 < X < 0 is mapped to iI=0
+    int iy0= (int) y;        // assuming y,z are positive
     int iz0= (int) z;
 
     // CIC weight on left grid
@@ -254,6 +128,98 @@ void pm_assign_cic_density(Particles* particles, size_t np)
   fft_pm->mode= fft_mode_x;
   msg_printf(msg_verbose, "CIC density assignment finished.\n");
 }
+
+//
+// Public functions
+//
+void pm_init(const int nc_pm, const double pm_factor_,
+	     Mem* const mem_pm, Mem* const mem_density,
+	     const float_t boxsize_,
+	     const size_t np_alloc)
+{
+  msg_printf(msg_verbose, "PM module init\n");
+  nc= nc_pm;
+  pm_factor= pm_factor_;
+  ncz= 2*(nc/2 + 1);
+  boxsize= boxsize_;
+
+  if(nc <= 1) {
+    msg_printf(msg_fatal, "Error: nc_pm (= %d) must be larger than 1\n",
+	       nc_pm);
+    throw RuntimeError();
+  }
+
+  const size_t nckz= nc/2 + 1;
+  
+  mem_pm->use_from_zero(0);
+  fft_pm= new FFT("PM", nc, mem_pm, 1);
+
+  size_t size_density_k= nc*(fft_pm->local_nky)*nckz*sizeof(complex_t);
+  delta_k= (complex_t*) mem_density->use_from_zero(size_density_k);
+
+  
+}
+
+void clear_density()
+{
+  float_t* const density= (float*) fft_pm->fx;
+  const size_t local_nx= fft_pm->local_nx;
+    
+#ifdef _OPENMP
+  #pragma omp parallel for default(shared)
+#endif
+  for(size_t ix = 0; ix < local_nx; ix++)
+    for(size_t iy = 0; iy < nc; iy++)
+      for(size_t iz = 0; iz < nc; iz++)
+	density[(ix*nc + iy)*ncz + iz] = -1;
+}
+
+void pm_compute_force(Particles* const particles)
+{
+  // Main routine of this source file
+  msg_printf(msg_verbose, "PM force computation...\n");
+
+  ////size_t np_plus_buffer=
+  ////send_buffer_positions(particles);
+  ////pm_assign_cic_density(particles, np_plus_buffer);
+  //pm_assign_cic_density(particles->p, particles->np_local);
+  
+
+#ifdef CHECK
+  check_total_density(fft_pm->fx);
+#endif
+  
+  compute_delta_k();
+
+  for(int axis=0; axis<3; axis++) {
+    // delta(k) -> f(x_i)
+    compute_force_mesh(axis);
+
+    // ToDo
+    //force_at_particle_locations(particles, np_plus_buffer, axis);
+  }
+  ////add_buffer_forces(particles, np_plus_buffer);
+}
+
+FFT* pm_compute_density(Particles* const particles)
+{
+  // Compute density only
+  msg_printf(msg_verbose, "PM density computation...\n");
+
+  domain_init(fft_pm, particles);
+  domain_send_positions(particles);
+
+  clear_density();
+  pm_assign_cic_density<Particle>(particles->p, particles->np_local);
+  pm_assign_cic_density<Vec3>(domain_buffer_positions(), domain_buffer_np());
+
+  return fft_pm;
+}
+
+//
+// Static functions
+//
+
 
 void check_total_density(float_t const * const density)
 {

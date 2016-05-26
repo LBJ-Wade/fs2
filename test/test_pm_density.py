@@ -6,6 +6,7 @@ import h5py
 import fs
 from create_pm_density import create_pm_density
 
+print("setting loglevel")
 fs.set_loglevel(0)
 
 delta = create_pm_density()
@@ -26,9 +27,9 @@ if fs.comm_this_node() == 0:
     print("Total %.3f" % sum)
     assert(abs(sum) < eps*nmesh)
 
-#
-# Compare with serial mesh
-#
+    #
+    # Compare with serial mesh
+    #
     filename = 'pm_density.h5'
     file = h5py.File(filename, 'r')
     delta_ref = file['delta'][:]

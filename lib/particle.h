@@ -16,6 +16,10 @@ struct Particle {
   uint64_t id;      // Particle index 1,2,3...
 };
 
+struct Vec3 {
+  float_t x[3];
+};
+
 class Particles {
  public:
   Particles(const int nc, const double boxsize);

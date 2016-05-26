@@ -13,11 +13,10 @@
 static enum LogLevel log_level;
 static char prefix[8]= "";
 
-
-
 void msg_set_loglevel(const enum LogLevel lv)
 {
   log_level= lv;
+  msg_printf(msg_fatal, "loglevel is set to %d\n", log_level);
 
   comm_mpi_msg();
 }

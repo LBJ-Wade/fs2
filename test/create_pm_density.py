@@ -16,13 +16,16 @@ def create_pm_density():
     seed = 1
 
     # initial setup
-    fs.set_loglevel(1)
+    #fs.set_loglevel(1)
     fs.cosmology_init(omega_m)
     ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
-    fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize)
+
 
     # Set 2LPT displacements at scale factor a
     particles = fs.lpt(nc, boxsize, a, ps, seed)
+    np = len(particles)
+
+    fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize, np)
 
     fft = fs.pm_compute_density(particles)
     return fft.asarray()

@@ -81,4 +81,3 @@ void comm_bcast_double(double* p_double, int count)
   MPI_Bcast(p_double, count, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
-

@@ -39,6 +39,7 @@ all: $(LIB)
 OBJS := comm.o msg.o config.o fft.o mem.o particle.o
 OBJS += power.o cosmology.o lpt.o pm.o cola.o leapfrog.o
 OBJS += gadget_file.o hdf5_write.o
+OBJS += pm_domain.o
 
 #
 # Linking libraries

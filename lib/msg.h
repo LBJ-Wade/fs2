@@ -1,7 +1,7 @@
 #ifndef MSG_H
 #define MSG_H 1
 
-enum LogLevel {msg_debug, msg_verbose, msg_info, msg_warn, msg_error, msg_fatal, msg_silent};
+enum LogLevel {msg_debug=0, msg_verbose, msg_info, msg_warn, msg_error, msg_fatal, msg_silent};
 
 
 /*
