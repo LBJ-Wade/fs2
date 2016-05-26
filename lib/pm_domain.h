@@ -10,9 +10,9 @@ class Domain {
  public:
   void clear();
   void send_packet();
-  void push(const float_t x[], const float_t shift) {
+  void push(const float_t x[]) {
     // Push the particle position to packet, send if the packet become full
-    buf.push_back(x[0] + shift);
+    buf.push_back(x[0]);
     buf.push_back(x[1]);
     buf.push_back(x[2]);
 

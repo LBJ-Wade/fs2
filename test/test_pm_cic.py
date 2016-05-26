@@ -5,42 +5,48 @@ import unittest
 import numpy as np
 import fs
 
+# def test_one():
+#     xs = [0.0, 0.25, 0.5, 1.0, nc/2, nc-0.25, nc]
+#     for x in xs:
+#         for y in xs:
+#             for z in xs:
+#                 one_particle_test(x, y, z)
+
+def one_particle_test(x, y, z):
+    dx = boxsize/nc
+    particles = fs.Particles(nc, boxsize)
+
+    if fs.comm_this_node() == 0:
+        particles.set_one(x*dx, y*dx, z*dx)
+        print("-- Testing %.1f %.1f %.1f -- " % (x*dx, y*dx, z*dx))
+
+    fft = fs.pm_compute_density(particles)
+    a = fft.asarray()
+    
+    # Test Total = 1
+    if fs.comm_this_node() == 0:
+        print(a + 1.0)
+        total = np.sum(a + 1.0)
+        if abs(total - 1.0) < 1.0e-15:
+            print('%.2f OK' % total)
+        else:
+            print('%.2f Error' % total)
+            
+        assert(abs(total - 1.0) < 1.0e-15)
+
 
 nc = 4
 boxsize = 64
+fs.set_loglevel(0)
 
+np_buf= 10
+fs.pm_init(nc, 1, boxsize, np_buf)
 
-class TestFFT(unittest.TestCase):
-    def setUp(self):
-        fs.set_loglevel(3)
+one_particle_test(0, 2, 2)
+one_particle_test(1, 2, 2)
+one_particle_test(1.5, 2, 2)
+one_particle_test(3, 2, 2)
+one_particle_test(3.5, 2, 2)
+one_particle_test(4, 2, 2)
 
-        self.particles = fs.Particles(nc, boxsize)
-        fs.pm_init(nc, 1, boxsize)
-
-    def tearDown(self):
-        fs.comm_mpi_finalise()
-
-    def test_one(self):
-        xs = [0.0, 0.25, 0.5, 1.0, nc/2, nc-0.25, nc]
-        for x in xs:
-            for y in xs:
-                for z in xs:
-                    self.one_particle_test(x, y, z)
-
-    def one_particle_test(self, x, y, z):
-        dx = boxsize/nc
-        self.particles.set_one(x*dx, y*dx, z*dx)
-        fft = fs.pm_compute_density(self.particles)
-        a = fft.asarray() + 1.0
-
-        # Test Total = 1
-        total = np.sum(a)
-        self.assertTrue(abs(total - 1.0) < 1.0e-15)
-
-        # ToDo? Test array 'a'
-        # Test tes
-        # tearDown can be called many times
-
-
-if __name__ == '__main__':
-    unittest.main()
+fs.comm_mpi_finalise()

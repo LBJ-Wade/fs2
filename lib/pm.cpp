@@ -80,7 +80,13 @@ void pm_assign_cic_density(T const * const p, size_t np)
     float y=p[i].x[1]*dx_inv;
     float z=p[i].x[2]*dx_inv;
 
-    int ix0= (int) floor(x); // without floor, -1 < X < 0 is mapped to iI=0
+#ifdef CHECK
+    assert(0 <= x && x <= nc);
+    assert(0 <= y && y <= nc);
+    assert(0 <= z && z <= nc);
+#endif
+    
+    int ix0= (int) x; // without floor, -1 < X < 0 is mapped to iI=0
     int iy0= (int) y;        // assuming y,z are positive
     int iz0= (int) z;
 
@@ -98,14 +104,13 @@ void pm_assign_cic_density(T const * const p, size_t np)
     assert(y >= 0.0f && z >= 0.0f);
 #endif
             
-    // No periodic wrapup in x direction. 
-    // Buffer particles are copied from adjacent nodes, instead
+    if(ix0 >= nc) ix0= 0;
     if(iy0 >= nc) iy0= 0; 
     if(iz0 >= nc) iz0= 0;
 
-    int ix1= ix0 + 1;
-    int iy1= iy0 + 1; if(iy1 >= nc) iy1= 0; // assumes y,z < boxsize
-    int iz1= iz0 + 1; if(iz1 >= nc) iz1= 0;
+    int ix1= ix0 + 1; if(ix1 >= nc) ix1 -= nc;
+    int iy1= iy0 + 1; if(iy1 >= nc) iy1 -= nc; // assumes y,z < boxsize
+    int iz1= iz0 + 1; if(iz1 >= nc) iz1 -= nc;
 
     ix0 -= local_ix0;
     ix1 -= local_ix0;
