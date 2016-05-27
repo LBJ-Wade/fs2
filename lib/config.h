@@ -16,6 +16,7 @@ typedef fftw_complex complex_t;
 #define FLOAT_TYPE MPI_DOUBLE
 #define FLOAT_SAVE_TYPE H5T_IEEE_F64LE
 #define FLOAT_MEM_TYPE H5T_NATIVE_DOUBLE
+#define PRECISION "double"
 
 #else
 typedef fftwf_complex complex_t;
@@ -24,6 +25,7 @@ typedef float Float;
 #define FLOAT_TYPE      MPI_FLOAT
 #define FLOAT_SAVE_TYPE H5T_IEEE_F32LE
 #define FLOAT_MEM_TYPE  H5T_NATIVE_FLOAT
+#define PRECISION "single"
 
 #endif
 

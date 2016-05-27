@@ -21,6 +21,7 @@ setup(name='fs',
                      'py_write.cpp', 'py_fft.cpp', 'py_hdf5_io.cpp'
                     ],
                     include_dirs = ['../lib', np.get_include()],
+                    define_macros = [('DOUBLEPRECISION','1')],
                     library_dirs =  ['../lib'],
                     libraries = ['fs'],
           )

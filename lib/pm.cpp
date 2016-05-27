@@ -347,7 +347,7 @@ void force_at_particle_locations(Particles* const particles, const int np,
   const size_t local_nx= fft_pm->local_nx;
   const size_t local_ix0= fft_pm->local_ix0;
   const Float* fx= fft_pm->fx;
-  float3* f= particles->force;
+  Float3* f= particles->force;
   
 #ifdef _OPENMP
   #pragma omp parallel for default(shared)     
@@ -404,7 +404,7 @@ void add_buffer_forces(Particles* const particles, const size_t np)
   Particle* const p= particles->p;
   
   const int np_local= particles->np_local;
-  float3* const force= particles->force;
+  Float3* const force= particles->force;
 
   for(int j=np_local; j<np; j++) {
     size_t i= p[j].id - 1;

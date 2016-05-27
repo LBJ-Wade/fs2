@@ -51,7 +51,7 @@ void leapfrog_kick(Particles* const particles, const double avel1)
 
   Particle* const p= particles->p;
   const int np= particles->np_local;
-  float3* const f= particles->force;
+  Float3* const f= particles->force;
 
   // Kick using acceleration at scale factor a
   // Assume forces at a is in particles->force

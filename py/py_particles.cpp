@@ -72,8 +72,8 @@ PyObject* py_particles_slice(PyObject* self, PyObject* args)
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
-  const float_t boxsize= particles->boxsize;
-  const float_t x_max= frac*boxsize;
+  const Float boxsize= particles->boxsize;
+  const Float x_max= frac*boxsize;
   Particle* const p= particles->p;
   const size_t n= particles->np_local;
 
@@ -89,7 +89,7 @@ PyObject* py_particles_slice(PyObject* self, PyObject* args)
 
   // Return vector<Particle> as np.array
   const int nd=2;
-  const int ncol= sizeof(Particle)/sizeof(float_t);
+  const int ncol= sizeof(Particle)/sizeof(Float);
   npy_intp dims[]= {(npy_intp) v->size(), ncol};
 
   return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT, &(v->front()));
@@ -144,7 +144,7 @@ PyObject* py_particles_getitem(PyObject* self, PyObject* args)
   }
 
   const int nd=2;
-  const int ncol= sizeof(Particle)/sizeof(float_t);
+  const int ncol= sizeof(Particle)/sizeof(Float);
   npy_intp dims[]= {(npy_intp) v->size(), ncol};
 
   return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT, &(v->front()));
