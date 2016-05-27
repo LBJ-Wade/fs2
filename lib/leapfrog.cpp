@@ -20,11 +20,11 @@ void leapfrog_set_initial_velocity(Particles* const particles, const double a)
   Particle* const p= particles->p;
   const int np= particles->np_local;
 
-  const float_t da1= cosmology_D_growth(a);
-  const float_t da2= cosmology_D2_growth(a, da1);
+  const Float da1= cosmology_D_growth(a);
+  const Float da2= cosmology_D2_growth(a, da1);
     
-  const float Dv= cosmology_Dv_growth(a, da1);
-  const float D2v= cosmology_D2v_growth(a, da2);
+  const Float Dv= cosmology_Dv_growth(a, da1);
+  const Float D2v= cosmology_D2v_growth(a, da2);
 
   for(int i=0; i<np; i++) {
     p[i].v[0]= p[i].dx1[0]*Dv + p[i].dx2[0]*D2v;
@@ -44,7 +44,7 @@ void leapfrog_kick(Particles* const particles, const double avel1)
   const double af=  avel1;           // t + 0.5*dt
 
   const double om= cosmology_omega_m();
-  const float_t kick_factor= SphiStd(ai, af);
+  const Float kick_factor= SphiStd(ai, af);
 
   msg_printf(msg_info, "Leapfrog kick %lg -> %lg\n", ai, avel1);
   msg_printf(msg_debug, "kick_factor = %lg\n", kick_factor);

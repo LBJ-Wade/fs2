@@ -16,7 +16,7 @@ static char prefix[8]= "";
 void msg_set_loglevel(const enum LogLevel lv)
 {
   log_level= lv;
-  msg_printf(msg_fatal, "loglevel is set to %d\n", log_level);
+  //msg_printf(msg_fatal, "loglevel is set to %d\n", log_level);
 
   comm_mpi_msg();
 }
@@ -30,7 +30,8 @@ void msg_set_prefix(const char prefix_[])
 
 void msg_printf(const enum LogLevel msg_level, char const * const fmt, ...)
 {
-  if(comm_this_node() == 0 && msg_level >= log_level) {
+  if(msg_level >= msg_error ||
+     (msg_level >= log_level && comm_this_node() == 0)) {
     va_list argp;
 
     va_start(argp, fmt);

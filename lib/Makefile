@@ -6,7 +6,7 @@
 # Compile options
 #
 
-#OPT+= -DDOUBLEPRECISION
+OPT+= -DDOUBLEPRECISION
 OPT += -DCHECK  # slow assersions
 
 #
@@ -68,6 +68,8 @@ libfs.dylib: $(OBJS)
 	$(CXX) -dynamiclib $(LIBS) $(OBJS) -o $@
 
 # Dependences
+$(OBJS): Makefile
+
 # g++ -MM -MG *.cpp
 comm.o: comm.cpp
 config.o: config.cpp config.h msg.h

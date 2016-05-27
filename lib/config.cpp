@@ -5,7 +5,7 @@
 
 void config_assert(void)
 {
-  assert(ALGN % sizeof(float_t) == 0);
+  assert(ALGN % sizeof(Float) == 0);
   assert(ALGN % sizeof(double) == 0);
 }
 

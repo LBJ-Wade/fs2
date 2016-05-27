@@ -97,11 +97,11 @@ void hdf5_write_particles(const char filename[],
     }
   }
 
-  assert(sizeof(Particle) % sizeof(float_t) == 0);
+  assert(sizeof(Particle) % sizeof(Float) == 0);
   
   Particle* const p= particles->p;
   const size_t np= particles->np_local;
-  const size_t stride= sizeof(Particles)/sizeof(float_t);
+  const size_t stride= sizeof(Particles)/sizeof(Float);
 
   if(*var == 'x') {
     msg_printf(msg_verbose, "writing positions\n");

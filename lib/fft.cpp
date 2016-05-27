@@ -14,12 +14,6 @@
 
 using namespace std;
 
-// FFTW() adds fftw_ or fftwf_ prefix depending on DOUBLEPRECISION
-#ifdef DOUBLEPRECISION
-#define FFTW(f) fftw_ ## f
-#else
-#define FFTW(f) fftwf_ ## f
-#endif
 
 
 FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
@@ -49,7 +43,7 @@ FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
   void* buf= mem->use_remaining(size);
   // Call mem_use_from_zero(mem, 0) before this to use mem from the beginning.
 
-  fx= (float_t*) buf; fk= (complex_t*) buf;
+  fx= (Float*) buf; fk= (complex_t*) buf;
 
   unsigned flag= 0;
   if(transposed) flag= FFTW_MPI_TRANSPOSED_OUT;

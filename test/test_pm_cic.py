@@ -25,7 +25,7 @@ def one_particle_test(x, y, z):
     
     # Test Total = 1
     if fs.comm_this_node() == 0:
-        print(a + 1.0)
+        #print(a + 1.0)
         total = np.sum(a + 1.0)
         if abs(total - 1.0) < 1.0e-15:
             print('%.2f OK' % total)
@@ -37,7 +37,7 @@ def one_particle_test(x, y, z):
 
 nc = 4
 boxsize = 64
-fs.set_loglevel(0)
+fs.set_loglevel(3)
 
 np_buf= 10
 fs.pm_init(nc, 1, boxsize, np_buf)

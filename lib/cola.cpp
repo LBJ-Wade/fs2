@@ -13,7 +13,7 @@
 #include "cola.h"
 #include "cosmology.h"
 
-static float nLPT= -2.5f;
+static const double nLPT= -2.5f;
 
 double Sq(double ai, double af, double aRef);
 
@@ -27,7 +27,7 @@ void cola_kick(Particles* const particles, const double avel1)
   printf("omega= %e\n", om);
   msg_printf(msg_info, "Kick %lg -> %lg\n", ai, avel1);
 
-  const float_t kick_factor= (pow(af, nLPT) - pow(ai, nLPT))/
+  const Float kick_factor= (pow(af, nLPT) - pow(ai, nLPT))/
                              (nLPT*pow(a, nLPT)*sqrt(om/a + (1.0 - om)*a*a));
   printf("kick_factor= %e\n", kick_factor);
   
@@ -36,8 +36,8 @@ void cola_kick(Particles* const particles, const double avel1)
 	
   msg_printf(msg_debug, "growth factor %lg\n", growth1);
 
-  const float_t q1= growth1;
-  const float_t q2= cosmology_D2a_growth(growth1, growth2);
+  const Float q1= growth1;
+  const Float q2= cosmology_D2a_growth(growth1, growth2);
 
   
   Particle* const p= particles->p;
@@ -51,9 +51,9 @@ void cola_kick(Particles* const particles, const double avel1)
   #pragma omp parallel for default(shared)
 #endif
   for(size_t i=0; i<np; i++) {
-    float_t ax= -1.5*om*(f[i][0] + p[i].dx1[0]*q1 + p[i].dx2[0]*q2);
-    float_t ay= -1.5*om*(f[i][1] + p[i].dx1[1]*q1 + p[i].dx2[1]*q2);
-    float_t az= -1.5*om*(f[i][2] + p[i].dx1[2]*q1 + p[i].dx2[2]*q2);
+    Float ax= -1.5*om*(f[i][0] + p[i].dx1[0]*q1 + p[i].dx2[0]*q2);
+    Float ay= -1.5*om*(f[i][1] + p[i].dx1[1]*q1 + p[i].dx2[1]*q2);
+    Float az= -1.5*om*(f[i][2] + p[i].dx1[2]*q1 + p[i].dx2[2]*q2);
 
     p[i].v[0] += ax*kick_factor;
     p[i].v[1] += ay*kick_factor;
@@ -77,9 +77,9 @@ void cola_drift(Particles* const particles, const double apos1)
 
   const double growth_i= cosmology_D_growth(ai);
   const double growth_f= cosmology_D_growth(af);
-  const float_t da1= growth_f - growth_i;
+  const Float da1= growth_f - growth_i;
 
-  const float_t da2= cosmology_D2_growth(af, growth_f) -
+  const Float da2= cosmology_D2_growth(af, growth_f) -
                      cosmology_D2_growth(ai, growth_i);
 
   msg_printf(msg_info, "Drift %lg -> %lg\n", ai, af);
