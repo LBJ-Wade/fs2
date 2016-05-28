@@ -53,6 +53,16 @@ template<class T> T comm_sum(T x)
   return x_reduced;
 }
 
+template<class T> T comm_max(T x)
+{
+  T x_reduced;
+  MPI_Allreduce(&x, &x_reduced, 1, mpi_datatype(typeid(T)),
+		MPI_MAX, MPI_COMM_WORLD);
+
+  return x_reduced;
+}
+
+
 template<class T> T comm_partial_sum(T x)
 {
   T x_reduced;
@@ -61,4 +71,6 @@ template<class T> T comm_partial_sum(T x)
 
   return x_reduced;
 }
+
+
 #endif

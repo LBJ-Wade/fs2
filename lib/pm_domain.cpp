@@ -2,6 +2,7 @@
 // Copy particle positions to PM domains for density computation
 // Retrive particle force from PM domains
 //
+#include <iostream>
 #include <vector>
 #include <deque>
 #include <cstdlib>
@@ -18,7 +19,7 @@ using namespace std;
 
 static int nc;
 static int nbuf, nbuf_alloc;
-static int nbuf_index, nbuf_alloc_index;
+static int nbuf_index, nbuf_index_alloc;
 static MPI_Win win_nbuf, win_pos, win_force;
 static Float x_left, x_right;
 static Float* buf_pos= 0;
@@ -50,8 +51,12 @@ void domain_init(FFT const * const fft, Particles const * const particles)
 		 MPI_COMM_WORLD, &win_nbuf);
 
   // ToDo: 2.25 is too large, take statistics and make better estimate
-  nbuf_alloc= 2.25*((double) particles->np_total)/nc*(fft->local_nx + 2);
+  int local_nx= comm_max<int>(fft->local_nx);
+
+  double np_total= (double) particles->np_total;
   
+  nbuf_alloc= 10 + 1.25*(np_total + 5*sqrt(np_total))/nc*(local_nx + 2);
+
   assert(nbuf_alloc > 0);
   
   MPI_Win_allocate(sizeof(Float)*3*nbuf_alloc,
@@ -62,11 +67,11 @@ void domain_init(FFT const * const fft, Particles const * const particles)
 		   sizeof(Float), MPI_INFO_NULL, MPI_COMM_WORLD,
 		   &buf_force, &win_force);
 
-  nbuf_alloc_index= particles->np_allocated;
-  buf_index= (Index*) malloc(sizeof(Index)*nbuf_alloc_index);
+  nbuf_index_alloc= particles->np_allocated;
+  buf_index= (Index*) malloc(sizeof(Index)*nbuf_index_alloc);
   
   const size_t size_buf= sizeof(Float)*3*nbuf_alloc;
-  const size_t size_index_buf= sizeof(Index)*nbuf_alloc_index;
+  const size_t size_index_buf= sizeof(Index)*nbuf_index_alloc;
   
   if(buf_pos == 0 || buf_force == 0 || buf_index == 0) {
     msg_printf(msg_fatal,
@@ -118,8 +123,8 @@ void domain_init(FFT const * const fft, Particles const * const particles)
 
   assert(Domain::packet_size % 3 == 0);
   packet_force= (Float3*) malloc(sizeof(Float)*Domain::packet_size);
-  
 
+  //comm_barrier();
 }
 
 void domain_send_positions(Particles* const particles)
@@ -130,7 +135,7 @@ void domain_send_positions(Particles* const particles)
   msg_printf(msg_verbose, "sending positions\n");
 
   nbuf= 0;
-  nbuf_alloc_index= 0;
+  nbuf_index= 0;
   packets_sent.clear();
   packets_clear();
   
@@ -201,8 +206,6 @@ void send(const int i, const Float x[], const Float boxsize)
 
   for(vector<Domain>::iterator
 	dom= decomposition.begin(); dom != decomposition.end(); ++dom) {
-    //printf("send %.2f %.2f %.2f [%.2f, %.2f]\n",
-    //x[0], x[1], x[2], dom->xbuf_min, dom->xbuf_max);
     if((dom->xbuf_min < x[0] && x[0] < dom->xbuf_max) ||
        (dom->xbuf_min < x[0] - boxsize && x[0] - boxsize < dom->xbuf_max) ||
        (dom->xbuf_min < x[0] + boxsize && x[0] + boxsize < dom->xbuf_max))
@@ -239,15 +242,17 @@ void Domain::send_packet()
     msg_printf(msg_debug, "No particle copy to node %d\n", rank);
     return;
   }
-
+	 
   Packet pkt;
   pkt.dest_rank= rank;
   pkt.offset_index= nbuf_index;
   pkt.n= nsend;
 
+  assert(0 <= nbuf_index && nbuf_index + nsend < nbuf_index_alloc);
+
   for(vector<Index>::const_iterator
-	p= buf_index.begin(); p != buf_index.end(); ++p) {
-    buf_index[nbuf_index++]= *p;
+	ind= buf_index.begin(); ind != buf_index.end(); ++ind) {
+    buf_index[nbuf_index++]= *ind;
   }
 
   // offset= rank::nbuf

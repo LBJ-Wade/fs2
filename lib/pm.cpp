@@ -1,4 +1,3 @@
-#include <iostream>
 #include <cstdio>
 #include <cmath>
 #include <cassert>
@@ -87,7 +86,7 @@ void pm_assign_cic_density(T const * const p, size_t np)
 #endif
     
     int ix0= (int) x; // without floor, -1 < X < 0 is mapped to iI=0
-    int iy0= (int) y;        // assuming y,z are positive
+    int iy0= (int) y; // assuming y,z are positive
     int iz0= (int) z;
 
     // CIC weight on left grid
@@ -100,10 +99,6 @@ void pm_assign_cic_density(T const * const p, size_t np)
     Float wy0= 1 - wy1;
     Float wz0= 1 - wz1;
 
-#ifdef CHECK
-    assert(y >= 0.0f && z >= 0.0f);
-#endif
-            
     if(ix0 >= nc) ix0= 0;
     if(iy0 >= nc) iy0= 0; 
     if(iz0 >= nc) iz0= 0;
@@ -114,6 +109,7 @@ void pm_assign_cic_density(T const * const p, size_t np)
 
     ix0 -= local_ix0;
     ix1 -= local_ix0;
+
 
     if(0 <= ix0 && ix0 < local_nx) {
       grid_assign(density, ix0, iy0, iz0, fac*wx0*wy0*wz0);
