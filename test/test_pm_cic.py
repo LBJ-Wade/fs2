@@ -13,6 +13,8 @@ def one_particle_test(x, y, z):
         particles.set_one(x*dx, y*dx, z*dx)
         print("-- Testing %.1f %.1f %.1f -- " % (x*dx, y*dx, z*dx))
 
+    particles.update_np_total()
+
     fft = fs.pm_compute_density(particles)
     a = fft.asarray()
     

@@ -18,6 +18,9 @@ class Particles:
     def set_one(self, x, y, z):
         c._particles_one(self._particles, x, y, z)
 
+    def update_np_total(self):
+        c._particles_update_np_total(self._particles)
+        
     def slice(self, frac):
         return c._particles_slice(self._particles, frac)
 

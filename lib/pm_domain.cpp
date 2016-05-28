@@ -49,7 +49,7 @@ void domain_init(FFT const * const fft, Particles const * const particles)
   MPI_Win_create(&nbuf, sizeof(int), sizeof(int), MPI_INFO_NULL,
 		 MPI_COMM_WORLD, &win_nbuf);
 
-
+  // ToDo: 2.25 is too large, take statistics and make better estimate
   nbuf_alloc= 2.25*((double) particles->np_total)/nc*(fft->local_nx + 2);
   
   assert(nbuf_alloc > 0);

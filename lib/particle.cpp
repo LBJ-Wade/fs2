@@ -16,7 +16,8 @@ Particles::Particles(const int nc, const double boxsize_) :
   this->force= (Float3*) calloc(3*np_alloc, sizeof(float)); assert(force);
   this->np_allocated= np_alloc;
   this->boxsize= boxsize_;
-
+  this->np_local= 0;
+  this->np_total= 0;
   
   msg_printf(msg_verbose, "%lu Mbytes allocated for %lu particles\n",
 	     mbytes(np_alloc*sizeof(Particle)), np_alloc);

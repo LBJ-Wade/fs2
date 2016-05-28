@@ -54,6 +54,8 @@ static PyMethodDef methods[] = {
    "_particles_getitem(_particles, row, col)"},
   {"_particles_one", py_particles_one, METH_VARARGS,
    "_particles_one(_particles, x, y, z)"},
+  {"_particles_update_np_total", py_particles_update_np_total, METH_VARARGS,
+   "_particles_update_np_total(_particles)"},
   
   {"_lpt", py_lpt, METH_VARARGS,
    "_lpt(nc, boxsize, a, _ps, rando_seed); setup 2LPT displacements"},

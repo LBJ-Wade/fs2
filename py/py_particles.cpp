@@ -171,7 +171,29 @@ PyObject* py_particles_one(PyObject* self, PyObject* args)
   Particle* const p= particles->p;
   p->x[0]= x; p->x[1]= y; p->x[2]= z;
   particles->np_local= 1;
-
   
+  Py_RETURN_NONE;
+}
+
+PyObject* py_particles_update_np_total(PyObject* self, PyObject* args)
+{
+  // _update_np_total(_particles)
+  PyObject* py_particles;
+  
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+     return NULL;
+
+  Particles* const particles=
+    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  unsigned long long np_local= particles->np_local;
+  unsigned long long np_total;
+  
+  MPI_Allreduce(&np_local, &np_total, 1, MPI_UNSIGNED_LONG_LONG,
+		MPI_SUM, MPI_COMM_WORLD);
+
+  particles->np_total= np_total;
+
   Py_RETURN_NONE;
 }
