@@ -12,20 +12,20 @@ class Domain {
   void send_packet();
   void push(const Index i, const Float x[]) {
     // Push the particle position to packet, send if the packet become full
-    buf.push_back(x[0]);
-    buf.push_back(x[1]);
-    buf.push_back(x[2]);
-    buf_index.push_back(i);
+    vbuf.push_back(x[0]);
+    vbuf.push_back(x[1]);
+    vbuf.push_back(x[2]);
+    vbuf_index.push_back(i);
 
-    if(buf.size() >= packet_size)
+    if(vbuf.size() >= packet_size)
       send_packet();
   }
   Float xbuf_min, xbuf_max;
   int rank;
   static const int packet_size= 1024/3*3; // number of positions (3*sizeof(Float))
  private:
-  std::vector<Float> buf;
-  std::vector<Index> buf_index;
+  std::vector<Float> vbuf;
+  std::vector<Index> vbuf_index;
 };
 
 struct Packet {

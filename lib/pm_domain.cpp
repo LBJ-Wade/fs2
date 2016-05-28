@@ -230,13 +230,14 @@ void packets_flush()
 
 void Domain::clear()
 {
-  buf.clear();
+  vbuf.clear();
+  vbuf_index.clear();
 }
 
 void Domain::send_packet()
 {
-  assert(buf.size() % 3 == 0);
-  const int nsend= buf.size() / 3;
+  assert(vbuf.size() % 3 == 0);
+  const int nsend= vbuf.size() / 3;
   
   if(nsend == 0) {
     msg_printf(msg_debug, "No particle copy to node %d\n", rank);
@@ -249,11 +250,13 @@ void Domain::send_packet()
   pkt.n= nsend;
 
   assert(0 <= nbuf_index && nbuf_index + nsend < nbuf_index_alloc);
-
   for(vector<Index>::const_iterator
-	ind= buf_index.begin(); ind != buf_index.end(); ++ind) {
-    buf_index[nbuf_index++]= *ind;
+	ind= vbuf_index.begin(); ind != vbuf_index.end(); ++ind) {
+    assert(0 <= nbuf_index && nbuf_index < nbuf_index_alloc);
+    buf_index[nbuf_index]= *ind;
+    nbuf_index++;
   }
+
 
   // offset= rank::nbuf
   // rank::nbuf += nsend
@@ -269,7 +272,7 @@ void Domain::send_packet()
 	       nbuf_alloc, offset + nsend);
     throw RuntimeError();
   }
-  MPI_Put(&buf.front(), nsend*3, FLOAT_TYPE,
+  MPI_Put(&vbuf.front(), nsend*3, FLOAT_TYPE,
 	  rank, offset*3, nsend*3, FLOAT_TYPE, win_pos);
 
   msg_printf(msg_debug, "sending packet %d particles to %d, offset= %d\n",
@@ -280,6 +283,6 @@ void Domain::send_packet()
   pkt.offset= offset;
   packets_sent.push_back(pkt);
   
-  buf.clear();
-  buf_index.clear();
+  vbuf.clear();
+  vbuf_index.clear();
 }
