@@ -1,16 +1,9 @@
 #
-# Test PM CIC density assignment
+# Test PM CIC density assignment with one particle
 #
 import unittest
 import numpy as np
 import fs
-
-# def test_one():
-#     xs = [0.0, 0.25, 0.5, 1.0, nc/2, nc-0.25, nc]
-#     for x in xs:
-#         for y in xs:
-#             for z in xs:
-#                 one_particle_test(x, y, z)
 
 def one_particle_test(x, y, z):
     dx = boxsize/nc

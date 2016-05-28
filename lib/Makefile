@@ -2,11 +2,17 @@
 # fs: fast cosmological simulation system
 #   
 
+default:
+	cd .. && $(MAKE) lib
+
+LIB = libfs.a libfs.dylib
+lib: $(LIB)
+
+
 #
 # Compile options
 #
 
-OPT+= -DDOUBLEPRECISION
 OPT += -DCHECK  # slow assersions
 
 #
@@ -16,7 +22,7 @@ OPT += -DCHECK  # slow assersions
 # Define OPENMP to enable MPI+OpenMP hybrid parallelization
 # OPENMP  = -fopenmp # -openmp for Intel, -fopenmp for gcc, llvm doesn't support
 
-CXX      = mpic++
+#CXX      = mpic++
 
 WOPT    ?= -Wall
 CPPFLAGS  := -O3 $(WOPT) $(OPENMP) $(OPT)
@@ -33,8 +39,6 @@ DIR_PATH   = $(FFTW3_DIR) $(GSL_DIR) $(HDF5P_DIR)
 CPPFLAGS  += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
 LIBS      += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
 
-LIB        = libfs.a libfs.dylib
-all: $(LIB)
 
 OBJS := comm.o msg.o config.o fft.o mem.o particle.o
 OBJS += power.o cosmology.o lpt.o pm.o cola.o leapfrog.o
@@ -65,6 +69,7 @@ libfs.a: $(OBJS)
 	ar r $@ $(OBJS)
 
 libfs.dylib: $(OBJS)
+	echo $(OPT)
 	$(CXX) -dynamiclib $(LIBS) $(OBJS) -o $@
 
 # Dependences
@@ -85,7 +90,7 @@ power.o: power.cpp comm.h msg.h power.h
 
 .PHONY: clean run dependence
 clean:
-	rm -f $(EXEC) $(OBJS)
+	rm -f $(LIB) $(OBJS)
 
 dependence:
 	g++ -MM -MG *.cpp

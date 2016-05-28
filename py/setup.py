@@ -5,8 +5,9 @@ import os
 print("np.get_include()")
 print(np.get_include())
 
-os.environ["CC"] = "mpicc"
-os.environ["CXX"] = "mpic++"
+#os.environ["CC"] = "mpicc"
+#os.environ["CXX"] = "mpic++"
+
 
 setup(name='fs',
       version='0.0.1',
@@ -21,7 +22,7 @@ setup(name='fs',
                      'py_write.cpp', 'py_fft.cpp', 'py_hdf5_io.cpp'
                     ],
                     include_dirs = ['../lib', np.get_include()],
-                    define_macros = [('DOUBLEPRECISION','1')],
+                    #define_macros = [('DOUBLEPRECISION','1')],
                     library_dirs =  ['../lib'],
                     libraries = ['fs'],
           )

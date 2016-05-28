@@ -1,13 +1,17 @@
-##!/bin/sh
+#!/bin/sh
 
-for np in 2 1 4
-do
-  mpirun -n $np python3 test_pm_density.py || exit 1
-done
+#
+# Run python script with mpirun -n 1..4
+#
 
-for np in 1 4
+if [ $# -lt 1 ]; then
+  echo "sh test.sh <test python file>"
+  return 1
+fi
+
+for np in 1 2 3 4
 do
-  mpirun -n $np python3 test_fft.py || exit 1
+  mpirun -n $1 || exit 1
 done
 
 
