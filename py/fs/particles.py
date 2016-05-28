@@ -29,3 +29,7 @@ class Particles:
 
     def save_hdf5(self, filename, var):
         c._hdf5_write_particles(self._particles, filename, var)
+
+    @property    
+    def id(self):
+        return c._particles_id_asarray(self._particles)

@@ -1,13 +1,21 @@
 #include <iostream>
 #include <vector>
+#include <typeinfo>
 #include "msg.h"
 #include "particle.h"
 #include "util.h"
+#include "comm.h"
 #include "py_particles.h"
 #include "py_assert.h"
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "numpy/arrayobject.h"
+
+#ifdef DOUBLEPRECISION
+#define NPY_FLOAT_TYPE NPY_DOUBLE
+#else
+#define NPY_FLOAT_TYPE NPY_FLOAT
+#endif
 
 using namespace std;
 
@@ -92,7 +100,7 @@ PyObject* py_particles_slice(PyObject* self, PyObject* args)
   const int ncol= sizeof(Particle)/sizeof(Float);
   npy_intp dims[]= {(npy_intp) v->size(), ncol};
 
-  return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT, &(v->front()));
+  return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT_TYPE, &(v->front()));
 }
 
 PyObject* py_particles_getitem(PyObject* self, PyObject* args)
@@ -197,3 +205,190 @@ PyObject* py_particles_update_np_total(PyObject* self, PyObject* args)
 
   Py_RETURN_NONE;
 }
+
+PyObject* py_particles_id_asarray(PyObject* self, PyObject* args)
+{
+  // _particles_id_global_as_array(_particles)
+  //   return p.id as np.array at node 0
+  //   return None for node > 0
+
+  PyObject* py_particles;
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles const * const particles=
+    (Particles const *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+  
+  //
+  // Allocate a new np.array
+  //
+  PyObject* arr= 0;
+  uint64_t* recvbuf= 0;
+    
+  if(comm_this_node() == 0) {
+    const int nd= 1;
+    npy_intp dims[]= {(npy_intp) particles->np_total};
+
+    arr= PyArray_ZEROS(nd, dims, NPY_UINT64, 0);
+    py_assert_ptr(arr);
+  
+    recvbuf= (uint64_t*) PyArray_DATA((PyArrayObject*) arr);
+    py_assert_ptr(recvbuf);
+  }
+
+  /*
+  if(comm_n_nodes() == 1) {
+    size_t i=0;
+    for(size_t ix=0; ix<nx; ++ix)
+     for(size_t iy=0; iy<nc; ++iy) 
+      for(size_t iz=0; iz<nc; ++iz)
+	recvbuf[i++]= fft->fx[(nc*ix + iy)*ncz + iz];
+    
+    return arr;
+  }
+  */
+
+
+  //
+  // Gather global grid data if n_nodes > 1
+  //
+  Particle const * const p= particles->p;
+  const int nsend= particles->np_local;
+
+  const int n= comm_n_nodes();
+  uint64_t* const sendbuf= (uint64_t*) malloc(sizeof(uint64_t)*nsend);
+  py_assert_ptr(sendbuf);
+  
+  for(size_t i=0; i<nsend; ++i)
+    sendbuf[i]= p[i].id;
+
+  int* nrecv= 0;
+  int* displ=0;
+
+  if(comm_this_node() == 0) {
+    // Allocate for gathered data
+    nrecv= (int*) malloc(sizeof(int)*2*n);
+    if(nrecv == 0) {
+      PyErr_SetString(PyExc_MemoryError,
+		      "Unable to allocate memory for nrecv");
+      return NULL;
+    }
+
+    displ= nrecv + n;
+  }
+    
+  MPI_Gather(&nsend, 1, MPI_INT, nrecv, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  if(comm_this_node() == 0) {
+    int displ_sum= 0;
+    for(int i=0; i<n; ++i) {
+      nrecv[i] *= sizeof(uint64_t);
+      displ[i]= displ_sum;
+      displ_sum += nrecv[i];
+    }
+  }
+    
+  MPI_Gatherv(sendbuf, nsend*sizeof(uint64_t), MPI_BYTE, 
+	   recvbuf, nrecv, displ, MPI_BYTE, 0, MPI_COMM_WORLD);
+
+  free(nrecv);
+  free(sendbuf);
+
+  if(comm_this_node() == 0) {
+    return arr;
+  }
+
+  Py_RETURN_NONE;
+}
+
+
+template <class T>
+PyObject* py_particles_asarray(T const * dat,
+			       const size_t nrow, const size_t ncol,
+			       const size_t stride)
+{
+  //
+  // Allocate a new np.array
+  //
+  PyObject* arr= 0;
+  T* recvbuf= 0;
+
+  int type_num;
+  if(typeid(T) == typeid(float))
+    type_num= NPY_FLOAT;
+  else if(typeid(T) == typeid(double))
+    type_num= NPY_DOUBLE;
+  else if(typeid(T) == typeid(uint64_t))
+    type_num= NPY_UTINT64;
+  else
+    throw RuntimeError();
+    
+  if(comm_this_node() == 0) {
+    const int nd= ncol == 1 ? 1 : 2;
+    npy_intp dims[]= {(npy_intp) particles->np_total, ncol};
+
+    arr= PyArray_ZEROS(nd, dims, typenum, 0);
+    py_assert_ptr(arr);
+  
+    recvbuf= (T*) PyArray_DATA((PyArrayObject*) arr);
+    py_assert_ptr(recvbuf);
+  }
+
+  //
+  // Gather global grid data if n_nodes > 1
+  //
+  Particle const * const p= particles->p;
+  const int nsend= particles->np_local;
+
+  const int n= comm_n_nodes();
+  T* const sendbuf= (T*) malloc(sizeof(T)*nsend);
+  py_assert_ptr(sendbuf);
+
+  size_t ibuf= 0;
+  assert(sizeof(char) == 1);
+  
+  for(size_t i=0; i<nsend; ++i) {
+    for(size_t j=0; j<ncol; ++j)
+      sendbuf[ibuf++]= dat[j];
+    dat = (T*) (((char*)dat) + stride);
+  }
+
+  int* nrecv= 0;
+  int* displ=0;
+
+  if(comm_this_node() == 0) {
+    // Allocate for gathered data
+    nrecv= (int*) malloc(sizeof(int)*2*n);
+    if(nrecv == 0) {
+      PyErr_SetString(PyExc_MemoryError,
+		      "Unable to allocate memory for nrecv");
+      return NULL;
+    }
+
+    displ= nrecv + n;
+  }
+    
+  MPI_Gather(&nsend, 1, MPI_INT, nrecv, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  if(comm_this_node() == 0) {
+    int displ_sum= 0;
+    for(int i=0; i<n; ++i) {
+      nrecv[i] *= sizeof(T)*ncol;
+      displ[i]= displ_sum;
+      displ_sum += nrecv[i];
+    }
+  }
+    
+  MPI_Gatherv(sendbuf, nsend*sizeof(T)*ncol, MPI_BYTE, 
+	      recvbuf, nrecv, displ, MPI_BYTE, 0, MPI_COMM_WORLD);
+
+  free(nrecv);
+  free(sendbuf);
+
+  if(comm_this_node() == 0) {
+    return arr;
+  }
+
+  Py_RETURN_NONE;
+}
+
