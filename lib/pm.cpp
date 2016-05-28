@@ -40,11 +40,11 @@ static inline Float grid_val(Float const * const d,
 
 
 static void check_total_density(Float const * const density);
-static void compute_delta_k(void);
+static void compute_delta_k();
 static void compute_force_mesh(const int k);
-static void force_at_particle_locations(
-		 Particles* const particles, const int np, const int axis);
-static void add_buffer_forces(Particles* const particles, const size_t np);
+//static void force_at_particle_locations(
+//		 Particles* const particles, const int np, const int axis);
+//static void add_buffer_forces(Particles* const particles, const size_t np);
 static void clear_density();
 
 //
@@ -134,6 +134,65 @@ void pm_assign_cic_density(T const * const p, size_t np)
   msg_printf(msg_verbose, "CIC density assignment finished.\n");
 }
 
+template <class T>
+void force_at_particle_locations(T const * const p, const int np, 
+				 const int axis, Float3* const f)
+{
+  const Float dx_inv= nc/boxsize;
+  const size_t local_nx= fft_pm->local_nx;
+  const size_t local_ix0= fft_pm->local_ix0;
+  const Float* fx= fft_pm->fx;
+
+#ifdef _OPENMP
+  #pragma omp parallel for default(shared)     
+#endif
+  for(size_t i=0; i<np; i++) {
+    Float x= p[i].x[0]*dx_inv;
+    Float y= p[i].x[1]*dx_inv;
+    Float z= p[i].x[2]*dx_inv;
+
+    int ix0= (int) x;
+    int iy0= (int) y;
+    int iz0= (int) z;
+    
+    Float wx1= x - ix0;
+    Float wy1= y - iy0;
+    Float wz1= z - iz0;
+
+    Float wx0= 1 - wx1;
+    Float wy0= 1 - wy1;
+    Float wz0= 1 - wz1;
+
+    if(ix0 >= nc) ix0= 0;
+    if(iy0 >= nc) iy0= 0;
+    if(iz0 >= nc) iz0= 0;
+            
+    int ix1= ix0 + 1; if(ix1 >= nc) ix1 -= nc;
+    int iy1= iy0 + 1; if(iy1 >= nc) iy1 -= nc;
+    int iz1= iz0 + 1; if(iz1 >= nc) iz1 -= nc;
+
+    ix0 -= local_ix0;
+    ix1 -= local_ix0;
+
+    f[i][axis]= 0;
+
+    if(0 <= ix0 && ix0 < local_nx) {
+      f[i][axis] += 
+	grid_val(fx, ix0, iy0, iz0)*wx0*wy0*wz0 +
+	grid_val(fx, ix0, iy0, iz1)*wx0*wy0*wz1 +
+	grid_val(fx, ix0, iy1, iz0)*wx0*wy1*wz0 +
+	grid_val(fx, ix0, iy1, iz1)*wx0*wy1*wz1;
+    }
+    if(0 <= ix1 && ix1 < local_nx) {
+      f[i][axis] += 
+	grid_val(fx, ix1, iy0, iz0)*wx1*wy0*wz0 +
+	grid_val(fx, ix1, iy0, iz1)*wx1*wy0*wz1 +
+	grid_val(fx, ix1, iy1, iz0)*wx1*wy1*wz0 +
+	grid_val(fx, ix1, iy1, iz1)*wx1*wy1*wz1;
+    }
+  }
+}
+
 //
 // Public functions
 //
@@ -182,26 +241,26 @@ void clear_density()
 void pm_compute_force(Particles* const particles)
 {
   // Main routine of this source file
-  msg_printf(msg_verbose, "PM force computation...\n");
 
-  ////size_t np_plus_buffer=
-  ////send_buffer_positions(particles);
-  ////pm_assign_cic_density(particles, np_plus_buffer);
-  //pm_assign_cic_density(particles->p, particles->np_local);
-  
+
+  pm_compute_density(particles);
 
 #ifdef CHECK
   check_total_density(fft_pm->fx);
 #endif
+
+  msg_printf(msg_verbose, "PM force computation...\n");
   
   compute_delta_k();
 
   for(int axis=0; axis<3; axis++) {
     // delta(k) -> f(x_i)
     compute_force_mesh(axis);
-
-    // ToDo
-    //force_at_particle_locations(particles, np_plus_buffer, axis);
+    force_at_particle_locations<Particle>(
+		     particles->p, particles->np_local, axis, particles->force);
+    force_at_particle_locations<Pos>(
+		    domain_buffer_positions(), domain_buffer_np(), axis,
+		    domain_buffer_forces());
   }
   ////add_buffer_forces(particles, np_plus_buffer);
 }
@@ -216,7 +275,7 @@ FFT* pm_compute_density(Particles* const particles)
 
   clear_density();
   pm_assign_cic_density<Particle>(particles->p, particles->np_local);
-  pm_assign_cic_density<Vec3>(domain_buffer_positions(), domain_buffer_np());
+  pm_assign_cic_density<Pos>(domain_buffer_positions(), domain_buffer_np());
 
   return fft_pm;
 }
@@ -233,9 +292,9 @@ void check_total_density(Float const * const density)
   double sum= 0.0;
   const size_t local_nx= fft_pm->local_nx;
   
-  for(size_t ix = 0; ix < local_nx; ix++)
-    for(size_t iy = 0; iy < nc; iy++)
-      for(size_t iz = 0; iz < nc; iz++)
+  for(size_t ix=0; ix<local_nx; ix++)
+    for(size_t iy=0; iy<nc; iy++)
+      for(size_t iz=0; iz<nc; iz++)
 	sum += density[(ix*nc + iy)*ncz + iz];
 
   double sum_global;
@@ -258,7 +317,7 @@ void check_total_density(Float const * const density)
 }
 
 
-void compute_delta_k(void)
+void compute_delta_k()
 {
   // Fourier transform delta(x) -> delta(k) and copy it to delta_k
   //  Input:  delta(x) in fft_pm->fx
@@ -338,66 +397,8 @@ void compute_force_mesh(const int axis)
 
 // Does 3-linear interpolation
 // particles= Values of mesh at particle positions P.x
-void force_at_particle_locations(Particles* const particles, const int np, 
-				 const int axis)
-{
-  const Particle* p= particles->p;
-  
-  const Float dx_inv= nc/boxsize;
-  const size_t local_nx= fft_pm->local_nx;
-  const size_t local_ix0= fft_pm->local_ix0;
-  const Float* fx= fft_pm->fx;
-  Float3* f= particles->force;
-  
-#ifdef _OPENMP
-  #pragma omp parallel for default(shared)     
-#endif
-  for(size_t i=0; i<np; i++) {
-    Float x=p[i].x[0]*dx_inv;
-    Float y=p[i].x[1]*dx_inv;
-    Float z=p[i].x[2]*dx_inv;
-            
-    int ix0= (int) floor(x);
-    int iy0= (int) y;
-    int iz0= (int) z;
-    
-    Float wx1= x - ix0;
-    Float wy1= y - iy0;
-    Float wz1= z - iz0;
 
-    Float wx0= 1 - wx1;
-    Float wy0= 1 - wy1;
-    Float wz0= 1 - wz1;
-
-    if(iy0 >= nc) iy0= 0;
-    if(iz0 >= nc) iz0= 0;
-            
-    int ix1= ix0 + 1;
-    int iy1= iy0 + 1; if(iy1 >= nc) iy1= 0;
-    int iz1= iz0 + 1; if(iz1 >= nc) iz1= 0;
-
-    ix0 -= local_ix0;
-    ix1 -= local_ix0;
-
-    f[i][axis]= 0;
-
-    if(0 <= ix0 && ix0 < local_nx) {
-      f[i][axis] += 
-	grid_val(fx, ix0, iy0, iz0)*wx0*wy0*wz0 +
-	grid_val(fx, ix0, iy0, iz1)*wx0*wy0*wz1 +
-	grid_val(fx, ix0, iy1, iz0)*wx0*wy1*wz0 +
-	grid_val(fx, ix0, iy1, iz1)*wx0*wy1*wz1;
-    }
-    if(0 <= ix1 && ix1 < local_nx) {
-      f[i][axis] += 
-	grid_val(fx, ix1, iy0, iz0)*wx1*wy0*wz0 +
-	grid_val(fx, ix1, iy0, iz1)*wx1*wy0*wz1 +
-	grid_val(fx, ix1, iy1, iz0)*wx1*wy1*wz0 +
-	grid_val(fx, ix1, iy1, iz1)*wx1*wy1*wz1;
-    }
-  }
-}
-
+/*
 void add_buffer_forces(Particles* const particles, const size_t np)
 {
   // !!! Non-MPI version
@@ -414,6 +415,7 @@ void add_buffer_forces(Particles* const particles, const size_t np)
     force[i][2] += force[j][2];
   }
 }
+*/
 
 FFT* pm_get_fft()
 {

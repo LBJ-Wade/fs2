@@ -18,11 +18,15 @@ using namespace std;
 
 static int nc;
 static int nbuf, nbuf_alloc;
-static MPI_Win win_nbuf, win_pos;
+static int nbuf_index, nbuf_alloc_index;
+static MPI_Win win_nbuf, win_pos, win_force;
 static Float x_left, x_right;
 static Float* buf_pos= 0;
+static Float* buf_force= 0;
+static Index* buf_index= 0;
 static vector<Domain> decomposition;
 static deque<Packet>  packets_sent;
+static Float3* packet_force;
 
 static inline void send(const int i, const Float x[], const Float boxsize);
 
@@ -47,23 +51,32 @@ void domain_init(FFT const * const fft, Particles const * const particles)
 
 
   nbuf_alloc= 2.25*((double) particles->np_total)/nc*(fft->local_nx + 2);
-  //printf("nbuf_alloc= %d\n", nbuf_alloc);
+  
   assert(nbuf_alloc > 0);
   
   MPI_Win_allocate(sizeof(Float)*3*nbuf_alloc,
-		   sizeof(Float),  MPI_INFO_NULL, MPI_COMM_WORLD,
+		   sizeof(Float), MPI_INFO_NULL, MPI_COMM_WORLD,
 		   &buf_pos, &win_pos);
 
-  size_t size_buf= sizeof(Float)*3*nbuf_alloc;
+  MPI_Win_allocate(sizeof(Float)*3*nbuf_alloc,
+		   sizeof(Float), MPI_INFO_NULL, MPI_COMM_WORLD,
+		   &buf_force, &win_force);
+
+  nbuf_alloc_index= particles->np_allocated;
+  buf_index= (Index*) malloc(sizeof(Index)*nbuf_alloc_index);
   
-  if(buf_pos == 0) {
+  const size_t size_buf= sizeof(Float)*3*nbuf_alloc;
+  const size_t size_index_buf= sizeof(Index)*nbuf_alloc_index;
+  
+  if(buf_pos == 0 || buf_force == 0 || buf_index == 0) {
     msg_printf(msg_fatal,
        "Error: unable to allocate %lu MBytes for PM domain buffer\n", size_buf);
     throw MemoryError();
   }
 
   msg_printf(msg_verbose,
-	     "PM domain buffer %d MB allocated\n", mbytes(size_buf));
+	     "PM domain buffer %d MB allocated\n",
+	     mbytes(2*size_buf + size_index_buf));
 
 
   // Create the decomposition, a vector of domains.
@@ -79,9 +92,6 @@ void domain_init(FFT const * const fft, Particles const * const particles)
   const int n_dest= n - 1;
   const int this_node= comm_this_node();
 
-  //printf("buf %d: %.2f %.2f %.2f %.2f\n", this_node, xbuf_all[0], xbuf_all[1], xbuf_all[2], xbuf_all[3]);
-
-  
   decomposition.reserve(n_dest);
   Domain d;
   for(int i=1; i<=n/2; ++i) {
@@ -99,15 +109,17 @@ void domain_init(FFT const * const fft, Particles const * const particles)
       d.rank= i_minus;
       d.xbuf_min= xbuf_all[2*i_minus];
       d.xbuf_max= xbuf_all[2*i_minus + 1];
-      //printf("domain-minus %d %d %.2f %.2f\n", this_node, i_minus, d.xbuf_min, d.xbuf_max);
 
       decomposition.push_back(d);
     }
   }
-
-  assert(decomposition.size() == n_dest);
-  
   free(xbuf_all);  
+  assert(decomposition.size() == n_dest);
+
+  assert(Domain::packet_size % 3 == 0);
+  packet_force= (Float3*) malloc(sizeof(Float)*Domain::packet_size);
+  
+
 }
 
 void domain_send_positions(Particles* const particles)
@@ -118,6 +130,7 @@ void domain_send_positions(Particles* const particles)
   msg_printf(msg_verbose, "sending positions\n");
 
   nbuf= 0;
+  nbuf_alloc_index= 0;
   packets_sent.clear();
   packets_clear();
   
@@ -139,17 +152,42 @@ void domain_send_positions(Particles* const particles)
   packets_flush();
 
   MPI_Win_fence(0, win_pos);
-
-  //printf("Remote particles in %d: %d\n", this_node, nbuf);
-  //for(int i=0; i<nbuf; ++i) {
-  //  printf("%d %.1f %.1f %.1f\n", this_node,
-  //buf_pos[3*i], buf_pos[3*i+1], buf_pos[3*i+2]);
-  //}
 }
 
-Vec3 const * domain_buffer_positions()
+void domain_get_forces(Particles* const particles)
 {
-  return (Vec3 const *) buf_pos;
+  Float3* const f= particles->force;
+  
+  MPI_Win_fence(0, win_force);
+  for(deque<Packet>::const_iterator packet= packets_sent.begin();
+      packet != packets_sent.end(); ++packet) {
+    const Index nsent= packet->n;
+    MPI_Get(packet_force, 3*nsent, FLOAT_TYPE, packet->dest_rank,
+	    packet->offset*3, 3*nsent, FLOAT_TYPE, win_force);
+
+    Index index0= packet->offset_index;
+    for(Index i=0; i<nsent; ++i) {
+      Index index= index0 + i;
+#ifdef CHECK
+      assert(0 <= index && index < particles->np_local);
+#endif
+      
+      f[index][0]= packet_force[i][0];
+      f[index][1]= packet_force[i][1];
+      f[index][2]= packet_force[i][2];
+    }
+  }
+  MPI_Win_fence(0, win_force);
+}
+
+Pos const * domain_buffer_positions()
+{
+  return (Pos const *) buf_pos;
+}
+
+Float3* domain_buffer_forces()
+{
+  return (Float3*) buf_force;
 }
 
 int domain_buffer_np()
@@ -168,7 +206,7 @@ void send(const int i, const Float x[], const Float boxsize)
     if((dom->xbuf_min < x[0] && x[0] < dom->xbuf_max) ||
        (dom->xbuf_min < x[0] - boxsize && x[0] - boxsize < dom->xbuf_max) ||
        (dom->xbuf_min < x[0] + boxsize && x[0] + boxsize < dom->xbuf_max))
-      dom->push(x);
+      dom->push(i, x);
   }
 }
 
@@ -202,6 +240,16 @@ void Domain::send_packet()
     return;
   }
 
+  Packet pkt;
+  pkt.dest_rank= rank;
+  pkt.offset_index= nbuf_index;
+  pkt.n= nsend;
+
+  for(vector<Index>::const_iterator
+	p= buf_index.begin(); p != buf_index.end(); ++p) {
+    buf_index[nbuf_index++]= *p;
+  }
+
   // offset= rank::nbuf
   // rank::nbuf += nsend
   int offset;
@@ -223,12 +271,10 @@ void Domain::send_packet()
 	     nsend, rank, offset);
   
   // Record the information for force get
-  Packet pkt;
-  pkt.dest_rank= rank;
+
   pkt.offset= offset;
-  pkt.n= nsend;
-  
   packets_sent.push_back(pkt);
   
   buf.clear();
+  buf_index.clear();
 }

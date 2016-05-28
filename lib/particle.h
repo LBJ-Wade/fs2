@@ -16,7 +16,7 @@ struct Particle {
   uint64_t id;      // Particle index 1,2,3...
 };
 
-struct Vec3 {
+struct Pos {
   Float x[3];
 };
 

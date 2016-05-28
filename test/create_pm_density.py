@@ -31,7 +31,7 @@ def create_pm_density():
     return fft.asarray()
 
 if __name__ == '__main__':
-    create_pm_density()
+    a = create_pm_density()
     filename = 'pm_density.h5'
     file = h5py.File(filename, 'w')
 

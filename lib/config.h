@@ -30,6 +30,8 @@ typedef float Float;
 #endif
 
 typedef Float Float3[3];
+typedef int   Index;     // local index
+
 
 #ifndef M_PI
 #define M_PI      3.14159265358979323846264338327950288
