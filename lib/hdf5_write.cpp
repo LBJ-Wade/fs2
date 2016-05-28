@@ -27,10 +27,16 @@ void hdf5_write_header(const char filename[])
 
 static void write_data_table(hid_t loc, const char name[], 
 		      const hsize_t nrow, const hsize_t ncol,
-		      const hsize_t stride, void const * const data)
+		      const hsize_t stride,
+		      const hid_t mem_type, const hid_t save_type,
+		      void const * const data)
 {
+  // Float    FLOAT_MEM_TYPE    FLOAT_SAVE_TYPE (config.h)
+  // uint64_t H5T_NATIVE_UINT64 H5T_STD_U64LE 
+  
   // Gather inter-node information
   long long offset_ll= comm_partial_sum<long long>(nrow);
+  offset_ll -= nrow;
   printf("%d %lld %lld\n", comm_this_node(), nrow, offset_ll);
 
   //long long nrow_total= comm_sum<long long>(nrow);
@@ -54,15 +60,20 @@ static void write_data_table(hid_t loc, const char name[],
   H5Sselect_hyperslab(filespace, H5S_SELECT_SET,
 		      offset_file, NULL, count_file, NULL);
 
-  hid_t dataset= H5Dcreate(loc, name, FLOAT_SAVE_TYPE, filespace,
+  hid_t dataset= H5Dcreate(loc, name, save_type, filespace,
 			   H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  if(dataset < 0)
+    return;
 
   hid_t plist= H5Pcreate(H5P_DATASET_XFER);
   H5Pset_dxpl_mpio(plist, H5FD_MPIO_COLLECTIVE);
     
-  const herr_t status = H5Dwrite(dataset, FLOAT_MEM_TYPE,
-				 memspace, filespace,
+  const herr_t status = H5Dwrite(dataset, mem_type, memspace, filespace,
 				 plist, data);
+
+  // This works for serial code
+  //const herr_t status= H5Dwrite(dataset, mem_type, memspace, filespace,
+  //H5P_DEFAULT, data); // debug!!!
 
   H5Pclose(plist);
   H5Sclose(memspace);
@@ -76,47 +87,72 @@ void hdf5_write_particles(const char filename[],
 			  Particles const * const particles,
 			  char const* var)
 {
-  // var is a subset of "xvf12" (in this order)
+  // var is a subset of "ixvf12" (in this order)
   // which specifies which data (position, velocity, ..) are writen
+  //  i: id
   //  x: position
   //  v: velocity
   //  f: force
   //  1: 1LPT displacements (at a=1)
   //  2: 2LPT displacements (at a=1)
-  
+
+  //H5Eset_auto2(H5E_DEFAULT, NULL, 0);
+    
   // Parallel file access  
   hid_t plist= H5Pcreate(H5P_FILE_ACCESS);
   H5Pset_fapl_mpio(plist, MPI_COMM_WORLD, MPI_INFO_NULL);
   
-  hid_t file= H5Fopen(filename, H5F_ACC_RDWR, plist);
+  //hid_t file= H5Fopen(filename, H5F_ACC_RDWR, plist);
+  //if(file < 0) {
+  hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
   if(file < 0) {
-    hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
-    if(file < 0) {
-      msg_printf(msg_error, "Error: unable to create: %s\n", filename);
-      throw IOError();
-    }
+    msg_printf(msg_error, "Error: unable to create: %s\n", filename);
+    throw IOError();
   }
+  //}
 
   assert(sizeof(Particle) % sizeof(Float) == 0);
   
-  Particle* const p= particles->p;
+  Particle const * const p= particles->p;
   const size_t np= particles->np_local;
   const size_t stride= sizeof(Particles)/sizeof(Float);
 
+  if(*var == 'i') {
+    msg_printf(msg_verbose, "writing ids\n");
+    assert(sizeof(Particle) % sizeof(uint64_t) == 0);
+    const size_t istride= sizeof(Particles)/sizeof(uint64_t);
+    write_data_table(file, "id", np, 1, istride,
+		     H5T_NATIVE_UINT64, H5T_STD_U64LE, &p->id);
+    ++var;
+  }
+  
   if(*var == 'x') {
     msg_printf(msg_verbose, "writing positions\n");
-    write_data_table(file, "x", np, 3, stride, p->x);
+    write_data_table(file, "x", np, 3, stride,
+		     FLOAT_MEM_TYPE, FLOAT_SAVE_TYPE, p->x);
     ++var;
   }
 
   if(*var == 'v') {
     msg_printf(msg_verbose, "writing velocities\n");
-    write_data_table(file, "v", np, 3, stride, p->v);
+    write_data_table(file, "v", np, 3, stride,
+		     FLOAT_MEM_TYPE, FLOAT_SAVE_TYPE, p->v);
     ++var;
   }
 
-  // ToDo f
-  // ToDo LPT
+  if(*var == 'f') {
+    write_data_table(file, "f", np, 3, 3,
+		     FLOAT_MEM_TYPE, FLOAT_SAVE_TYPE, particles->force);
+    
+    ++var;
+  }
+
+  if(*var != '\0') {
+    msg_printf(msg_error, "Error: unknown option for hdf5_write, %s\n", var);
+    throw ValError();
+  }
+
+  // ToDo write "12" LPT
   // ToDo write a_x, a_f
   // ToDo write omega_m, boxsize
 
