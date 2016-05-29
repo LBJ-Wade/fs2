@@ -57,7 +57,11 @@ static PyMethodDef methods[] = {
   {"_particles_update_np_total", py_particles_update_np_total, METH_VARARGS,
    "_particles_update_np_total(_particles)"},
   {"_particles_id_asarray", py_particles_id_asarray, METH_VARARGS,
-   "_particles_id_asarray"},
+   "_particles_id_asarray(_particles)"},
+  {"_particles_x_asarray", py_particles_x_asarray, METH_VARARGS,
+   "_particles_x_asarray(_particles)"},
+  {"_particles_force_asarray", py_particles_force_asarray, METH_VARARGS,
+   "_particles_force_asarray(_particles)"},
   
   {"_lpt", py_lpt, METH_VARARGS,
    "_lpt(nc, boxsize, a, _ps, rando_seed); setup 2LPT displacements"},

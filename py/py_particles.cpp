@@ -53,6 +53,8 @@ PyObject* py_particles_asarray(T const * dat,
 			       const size_t np_local, const size_t ncol,
 			       const size_t stride)
 {
+  // T Float or uint64_t
+  
   // Allocate a new np.array
   PyObject* arr= 0;
   T* recvbuf= 0;
@@ -323,8 +325,39 @@ PyObject* py_particles_id_asarray(PyObject* self, PyObject* args)
     (Particles const *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
-  return py_particles_asarray(&particles->p->id, particles->np_local, 1,
-			      sizeof(Particle));
+  return py_particles_asarray<uint64_t>(&particles->p->id,
+				     particles->np_local, 1, sizeof(Particle));
+}
+
+PyObject* py_particles_x_asarray(PyObject* self, PyObject* args)
+{
+  /*
+  PyObject* py_particles;
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles const * const particles=
+    (Particles const *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  return py_particles_asarray(particles->p->x, particles->np_local, 3,
+			      sizeof(Particles));
+  */
+  return 0;
+}
+
+PyObject* py_particles_force_asarray(PyObject* self, PyObject* args)
+{
+  PyObject* py_particles;
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles const * const particles=
+    (Particles const *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  return py_particles_asarray<Float>((Float*) particles->force,
+				     particles->np_local, 3, sizeof(Float)*3);
 }
 
 

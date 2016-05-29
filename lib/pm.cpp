@@ -40,7 +40,7 @@ static inline Float grid_val(Float const * const d,
 
 static void check_total_density(Float const * const density);
 static void compute_delta_k();
-static void compute_force_mesh(const int k);
+static void compute_force_mesh(const int axis);
 //static void force_at_particle_locations(
 //		 Particles* const particles, const int np, const int axis);
 //static void add_buffer_forces(Particles* const particles, const size_t np);
@@ -194,8 +194,7 @@ void force_at_particle_locations(T const * const p, const int np,
 //
 void pm_init(const int nc_pm, const double pm_factor_,
 	     Mem* const mem_pm, Mem* const mem_density,
-	     const Float boxsize_,
-	     const size_t np_alloc)
+	     const Float boxsize_)
 {
   msg_printf(msg_verbose, "PM module init\n");
   nc= nc_pm;
@@ -297,7 +296,7 @@ void check_total_density(Float const * const density)
   MPI_Reduce(&sum, &sum_global, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
   if(comm_this_node() == 0) {
-    double tol= FLOAT_EPS*nc*nc*nc;
+    double tol= 10*FLOAT_EPS*nc*nc*nc;
 
     if(fabs(sum_global) > tol) {
       msg_printf(msg_error,
@@ -388,6 +387,7 @@ void compute_force_mesh(const int axis)
     }
   }
 
+  fft_pm->mode= fft_mode_k;
   fft_pm->execute_inverse(); // f_k -> f(x)
 }
 

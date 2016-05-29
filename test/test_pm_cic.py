@@ -35,7 +35,7 @@ boxsize = 64
 fs.set_loglevel(3)
 
 np_buf= 10
-fs.pm_init(nc, 1, boxsize, np_buf)
+fs.pm_init(nc, 1, boxsize)
 
 one_particle_test(0, 2, 2)
 one_particle_test(1, 2, 2)

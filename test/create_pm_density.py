@@ -23,9 +23,8 @@ def create_pm_density():
 
     # Set 2LPT displacements at scale factor a
     particles = fs.lpt(nc, boxsize, a, ps, seed)
-    np = len(particles)
 
-    fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize, np)
+    fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 
     fft = fs.pm_compute_density(particles)
     return fft.asarray()

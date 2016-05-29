@@ -8,12 +8,12 @@ static bool pm_initialised= false;
 
 PyObject* py_pm_init(PyObject* self, PyObject* args)
 {
-  // pm_init(nc_pm, pm_factor, boxsize, np_buffer)
+  // pm_init(nc_pm, pm_factor, boxsize)
 
-  int nc_pm, np;
+  int nc_pm;
   double pm_factor, boxsize;
   
-  if(!PyArg_ParseTuple(args, "iddi", &nc_pm, &pm_factor, &boxsize, &np)) {
+  if(!PyArg_ParseTuple(args, "idd", &nc_pm, &pm_factor, &boxsize)) {
     return NULL;
   }
 
@@ -21,7 +21,7 @@ PyObject* py_pm_init(PyObject* self, PyObject* args)
   Mem* const mem1= new Mem("ParticleMesh", mem_size);
   Mem* const mem2= new Mem("delta_k", mem_size);
 
-  pm_init(nc_pm, pm_factor, mem1, mem2, boxsize, np);
+  pm_init(nc_pm, pm_factor, mem1, mem2, boxsize);
 
   pm_initialised= true;
 

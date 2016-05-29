@@ -14,5 +14,8 @@ PyObject* py_particles_getitem(PyObject* self, PyObject* args);
 PyObject* py_particles_one(PyObject* self, PyObject* args);
 PyObject* py_particles_update_np_total(PyObject* self, PyObject* args);
 PyObject* py_particles_id_asarray(PyObject* self, PyObject* args);
+PyObject* py_particles_x_asarray(PyObject* self, PyObject* args);
+PyObject* py_particles_force_asarray(PyObject* self, PyObject* args);
+
 
 #endif

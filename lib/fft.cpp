@@ -69,7 +69,11 @@ FFT::~FFT()
 
 void FFT::execute_forward()
 {
-  if(mode != 1) throw FFTError();
+  if(mode != fft_mode_x) {
+    msg_printf(msg_warn, "FFT %s mode is %d not %d for execute_forward\n",
+	       name, mode, fft_mode_x);
+    throw FFTError();
+  }
   FFTW(mpi_execute_dft_r2c)(forward_plan, fx, fk);
 }
 
