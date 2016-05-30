@@ -3,9 +3,9 @@
 #
 import h5py
 import fs
-
-
-def create_pm_density():
+import sys
+    
+def setup_particles():
     # parameters
     omega_m = 0.308
     h = 0.67
@@ -26,15 +26,23 @@ def create_pm_density():
 
     fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 
+    return particles
+
+def density():
+    particles = setup_particles()
     fft = fs.pm_compute_density(particles)
     return fft.asarray()
 
+def force():
+    particles = setup_particles()
+    fs.pm_compute_force(particles)
+    return particles
+
 if __name__ == '__main__':
-    a = create_pm_density()
-    filename = 'pm_density.h5'
-    file = h5py.File(filename, 'w')
+    
+    if sys.argv[-1] == 'density':
+        delta = pm_density()
+        file = h5py.File('pm_density.h5', 'w')
+        file['delta'] = delta
+        file.close()
 
-    file['delta'] = a
-    file.close()
-
-    print("%s written\n" % filename)

@@ -34,6 +34,10 @@ class Particles:
     def id(self):
         return c._particles_id_asarray(self._particles)
 
+    @property
+    def x(self):
+        return c._particles_x_asarray(self._particles)
+    
     @property    
     def force(self):
         return c._particles_force_asarray(self._particles)

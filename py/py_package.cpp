@@ -16,6 +16,7 @@
 #include "py_write.h"
 #include "py_hdf5_io.h"
 #include "py_fft.h"
+#include "py_config.h"
 
 using namespace std;
 
@@ -97,6 +98,9 @@ static PyMethodDef methods[] = {
    "_fft_set_test_data(_fft)"},
   {"_fft_fx_global_as_array", py_fft_fx_global_as_array, METH_VARARGS,
    "_fft_fx_global_as_array(_fft); return fft->fx as nc^3 np.array"},
+
+  {"config_precision", py_config_precision, METH_VARARGS,
+   "get 'single' or 'double'"},
   
   {NULL, NULL, 0, NULL}
 };

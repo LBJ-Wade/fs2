@@ -4,8 +4,9 @@
 // Generates random Gaussian pertubation using 2LPT
 //
 
-#include <math.h>
-#include <assert.h>
+#include <iostream>
+#include <cmath>
+#include <cassert>
 #include <gsl/gsl_rng.h>
 #include "msg.h"
 #include "mem.h"
@@ -15,6 +16,8 @@
 #include "particle.h"
 #include "fft.h"
 #include "lpt.h"
+
+using namespace std;
 
 static unsigned int* seedtable;
 static double boxsize;
@@ -651,6 +654,8 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
                                     // multiply by cosmology_D2_growth() for a
        p->v[k]= 0;                  // velocity in comoving 2LPT
 
+       //cerr << "x= " << p->x[0] << endl;
+       
        sum2 += (D1*dis + D2*dis2)*(D1*dis + D2*dis2);
      }
      p->id= id++;

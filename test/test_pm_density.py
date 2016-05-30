@@ -4,11 +4,11 @@
 import numpy as np
 import h5py
 import fs
-from create_pm_density import create_pm_density
+import pm_setup
 
 fs.set_loglevel(0)
 
-delta = create_pm_density()
+delta = pm_setup.density()
 
 #
 # Test total density is number of particles

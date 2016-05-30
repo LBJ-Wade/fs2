@@ -51,7 +51,7 @@ static int npy_type_num(const type_info& type_id)
 template <class T>
 PyObject* py_particles_asarray(T const * dat,
 			       const size_t np_local, const size_t ncol,
-			       const size_t stride)
+			       const size_t stride_bytes)
 {
   // T Float or uint64_t
   
@@ -81,16 +81,18 @@ PyObject* py_particles_asarray(T const * dat,
     
   const int nsend= np_local;
 
-  T* const sendbuf= (T*) malloc(sizeof(T)*nsend);
+  T* const sendbuf= (T*) malloc(sizeof(T)*nsend*ncol);
   py_assert_ptr(sendbuf);
 
   size_t ibuf= 0;
   assert(sizeof(char) == 1);
-  
+
   for(size_t i=0; i<nsend; ++i) {
-    for(size_t j=0; j<ncol; ++j)
+    for(size_t j=0; j<ncol; ++j) {
       sendbuf[ibuf++]= dat[j];
-    dat = (T*) (((char*)dat) + stride);
+    }
+    
+    dat = (T*) (((char*)dat) + stride_bytes);
   }
 
   const int n= comm_n_nodes();
@@ -108,7 +110,7 @@ PyObject* py_particles_asarray(T const * dat,
 
     displ= nrecv + n;
   }
-    
+x    
   MPI_Gather(&nsend, 1, MPI_INT, nrecv, 1, MPI_INT, 0,
 	     MPI_COMM_WORLD);
 
@@ -121,12 +123,13 @@ PyObject* py_particles_asarray(T const * dat,
     }
   }
 
-  // warning: at most 2^32 bytes for 4-byte int
+  // warning: MPI_Gatherv uses int
+  // Error beyond more than 2^32 bytes of data for 4-byte int
   MPI_Gatherv(sendbuf, nsend*sizeof(T)*ncol, MPI_BYTE, 
 	      recvbuf, nrecv, displ, MPI_BYTE, 0, MPI_COMM_WORLD);
 
-  free(nrecv);
-  free(sendbuf);
+  //cerr << "free nrecv\n";  free(nrecv);
+  //cerr << "free sndbuf\n"; free(sendbuf);
 
   if(comm_this_node() == 0) {
     return arr;
@@ -207,7 +210,7 @@ PyObject* py_particles_slice(PyObject* self, PyObject* args)
   // Return vector<Particle> as np.array
   const int nd=2;
   const int ncol= sizeof(Particle)/sizeof(Float);
-  npy_intp dims[]= {(npy_intp) v->size(), ncol};
+  npy_intp dims[]= {(npy_intp) v-s>size(), ncol};
 
   return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT_TYPE, &(v->front()));
 }
@@ -326,12 +329,12 @@ PyObject* py_particles_id_asarray(PyObject* self, PyObject* args)
   py_assert_ptr(particles);
 
   return py_particles_asarray<uint64_t>(&particles->p->id,
-				     particles->np_local, 1, sizeof(Particle));
+					particles->np_local, 1,
+					sizeof(Particle));
 }
 
 PyObject* py_particles_x_asarray(PyObject* self, PyObject* args)
 {
-  /*
   PyObject* py_particles;
   if(!PyArg_ParseTuple(args, "O", &py_particles))
     return NULL;
@@ -340,9 +343,9 @@ PyObject* py_particles_x_asarray(PyObject* self, PyObject* args)
     (Particles const *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
-  return py_particles_asarray(particles->p->x, particles->np_local, 3,
-			      sizeof(Particles));
-  */
+  return py_particles_asarray<Float>(particles->p[0].x, particles->np_local, 3,
+				     sizeof(Particle));
+
   return 0;
 }
 
@@ -359,6 +362,5 @@ PyObject* py_particles_force_asarray(PyObject* self, PyObject* args)
   return py_particles_asarray<Float>((Float*) particles->force,
 				     particles->np_local, 3, sizeof(Float)*3);
 }
-
 
 
