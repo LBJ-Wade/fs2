@@ -37,9 +37,8 @@ static void write_data_table(hid_t loc, const char name[],
   // Gather inter-node information
   long long offset_ll= comm_partial_sum<long long>(nrow);
   offset_ll -= nrow;
-  printf("%d %lld %lld\n", comm_this_node(), nrow, offset_ll);
 
-  //long long nrow_total= comm_sum<long long>(nrow);
+  long long nrow_total= comm_sum<long long>(nrow);
 
   // Data structure in memory
   const hsize_t data_size_mem= nrow*stride;
@@ -53,33 +52,28 @@ static void write_data_table(hid_t loc, const char name[],
 
   // Data structure in file
   const hsize_t dim= ncol == 1 ? 1 : 2;
-  const hsize_t data_size_file[]= {nrow, ncol};
-  //const hsize_t offset_file[]= {offset_ll, 0};
-  //const hsize_t count_file[]= {nrow, ncol};
+  const hsize_t data_size_file[]= {nrow_total, ncol};
   hid_t filespace= H5Screate_simple(dim, data_size_file, NULL);
-  //H5Sselect_hyperslab(filespace, H5S_SELECT_SET,
-  //offset_file, NULL, count_file, NULL);
+
+  // local subset of data for this node
+  const hsize_t offset_file[]= {offset_ll, 0};
+  const hsize_t count_file[]= {nrow, ncol};
+
+  H5Sselect_hyperslab(filespace, H5S_SELECT_SET,
+		      offset_file, NULL, count_file, NULL);
 
   hid_t dataset= H5Dcreate(loc, name, save_type, filespace,
 			   H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
   if(dataset < 0)
     return;
 
-  ///debug!!!
-  ///hid_t plist= H5Pcreate(H5P_DATASET_XFER);
-  ///H5Pset_dxpl_mpio(plist, H5FD_MPIO_COLLECTIVE);
+  hid_t plist= H5Pcreate(H5P_DATASET_XFER);
+  H5Pset_dxpl_mpio(plist, H5FD_MPIO_COLLECTIVE);
     
-  ///const herr_t status = H5Dwrite(dataset, mem_type, memspace, filespace,
-  ///plist, data);
-
   const herr_t status = H5Dwrite(dataset, mem_type, memspace, filespace,
-				  H5P_DEFAULT, data);
+				 plist, data);
 
-  // This works for serial code
-  //const herr_t status= H5Dwrite(dataset, mem_type, memspace, filespace,
-  //H5P_DEFAULT, data); // debug!!!
-
-  //H5Pclose(plist);
+  H5Pclose(plist);
   H5Sclose(memspace);
   H5Sclose(filespace);
   H5Dclose(dataset);
@@ -104,13 +98,13 @@ void hdf5_write_particles(const char filename[],
     
   // Parallel file access
   /// debug! temporary disable parallel write
-  ///hid_t plist= H5Pcreate(H5P_FILE_ACCESS);
-  ///H5Pset_fapl_mpio(plist, MPI_COMM_WORLD, MPI_INFO_NULL);
+  hid_t plist= H5Pcreate(H5P_FILE_ACCESS);
+  H5Pset_fapl_mpio(plist, MPI_COMM_WORLD, MPI_INFO_NULL);
   
   //hid_t file= H5Fopen(filename, H5F_ACC_RDWR, plist);
   //if(file < 0) {
-  //hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
-  hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
+  //hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   if(file < 0) {
     msg_printf(msg_error, "Error: unable to create: %s\n", filename);
     throw IOError();
@@ -163,7 +157,7 @@ void hdf5_write_particles(const char filename[],
   // ToDo write a_x, a_f
   // ToDo write omega_m, boxsize
 
-  //H5Pclose(plist);
+  H5Pclose(plist);
   H5Fclose(file);
 }
 

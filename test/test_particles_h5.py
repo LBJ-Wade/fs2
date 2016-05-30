@@ -21,6 +21,8 @@ filename = 'particles_%d.h5' % fs.comm_n_nodes()
 
 particles.save_hdf5(filename, 'ix')
 
+np = nc*nc*nc
+
 def assert_almost_equal(x, y):
     eps = 1.0e-15
     assert(abs(x - y) < eps)
@@ -30,9 +32,13 @@ if fs.comm_this_node() == 0:
     file_x = file['x'][:]
     file_id = file['id'][:]
     file.close()
-    
-    #xx_mem = particles.x
-    #iid_mem = particles.id
+
+    print('shape')
+    print(file_id.shape)
+    assert(file_id.shape == (np,))
+    assert(file_x.shape == (np, 3))
+
+    print('data shape OK')
 
     #
     # Test x_file
@@ -59,3 +65,5 @@ if fs.comm_this_node() == 0:
                 assert_almost_equal(z, file_x[index, 2])
 
     print('%s/x  OK' % filename)
+
+fs.comm_mpi_finalise()
