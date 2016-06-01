@@ -114,8 +114,8 @@ size_t fft_local_nx(const int nc)
 
 void fft_finalise()
 {
-  //if(comm_status() == comm_parallel)
-  //  FFTW(mpi_cleanup)();
+  if(comm_status() == comm_parallel)
+    FFTW(mpi_cleanup)();
 }
 
 void* fft_malloc(size_t size)

@@ -72,9 +72,9 @@ void pm_assign_cic_density(T const * const p, size_t np)
   #pragma omp parallel for default(shared)
 #endif
   for(size_t i=0; i<np; i++) {
-    float x=p[i].x[0]*dx_inv;
-    float y=p[i].x[1]*dx_inv;
-    float z=p[i].x[2]*dx_inv;
+    Float x=p[i].x[0]*dx_inv;
+    Float y=p[i].x[1]*dx_inv;
+    Float z=p[i].x[2]*dx_inv;
 
 #ifdef CHECK
     assert(0 <= x && x <= nc);
@@ -398,7 +398,7 @@ void compute_force_mesh(const int axis)
       for(size_t iz=kzmin; iz<nckz; iz++){
 	k[2]= (Float) iz;
 
-	float f2= f1/(k[0]*k[0] + k[1]*k[1] + k[2]*k[2])*k[axis];
+	Float f2= f1/(k[0]*k[0] + k[1]*k[1] + k[2]*k[2])*k[axis];
 
 	size_t index= (nc*iy_local + ix)*nckz + iz;
 	fk[index][0]= -f2*delta_k[index][1];
