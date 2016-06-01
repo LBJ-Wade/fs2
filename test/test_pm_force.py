@@ -1,7 +1,6 @@
 #
-# Compare PM force at particle locations
-# Test parallelisation does not change force
-#
+# Test PM force parallelisation:
+# check force does not depend on number of MPI nodes
 
 import fs
 import numpy as np
@@ -9,6 +8,7 @@ import h5py
 import pm_setup
 
 # read reference file
+# $ python3 create_force_h5.py to create
 file = h5py.File('force_%s.h5' % fs.config_precision(), 'r')
 
 ref_id = file['id'][:]
@@ -16,15 +16,14 @@ ref_force = file['f'][:]
 
 file.close()
 
-#print(ref_id)
-#print(ref_force)
-
+# compute PM force
 fs.set_loglevel(0)
 
 particles = pm_setup.force()
 particle_id = particles.id
 particle_force = particles.force
 
+# compare two forces
 if fs.comm_this_node() == 0:
     assert(np.all(particle_id == ref_id))
     print('pm_force id OK')

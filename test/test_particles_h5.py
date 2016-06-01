@@ -23,9 +23,11 @@ particles.save_hdf5(filename, 'ix')
 
 np = nc*nc*nc
 
+
 def assert_almost_equal(x, y):
     eps = 1.0e-15
     assert(abs(x - y) < eps)
+
 
 if fs.comm_this_node() == 0:
     file = h5py.File(filename, 'r')
@@ -53,7 +55,7 @@ if fs.comm_this_node() == 0:
 
     offset = 0.5
     for ix in range(nc):
-        x = (ix + offset)*nc/boxsize 
+        x = (ix + offset)*nc/boxsize
         for iy in range(nc):
             y = (iy + offset)*nc/boxsize
             for iz in range(nc):

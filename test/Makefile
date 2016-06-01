@@ -14,3 +14,9 @@ force_double.h5: create_force_h5.py
 	python3 $<
 
 test_pm_force: test_pm_force.py force_double.h5
+
+.PHONY: pep8
+
+pep8:
+	pep8 *.py
+
