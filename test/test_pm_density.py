@@ -17,7 +17,7 @@ delta = pm_setup.density()
 if fs.comm_this_node() == 0:
     nc = delta.shape
     nmesh = nc[0]*nc[1]*nc[2]
-    eps = 1.0e-7
+    eps = np.finfo(delta.dtype).eps
 
     a = delta.astype(np.float64)
 
@@ -28,7 +28,7 @@ if fs.comm_this_node() == 0:
     #
     # Compare with serial mesh
     #
-    filename = 'pm_density.h5'
+    filename = 'pm_density_%s.h5' % fs.config_precision()
     file = h5py.File(filename, 'r')
     delta_ref = file['delta'][:]
     file.close()
@@ -38,6 +38,8 @@ if fs.comm_this_node() == 0:
     max_error = np.max(np.abs(a))
     print('rms= %e' % rms_error)
     print('diff= %e' % max_error)
-    assert(max_error < 1.0e-4)
+    assert(max_error < 500.0*eps)
+
+    print('pm_density OK')
 
 fs.comm_mpi_finalise()

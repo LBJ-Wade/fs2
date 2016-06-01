@@ -13,7 +13,8 @@ lib: $(LIB)
 # Compile options
 #
 
-OPT += -DCHECK  # slow assersions
+OPT += -DCHECK  # slow assersions (turn on if you encounter a problem)
+#OPT += -DNDEBUG # drop assertion (not recomended)
 
 #
 # Compiler configurations

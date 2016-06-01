@@ -245,10 +245,10 @@ void clear_density()
 
 void pm_compute_force(Particles* const particles)
 {
-  // Main routine of this source file
+  // Compute density mesh, force mesh, forces on particles
   pm_compute_density(particles);
 
-#ifdef CHECK
+#ifndef NDEBUG
   check_total_density(fft_pm->fx);
 #endif
 
@@ -260,29 +260,20 @@ void pm_compute_force(Particles* const particles)
     // delta(k) -> f(x_i)
     compute_force_mesh(axis);
 
-    //msg_printf(msg_debug, "Force at particle location (local)\n");
     force_at_particle_locations<Particle>(
       particles->p, particles->np_local, axis, particles->force);
 
-    //msg_printf(msg_debug, "Force at particle location (buffer)\n");
     force_at_particle_locations<Pos>(
       domain_buffer_positions(), domain_buffer_np(), axis,
       domain_buffer_forces());
   }
 
-  // debug !!!
-  /*
-  Float3* ff= domain_buffer_forces();
-  for(int i=0; i<domain_buffer_np(); ++i)
-    printf("ff %e %e %e\n", ff[i][0], ff[i][1], ff[i][2]);
-  */
-  
   domain_get_forces(particles);
 }
 
 FFT* pm_compute_density(Particles* const particles)
 {
-  // Compute density only
+  // Compute density
   msg_printf(msg_verbose, "PM density computation...\n");
 
   domain_init(fft_pm, particles);
@@ -295,10 +286,10 @@ FFT* pm_compute_density(Particles* const particles)
   return fft_pm;
 }
 
+
 //
 // Static functions
 //
-
 
 void check_total_density(Float const * const density)
 {

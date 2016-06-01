@@ -13,7 +13,11 @@ check: $(TESTS)
 force_double.h5: create_force_h5.py
 	python3 $<
 
+pm_density_double.h5: create_pm_density_h5.py
+	python3 $<
+
 test_pm_force: test_pm_force.py force_double.h5
+test_pm_density: test_pm_density.py pm_density_double.h5
 
 .PHONY: pep8
 

@@ -38,6 +38,10 @@ if fs.comm_this_node() == 0:
     diff_max = np.max(np.abs(diff))
     print('pm_force max error %e / %e' % (diff_max, force_rms))
 
-    assert(diff_max < 10.0e-15)
+    eps = np.finfo(particle_force.dtype).eps
+
+    assert(diff_rms < 20*eps)
+    assert(diff_max < 1000*eps)
+    print('pm_force OK')
 
 fs.comm_mpi_finalise()
