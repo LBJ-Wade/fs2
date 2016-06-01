@@ -20,7 +20,6 @@ ps = fs.PowerSpectrum('../../data/planck_matterpower.dat')
 # Set 2LPT displacements at scale factor a
 particles = fs.lpt(nc, boxsize, a, ps, seed)
 
-use_long_id = False
-particles.save_gadget_binary('2lpt', use_long_id)
+particles.save_gadget_binary('2lpt.gadget', False)
 
 fs.comm_mpi_finalise()
