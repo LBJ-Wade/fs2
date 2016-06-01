@@ -13,7 +13,7 @@ Particles::Particles(const int nc, const double boxsize_) :
   size_t np_alloc= (size_t)((1.25*(nx + 1)*nc*nc));
 
   this->p= (Particle*) malloc(np_alloc*sizeof(Particle)); assert(p);
-  this->force= (Float3*) calloc(3*np_alloc, sizeof(float)); assert(force);
+  this->force= (Float3*) calloc(3*np_alloc, sizeof(Float)); assert(force);
   this->np_allocated= np_alloc;
   this->boxsize= boxsize_;
   this->np_local= 0;

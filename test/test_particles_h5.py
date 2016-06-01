@@ -33,7 +33,6 @@ if fs.comm_this_node() == 0:
     file_id = file['id'][:]
     file.close()
 
-    print('shape')
     print(file_id.shape)
     assert(file_id.shape == (np,))
     assert(file_x.shape == (np, 3))

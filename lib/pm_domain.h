@@ -37,5 +37,6 @@ void domain_send_positions(Particles* const particles);
 Pos const * domain_buffer_positions();
 Float3* domain_buffer_forces();
 int domain_buffer_np();
+void domain_get_forces(Particles* const particles);
 
 #endif

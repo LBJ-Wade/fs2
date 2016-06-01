@@ -50,9 +50,7 @@ void domain_init(FFT const * const fft, Particles const * const particles)
   MPI_Win_create(&nbuf, sizeof(int), sizeof(int), MPI_INFO_NULL,
 		 MPI_COMM_WORLD, &win_nbuf);
 
-  // ToDo: 2.25 is too large, take statistics and make better estimate
   int local_nx= comm_max<int>(fft->local_nx);
-
   double np_total= (double) particles->np_total;
   
   nbuf_alloc= 10 + 1.25*(np_total + 5*sqrt(np_total))/nc*(local_nx + 2);
@@ -86,7 +84,7 @@ void domain_init(FFT const * const fft, Particles const * const particles)
 
   // Create the decomposition, a vector of domains.
   const Float xbuf[2]= {boxsize*(fft->local_ix0 - 1)/nc,
-			  boxsize*(fft->local_ix0 + fft->local_nx + 1)/nc};
+			  boxsize*(fft->local_ix0 + fft->local_nx)/nc};
   const int n= comm_n_nodes();
 
   Float* const xbuf_all= (Float*) malloc(sizeof(Float)*2*n);
@@ -164,22 +162,34 @@ void domain_get_forces(Particles* const particles)
   Float3* const f= particles->force;
   
   MPI_Win_fence(0, win_force);
+
   for(deque<Packet>::const_iterator packet= packets_sent.begin();
       packet != packets_sent.end(); ++packet) {
     const Index nsent= packet->n;
+
     MPI_Get(packet_force, 3*nsent, FLOAT_TYPE, packet->dest_rank,
 	    packet->offset*3, 3*nsent, FLOAT_TYPE, win_force);
 
+    //msg_printf(msg_debug, "mpi_get %d %d\n", packet->offset, nsent);
+
     Index index0= packet->offset_index;
     for(Index i=0; i<nsent; ++i) {
-      Index index= index0 + i;
+      //printf("%d %d %d %d\n", comm_this_node(), i, index0, nbuf_index);
+      Index ii= index0 + i;
+#ifdef CHECK
+      assert(0 <= ii && ii < nbuf_index);
+#endif
+      Index index= buf_index[ii];
+      
+      //msg_printf(msg_debug, "get %d\n", index);
+      
 #ifdef CHECK
       assert(0 <= index && index < particles->np_local);
 #endif
       
-      f[index][0]= packet_force[i][0];
-      f[index][1]= packet_force[i][1];
-      f[index][2]= packet_force[i][2];
+      f[index][0] += packet_force[i][0];
+      f[index][1] += packet_force[i][1];
+      f[index][2] += packet_force[i][2];
     }
   }
   MPI_Win_fence(0, win_force);
@@ -208,8 +218,10 @@ void send(const int i, const Float x[], const Float boxsize)
 	dom= decomposition.begin(); dom != decomposition.end(); ++dom) {
     if((dom->xbuf_min < x[0] && x[0] < dom->xbuf_max) ||
        (dom->xbuf_min < x[0] - boxsize && x[0] - boxsize < dom->xbuf_max) ||
-       (dom->xbuf_min < x[0] + boxsize && x[0] + boxsize < dom->xbuf_max))
+       (dom->xbuf_min < x[0] + boxsize && x[0] + boxsize < dom->xbuf_max)) {
       dom->push(i, x);
+      //msg_printf(msg_debug, "send %d\n", i);
+    }
   }
 }
 
@@ -254,6 +266,7 @@ void Domain::send_packet()
 	ind= vbuf_index.begin(); ind != vbuf_index.end(); ++ind) {
     assert(0 <= nbuf_index && nbuf_index < nbuf_index_alloc);
     buf_index[nbuf_index]= *ind;
+    //printf("set buf_index %d %d\n", nbuf_index, nbuf_index_alloc);
     nbuf_index++;
   }
 

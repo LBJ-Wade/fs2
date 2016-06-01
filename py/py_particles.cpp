@@ -110,7 +110,7 @@ PyObject* py_particles_asarray(T const * dat,
 
     displ= nrecv + n;
   }
-x    
+
   MPI_Gather(&nsend, 1, MPI_INT, nrecv, 1, MPI_INT, 0,
 	     MPI_COMM_WORLD);
 
@@ -210,7 +210,7 @@ PyObject* py_particles_slice(PyObject* self, PyObject* args)
   // Return vector<Particle> as np.array
   const int nd=2;
   const int ncol= sizeof(Particle)/sizeof(Float);
-  npy_intp dims[]= {(npy_intp) v-s>size(), ncol};
+  npy_intp dims[]= {(npy_intp) v->size(), ncol};
 
   return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT_TYPE, &(v->front()));
 }

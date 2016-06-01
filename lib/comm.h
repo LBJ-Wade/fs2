@@ -6,6 +6,8 @@
 #include "msg.h"
 #include "error.h"
 
+enum CommStatus {comm_uninitialised=0, comm_parallel=1, comm_finalised=2};
+
 void comm_mpi_init(int* pargc, char*** pargv);
 void comm_mpi_finalise();
 void comm_mpi_msg();
@@ -18,6 +20,9 @@ void comm_barrier();
 
 void comm_bcast_int(int* p_int, int count);
 void comm_bcast_double(double* p_double, int count);
+
+CommStatus comm_status();
+
 
 static inline MPI_Datatype mpi_datatype(const std::type_info& type_id)
 {

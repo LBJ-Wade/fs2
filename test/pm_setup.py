@@ -3,6 +3,7 @@
 #
 import h5py
 import fs
+import pm_setup
 import sys
     
 def setup_particles():

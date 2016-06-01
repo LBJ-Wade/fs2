@@ -41,9 +41,6 @@ static inline Float grid_val(Float const * const d,
 static void check_total_density(Float const * const density);
 static void compute_delta_k();
 static void compute_force_mesh(const int axis);
-//static void force_at_particle_locations(
-//		 Particles* const particles, const int np, const int axis);
-//static void add_buffer_forces(Particles* const particles, const size_t np);
 static void clear_density();
 
 //
@@ -162,10 +159,23 @@ void force_at_particle_locations(T const * const p, const int np,
     if(ix0 >= nc) ix0= 0;
     if(iy0 >= nc) iy0= 0;
     if(iz0 >= nc) iz0= 0;
+
+#ifdef CHECK
+    assert(0 <= ix0 && ix0 < nc &&
+	   0 <= iy0 && iy0 < nc &&
+	   0 <= iz0 && iz0 < nc);
+#endif
+
             
     int ix1= ix0 + 1; if(ix1 >= nc) ix1 -= nc;
     int iy1= iy0 + 1; if(iy1 >= nc) iy1 -= nc;
     int iz1= iz0 + 1; if(iz1 >= nc) iz1 -= nc;
+
+#ifdef CHECK
+    assert(0 <= ix1 && ix1 < nc &&
+	   0 <= iy1 && iy1 < nc &&
+	   0 <= iz1 && iz1 < nc);
+#endif
 
     ix0 -= local_ix0;
     ix1 -= local_ix0;
@@ -236,8 +246,6 @@ void clear_density()
 void pm_compute_force(Particles* const particles)
 {
   // Main routine of this source file
-
-
   pm_compute_density(particles);
 
 #ifdef CHECK
@@ -251,13 +259,25 @@ void pm_compute_force(Particles* const particles)
   for(int axis=0; axis<3; axis++) {
     // delta(k) -> f(x_i)
     compute_force_mesh(axis);
+
+    //msg_printf(msg_debug, "Force at particle location (local)\n");
     force_at_particle_locations<Particle>(
-		     particles->p, particles->np_local, axis, particles->force);
+      particles->p, particles->np_local, axis, particles->force);
+
+    //msg_printf(msg_debug, "Force at particle location (buffer)\n");
     force_at_particle_locations<Pos>(
-		    domain_buffer_positions(), domain_buffer_np(), axis,
-		    domain_buffer_forces());
+      domain_buffer_positions(), domain_buffer_np(), axis,
+      domain_buffer_forces());
   }
-  ////add_buffer_forces(particles, np_plus_buffer);
+
+  // debug !!!
+  /*
+  Float3* ff= domain_buffer_forces();
+  for(int i=0; i<domain_buffer_np(); ++i)
+    printf("ff %e %e %e\n", ff[i][0], ff[i][1], ff[i][2]);
+  */
+  
+  domain_get_forces(particles);
 }
 
 FFT* pm_compute_density(Particles* const particles)
