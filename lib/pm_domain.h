@@ -22,7 +22,8 @@ class Domain {
   }
   Float xbuf_min, xbuf_max;
   int rank;
-  static const int packet_size= 1024/3*3; // number of positions (3*sizeof(Float))
+  static const int packet_size= 1024/3*3;
+  // number of positions (3*sizeof(Float))
  private:
   std::vector<Float> vbuf;
   std::vector<Index> vbuf_index;
@@ -32,11 +33,11 @@ struct Packet {
   int dest_rank, n, offset, offset_index;
 };
 
-void domain_init(FFT const * const fft, Particles const * const particles);
-void domain_send_positions(Particles* const particles);
-Pos const * domain_buffer_positions();
-Float3* domain_buffer_forces();
-int domain_buffer_np();
-void domain_get_forces(Particles* const particles);
+void pm_domain_init(FFT const * const fft, Particles const * const particles);
+void pm_domain_send_positions(Particles* const particles);
+Pos const * pm_domain_buffer_positions();
+Float3* pm_domain_buffer_forces();
+int pm_domain_buffer_np();
+void pm_domain_get_forces(Particles* const particles);
 
 #endif

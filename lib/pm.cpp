@@ -77,9 +77,9 @@ void pm_assign_cic_density(T const * const p, size_t np)
     Float z=p[i].x[2]*dx_inv;
 
 #ifdef CHECK
-    assert(0 <= x && x <= nc);
-    assert(0 <= y && y <= nc);
-    assert(0 <= z && z <= nc);
+    assert(0 <= x && x <= boxsize &&
+	   0 <= y && y <= boxsize &&
+	   0 <= z && z <= boxsize);
 #endif
     
     int ix0= (int) x; // without floor, -1 < X < 0 is mapped to iI=0
@@ -143,6 +143,13 @@ void force_at_particle_locations(T const * const p, const int np,
     Float x= p[i].x[0]*dx_inv;
     Float y= p[i].x[1]*dx_inv;
     Float z= p[i].x[2]*dx_inv;
+
+#ifdef CHECK
+    assert(0 <= x && x <= nc &&
+	   0 <= y && y < nc &&
+	   0 <= z && z < nc);
+#endif
+
 
     int ix0= (int) x;
     int iy0= (int) y;
@@ -225,8 +232,6 @@ void pm_init(const int nc_pm, const double pm_factor_,
 
   size_t size_density_k= nc*(fft_pm->local_nky)*nckz*sizeof(complex_t);
   delta_k= (complex_t*) mem_density->use_from_zero(size_density_k);
-
-  
 }
 
 void clear_density()
@@ -264,24 +269,24 @@ void pm_compute_force(Particles* const particles)
       particles->p, particles->np_local, axis, particles->force);
 
     force_at_particle_locations<Pos>(
-      domain_buffer_positions(), domain_buffer_np(), axis,
-      domain_buffer_forces());
+      pm_domain_buffer_positions(), pm_domain_buffer_np(), axis,
+      pm_domain_buffer_forces());
   }
 
-  domain_get_forces(particles);
+  pm_domain_get_forces(particles);
 }
 
 FFT* pm_compute_density(Particles* const particles)
 {
-  // Compute density
   msg_printf(msg_verbose, "PM density computation...\n");
 
-  domain_init(fft_pm, particles);
-  domain_send_positions(particles);
+  pm_domain_init(fft_pm, particles);
+  pm_domain_send_positions(particles);
 
   clear_density();
   pm_assign_cic_density<Particle>(particles->p, particles->np_local);
-  pm_assign_cic_density<Pos>(domain_buffer_positions(), domain_buffer_np());
+  pm_assign_cic_density<Pos>(pm_domain_buffer_positions(),
+			     pm_domain_buffer_np());
 
   return fft_pm;
 }
@@ -401,28 +406,6 @@ void compute_force_mesh(const int axis)
   fft_pm->mode= fft_mode_k;
   fft_pm->execute_inverse(); // f_k -> f(x)
 }
-
-// Does 3-linear interpolation
-// particles= Values of mesh at particle positions P.x
-
-/*
-void add_buffer_forces(Particles* const particles, const size_t np)
-{
-  // !!! Non-MPI version
-  Particle* const p= particles->p;
-  
-  const int np_local= particles->np_local;
-  Float3* const force= particles->force;
-
-  for(int j=np_local; j<np; j++) {
-    size_t i= p[j].id - 1;
-    assert(p[i].id == p[j].id);
-    force[i][0] += force[j][0];
-    force[i][1] += force[j][1];
-    force[i][2] += force[j][2];
-  }
-}
-*/
 
 FFT* pm_get_fft()
 {

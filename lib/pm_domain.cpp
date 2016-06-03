@@ -31,10 +31,12 @@ static Float3* packet_force;
 
 static inline void send(const int i, const Float x[], const Float boxsize);
 
+static void allocate_pm_buffer(const size_t np_allocated, const double np_total, const int local_nx);
+static void allocate_decomposition(const Float boxsize, const int local_ix0, const int local_nx);
 static void packets_clear();
 static void packets_flush();
 
-void domain_init(FFT const * const fft, Particles const * const particles)
+void pm_domain_init(FFT const * const fft, Particles const * const particles)
 {
   if(buf_pos)
     return;
@@ -46,28 +48,37 @@ void domain_init(FFT const * const fft, Particles const * const particles)
   x_left= boxsize/nc*(fft->local_ix0 + 1);
   x_right= boxsize/nc*(fft->local_ix0 + fft->local_nx - 1);
 
-  // Create MPI Windows
+  allocate_pm_buffer(particles->np_allocated, particles->np_total, fft->local_nx);
+
+  allocate_decomposition(boxsize, fft->local_ix0, fft->local_nx);
+}
+
+void allocate_pm_buffer(const size_t np_alloc, const double np_total, const int local_nx){
+  // Create MPI Windows and allocate memory for buffers
+
+  // nbuf: number of buffer particles in buf_pos, buf_force
   MPI_Win_create(&nbuf, sizeof(int), sizeof(int), MPI_INFO_NULL,
 		 MPI_COMM_WORLD, &win_nbuf);
 
-  int local_nx= comm_max<int>(fft->local_nx);
-  double np_total= (double) particles->np_total;
-  
-  nbuf_alloc= 10 + 1.25*(np_total + 5*sqrt(np_total))/nc*(local_nx + 2);
+  int local_nx_max= comm_max<int>(local_nx);
+  nbuf_alloc= 10 + 1.25*(np_total + 5*sqrt(np_total))/nc*(local_nx_max + 2);
 
   assert(nbuf_alloc > 0);
-  
+
+  // buf_pos: positions of particles from other MPI nodes
   MPI_Win_allocate(sizeof(Float)*3*nbuf_alloc,
 		   sizeof(Float), MPI_INFO_NULL, MPI_COMM_WORLD,
 		   &buf_pos, &win_pos);
 
+  // buf_force: force at buf_pos
   MPI_Win_allocate(sizeof(Float)*3*nbuf_alloc,
 		   sizeof(Float), MPI_INFO_NULL, MPI_COMM_WORLD,
 		   &buf_force, &win_force);
 
-  nbuf_index_alloc= particles->np_allocated;
+  nbuf_index_alloc= np_alloc;
   buf_index= (Index*) malloc(sizeof(Index)*nbuf_index_alloc);
-  
+
+  // print memory used
   const size_t size_buf= sizeof(Float)*3*nbuf_alloc;
   const size_t size_index_buf= sizeof(Index)*nbuf_index_alloc;
   
@@ -80,11 +91,13 @@ void domain_init(FFT const * const fft, Particles const * const particles)
   msg_printf(msg_verbose,
 	     "PM domain buffer %d MB allocated\n",
 	     mbytes(2*size_buf + size_index_buf));
+}
 
-
+void allocate_decomposition(const Float boxsize, const int local_ix0, const int local_nx)
+{
   // Create the decomposition, a vector of domains.
-  const Float xbuf[2]= {boxsize*(fft->local_ix0 - 1)/nc,
-			  boxsize*(fft->local_ix0 + fft->local_nx)/nc};
+  const Float xbuf[2]= {boxsize*(local_ix0 - 1)/nc,
+			boxsize*(local_ix0 + local_nx)/nc};
   const int n= comm_n_nodes();
 
   Float* const xbuf_all= (Float*) malloc(sizeof(Float)*2*n);
@@ -121,11 +134,9 @@ void domain_init(FFT const * const fft, Particles const * const particles)
 
   assert(Domain::packet_size % 3 == 0);
   packet_force= (Float3*) malloc(sizeof(Float)*Domain::packet_size);
-
-  //comm_barrier();
 }
 
-void domain_send_positions(Particles* const particles)
+void pm_domain_send_positions(Particles* const particles)
 {
   // Prerequisit: domain_init()
   assert(buf_pos);
@@ -157,7 +168,7 @@ void domain_send_positions(Particles* const particles)
   MPI_Win_fence(0, win_pos);
 }
 
-void domain_get_forces(Particles* const particles)
+void pm_domain_get_forces(Particles* const particles)
 {
   Float3* const f= particles->force;
   
@@ -195,17 +206,17 @@ void domain_get_forces(Particles* const particles)
   MPI_Win_fence(0, win_force);
 }
 
-Pos const * domain_buffer_positions()
+Pos const * pm_domain_buffer_positions()
 {
   return (Pos const *) buf_pos;
 }
 
-Float3* domain_buffer_forces()
+Float3* pm_domain_buffer_forces()
 {
   return (Float3*) buf_force;
 }
 
-int domain_buffer_np()
+int pm_domain_buffer_np()
 {
   return nbuf;
 }
