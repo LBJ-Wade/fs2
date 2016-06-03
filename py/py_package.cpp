@@ -16,6 +16,7 @@
 #include "py_write.h"
 #include "py_hdf5_io.h"
 #include "py_fft.h"
+#include "py_config.h"
 
 using namespace std;
 
@@ -54,6 +55,14 @@ static PyMethodDef methods[] = {
    "_particles_getitem(_particles, row, col)"},
   {"_particles_one", py_particles_one, METH_VARARGS,
    "_particles_one(_particles, x, y, z)"},
+  {"_particles_update_np_total", py_particles_update_np_total, METH_VARARGS,
+   "_particles_update_np_total(_particles)"},
+  {"_particles_id_asarray", py_particles_id_asarray, METH_VARARGS,
+   "_particles_id_asarray(_particles)"},
+  {"_particles_x_asarray", py_particles_x_asarray, METH_VARARGS,
+   "_particles_x_asarray(_particles)"},
+  {"_particles_force_asarray", py_particles_force_asarray, METH_VARARGS,
+   "_particles_force_asarray(_particles)"},
   
   {"_lpt", py_lpt, METH_VARARGS,
    "_lpt(nc, boxsize, a, _ps, rando_seed); setup 2LPT displacements"},
@@ -89,6 +98,9 @@ static PyMethodDef methods[] = {
    "_fft_set_test_data(_fft)"},
   {"_fft_fx_global_as_array", py_fft_fx_global_as_array, METH_VARARGS,
    "_fft_fx_global_as_array(_fft); return fft->fx as nc^3 np.array"},
+
+  {"config_precision", py_config_precision, METH_VARARGS,
+   "get 'single' or 'double'"},
   
   {NULL, NULL, 0, NULL}
 };

@@ -1,11 +1,14 @@
 # make
-#   to compile this python module
+#   compile this python module
 # make install
-#   to install it to a python module directory
+#   install the module to the python module directory
 
-all: build install
+default:
+	cd .. && $(MAKE) py
 
+py: build install
 
+CC   ?= mpicc
 SRC  := py_package.cpp py_msg.cpp
 
 build: $(SRC)

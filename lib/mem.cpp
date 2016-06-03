@@ -107,8 +107,8 @@ void* Mem::use_remaining(size_t size)
   }
   
   assert(size_using % sizeof(float) == 0);
-  float* p= (float*) buf;
-  size_t n= size_using / sizeof(float);
+  float* const p= (float*) buf;
+  const size_t n= size_using / sizeof(float);
 
   size_using += size;
   msg_printf(msg_verbose, "Using %lu of %lu in memory %s\n",

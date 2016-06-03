@@ -4,8 +4,9 @@
 // Generates random Gaussian pertubation using 2LPT
 //
 
-#include <math.h>
-#include <assert.h>
+#include <iostream>
+#include <cmath>
+#include <cassert>
 #include <gsl/gsl_rng.h>
 #include "msg.h"
 #include "mem.h"
@@ -16,13 +17,15 @@
 #include "fft.h"
 #include "lpt.h"
 
+using namespace std;
+
 static unsigned int* seedtable;
 static double boxsize;
 
 static size_t nc;
 static size_t local_nx;
 static size_t local_ix0;
-static float_t offset= 0.5f;
+static Float offset= 0.5f;
 
 FFT* fft_psi[3];    // Zeldovichi displacement Psi_i
 FFT* fft_psi_ij[6]; // derivative Psi_i,j= dPsi_i/dq_j
@@ -510,8 +513,8 @@ void lpt_compute_psi2_k(void)
   for(int i=0; i<6; i++) 
     fft_psi_ij[i]->execute_inverse();
 
-  float_t* psi_ij[6]; for(int i=0; i<6; i++) psi_ij[i]= fft_psi_ij[i]->fx;
-  float_t* const div_psi2= fft_div_psi2->fx; // == fft_psi_ij[3];
+  Float* psi_ij[6]; for(int i=0; i<6; i++) psi_ij[i]= fft_psi_ij[i]->fx;
+  Float* const div_psi2= fft_div_psi2->fx; // == fft_psi_ij[3];
 
   size_t nczr= 2*(nc/2 + 1);
   for(size_t ix=0; ix<local_nx; ix++) {
@@ -610,28 +613,28 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
     fft_psi2[i]->execute_inverse();
   }
 
-  float_t* psi[]=  {fft_psi[0]->fx, fft_psi[1]->fx, fft_psi[2]->fx};
-  float_t* psi2[]= {fft_psi2[0]->fx, fft_psi2[1]->fx, fft_psi2[2]->fx};
+  Float* psi[]=  {fft_psi[0]->fx, fft_psi[1]->fx, fft_psi[2]->fx};
+  Float* psi2[]= {fft_psi2[0]->fx, fft_psi2[1]->fx, fft_psi2[2]->fx};
   
 
   msg_printf(msg_verbose, "Setting particle grid and displacements\n");
 
   const size_t nczr= 2*(nc/2 + 1);
-  const float_t dx= boxsize/nc;
+  const Float dx= boxsize/nc;
   Particle* p= particles->p;
 
   double nmesh3_inv= 1.0/pow((double)nc, 3.0);
   uint64_t id= (uint64_t) local_ix0*nc*nc + 1;
 
-  const float_t D1= cosmology_D_growth(a);
-  const float_t D2= cosmology_D2_growth(a, D1);
+  const Float D1= cosmology_D_growth(a);
+  const Float D2= cosmology_D2_growth(a, D1);
 
   msg_printf(msg_verbose, "LPT growth factor for a=%e: D1= %e, D2= %e\n",
 	     a, D1, D2);
 
   double sum2= 0.0;
 
-  float_t x[3];
+  Float x[3];
   for(size_t ix=0; ix<local_nx; ix++) {
    x[0]= (local_ix0 + ix + offset)*dx;
    for(size_t iy=0; iy<nc; iy++) {
@@ -641,8 +644,8 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
 
      size_t index= (ix*nc + iy)*nczr + iz;
      for(int k=0; k<3; k++) {
-       float_t dis=  psi[k][index];
-       float_t dis2= nmesh3_inv*psi2[k][index];
+       Float dis=  psi[k][index];
+       Float dis2= nmesh3_inv*psi2[k][index];
        // psi2 had two inverse Fourier transofroms, giving additional nmesh3
        
        p->x[k]= x[k] + D1*dis + D2*dis2;
@@ -651,6 +654,8 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
                                     // multiply by cosmology_D2_growth() for a
        p->v[k]= 0;                  // velocity in comoving 2LPT
 
+       //cerr << "x= " << p->x[0] << endl;
+       
        sum2 += (D1*dis + D2*dis2)*(D1*dis + D2*dis2);
      }
      p->id= id++;
@@ -664,14 +669,17 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
   p= particles->p;
   
   msg_printf(msg_verbose, "2LPT displacements calculated.\n");
+
+  uint64_t nc64= nc;
   
-  particles->np_local= np_local; 
+  particles->np_local= np_local;
+  particles->np_total= nc64*nc64*nc64;
   particles->a_x= a;
   particles->a_v= a;
 
 }
 
-void lpt_set_offset(float_t offset_)
+void lpt_set_offset(Float offset_)
 {
   offset= offset_;
 }

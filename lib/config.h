@@ -5,29 +5,34 @@
 #ifndef CONFIG_H
 #define CONFIG_H 1
 
-#include <math.h>
+#include <cmath>
+#include <cfloat>
 #include <fftw3-mpi.h>
 #include <hdf5.h>
 
 #ifdef DOUBLEPRECISION
-typedef double float_t;
+typedef double Float;
 typedef fftw_complex complex_t;
-#define FLOAT_EPS 1.0e-15
+#define FLOAT_EPS DBL_EPSILON
 #define FLOAT_TYPE MPI_DOUBLE
 #define FLOAT_SAVE_TYPE H5T_IEEE_F64LE
 #define FLOAT_MEM_TYPE H5T_NATIVE_DOUBLE
+#define PRECISION "double"
 
 #else
 typedef fftwf_complex complex_t;
-typedef float float_t;
-#define FLOAT_EPS 1.0e-7f
-#define FLOAT_TYPE MPI_FLOAT
+typedef float Float;
+#define FLOAT_EPS       FLT_EPSILON
+#define FLOAT_TYPE      MPI_FLOAT
 #define FLOAT_SAVE_TYPE H5T_IEEE_F32LE
-#define FLOAT_MEM_TYPE H5T_NATIVE_FLOAT
+#define FLOAT_MEM_TYPE  H5T_NATIVE_FLOAT
+#define PRECISION "single"
 
 #endif
 
-typedef float_t float3[3];
+typedef Float Float3[3];
+typedef int   Index;     // local index
+
 
 #ifndef M_PI
 #define M_PI      3.14159265358979323846264338327950288

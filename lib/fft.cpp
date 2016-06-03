@@ -7,6 +7,7 @@
 #include <cassert>
 #include <fftw3-mpi.h>
 #include "config.h"
+#include "comm.h"
 #include "mem.h"
 #include "msg.h"
 #include "util.h"
@@ -14,12 +15,6 @@
 
 using namespace std;
 
-// FFTW() adds fftw_ or fftwf_ prefix depending on DOUBLEPRECISION
-#ifdef DOUBLEPRECISION
-#define FFTW(f) fftw_ ## f
-#else
-#define FFTW(f) fftwf_ ## f
-#endif
 
 
 FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
@@ -49,7 +44,7 @@ FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
   void* buf= mem->use_remaining(size);
   // Call mem_use_from_zero(mem, 0) before this to use mem from the beginning.
 
-  fx= (float_t*) buf; fk= (complex_t*) buf;
+  fx= (Float*) buf; fk= (complex_t*) buf;
 
   unsigned flag= 0;
   if(transposed) flag= FFTW_MPI_TRANSPOSED_OUT;
@@ -75,7 +70,11 @@ FFT::~FFT()
 
 void FFT::execute_forward()
 {
-  if(mode != 1) throw FFTError();
+  if(mode != fft_mode_x) {
+    msg_printf(msg_warn, "FFT %s mode is %d not %d for execute_forward\n",
+	       name, mode, fft_mode_x);
+    throw FFTError();
+  }
   FFTW(mpi_execute_dft_r2c)(forward_plan, fx, fk);
 }
 
@@ -115,7 +114,8 @@ size_t fft_local_nx(const int nc)
 
 void fft_finalise()
 {
-  //Fftw(mpi_cleanup)();
+  if(comm_status() == comm_parallel)
+    FFTW(mpi_cleanup)();
 }
 
 void* fft_malloc(size_t size)

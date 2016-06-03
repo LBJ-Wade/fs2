@@ -14,6 +14,7 @@ static int parallel_level= 0;
   // 2: MPI_THREAD_FUNNELED, only the thread that called MPI_Init_thread will
   //    make MPI calls.
 
+static CommStatus mpi_status= comm_uninitialised;
 //
 // Initialisation
 //
@@ -32,6 +33,8 @@ void comm_mpi_init(int* p_argc, char*** p_argv)
   parallel_level= 1;
 #endif
 
+  mpi_status= comm_parallel;
+  
   MPI_Comm_rank(MPI_COMM_WORLD, &this_node);
   MPI_Comm_size(MPI_COMM_WORLD, &n_nodes);
 }
@@ -47,6 +50,8 @@ void comm_mpi_msg()
 void comm_mpi_finalise()
 {
   msg_printf(msg_verbose, "Finishing program with MPI_Finalize()\n");
+  mpi_status= comm_finalised;
+
   MPI_Finalize();
 }
 
@@ -81,4 +86,8 @@ void comm_bcast_double(double* p_double, int count)
   MPI_Bcast(p_double, count, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
 
+CommStatus comm_status()
+{
+  return mpi_status;
+}
 

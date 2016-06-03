@@ -11,7 +11,7 @@ static inline size_t mbytes(size_t bytes)
 }
 
 
-static inline void periodic_wrapup_p(Particle& p, const float_t boxsize)
+static inline void periodic_wrapup_p(Particle& p, const Float boxsize)
 {
   for(int k=0; k<3; k++) {
     if(p.x[k] < 0) p.x[k] += boxsize;
@@ -23,7 +23,7 @@ static inline void periodic_wrapup_p(Particle& p, const float_t boxsize)
   }
 }
 
-static inline float_t periodic_wrapup(float_t x, const float_t boxsize)
+static inline Float periodic_wrapup(Float x, const Float boxsize)
 {
   if(x < 0) x += boxsize;
   if(x >= boxsize) x -= boxsize;
