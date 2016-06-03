@@ -56,8 +56,7 @@ void hdf5_write_particles(const char filename[],
   Particle const * const p= particles->p;
   const size_t np= particles->np_local;
 
-  if(comm_this_node() == 0)
-    write_header(file, particles);
+  write_header(file, particles);
 
   if(*var == 'i') {
     msg_printf(msg_verbose, "writing ids\n");
@@ -106,6 +105,8 @@ void hdf5_write_particles(const char filename[],
 
 void write_header(const hid_t loc, Particles const * const particles)
 {
+  if(comm_this_node() != 0)
+    return;
 
   const char group_name[]= "parameters";
   const hid_t group= H5Gcreate(loc, group_name,

@@ -142,6 +142,7 @@ void allocate_decomposition(const Float boxsize, const int local_ix0,
 
   assert(Domain::packet_size % 3 == 0);
   packet_force= (Float3*) malloc(sizeof(Float)*Domain::packet_size);
+  assert(packet_force);
 }
 
 void pm_domain_send_positions(Particles* const particles)

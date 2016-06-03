@@ -137,6 +137,11 @@ PyObject* py_fft_fx_global_as_array(PyObject* self, PyObject* args)
 
   const int n= comm_n_nodes();
   Float* const sendbuf= (Float*) malloc(sizeof(Float)*nsend);
+  if(sendbuf == 0) {
+    PyErr_SetString(PyExc_MemoryError,
+		    "Unable to allocate memory for nrecv");
+    return NULL;
+  }
 
   size_t i=0;
   for(size_t ix=0; ix<nx; ++ix) 
@@ -198,8 +203,4 @@ PyObject* py_fft_fx_as_array(FFT* const fft)
 		     fft->fx, 0, 0, 0);
 }
 */
-
-// How can I free a memory for PyArray? Give PyObject??
-// ToDo: gather nc^3 grid to node 0
-// return a PyArray with descructor?
 
