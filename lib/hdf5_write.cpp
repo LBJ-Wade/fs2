@@ -45,7 +45,6 @@ void hdf5_write_particles(const char filename[],
   //hid_t file= H5Fopen(filename, H5F_ACC_RDWR, plist);
   //if(file < 0) {
   hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
-  //hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   if(file < 0) {
     msg_printf(msg_error, "Error: unable to create HDF5 file, %s\n", filename);
     throw IOError();
@@ -56,7 +55,8 @@ void hdf5_write_particles(const char filename[],
   Particle const * const p= particles->p;
   const size_t np= particles->np_local;
 
-  write_header(file, particles);
+  msg_printf(msg_verbose, "writing header\n");
+  //write_header(file, particles);
 
   if(*var == 'i') {
     msg_printf(msg_verbose, "writing ids\n");
