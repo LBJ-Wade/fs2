@@ -1,6 +1,7 @@
 import fs
 import cola_setup
 
+
 particles = cola_setup.particles()
 
 filename = 'cola_%s.h5' % fs.config_precision()
