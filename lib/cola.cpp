@@ -12,6 +12,7 @@
 #include "msg.h"
 #include "cola.h"
 #include "cosmology.h"
+#include "timer.h"
 
 static const double nLPT= -2.5f;
 
@@ -19,6 +20,8 @@ double Sq(double ai, double af, double aRef);
 
 void cola_kick(Particles* const particles, const double avel1)
 {
+  timer("cola-kick");
+  
   const double ai=  particles->a_v;  // t - 0.5*dt
   const double a=   particles->a_x;  // t
   const double af=  avel1;           // t + 0.5*dt
@@ -67,6 +70,8 @@ void cola_kick(Particles* const particles, const double avel1)
 
 void cola_drift(Particles* const particles, const double apos1)
 {
+  timer("cola-drift");
+  
   const double ai= particles->a_x;
   const double af= apos1;
   
@@ -129,4 +134,3 @@ double Sq(double ai, double af, double av) {
      
   return result/pow(av, nLPT);
 }
-

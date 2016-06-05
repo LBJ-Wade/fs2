@@ -5,6 +5,7 @@
 #include <cassert>
 #include "msg.h"
 #include "comm.h"
+#include "timer.h"
 
 static int this_node= -1;
 static int n_nodes= 0;
@@ -37,6 +38,8 @@ void comm_mpi_init(int* p_argc, char*** p_argv)
   
   MPI_Comm_rank(MPI_COMM_WORLD, &this_node);
   MPI_Comm_size(MPI_COMM_WORLD, &n_nodes);
+
+  timer("start");
 }
 
 void comm_mpi_msg()

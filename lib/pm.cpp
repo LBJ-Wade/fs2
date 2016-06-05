@@ -14,6 +14,7 @@
 #include "error.h"
 #include "pm.h"
 #include "pm_domain.h"
+#include "timer.h"
 
 static double pm_factor;
 static size_t nc, ncz;
@@ -250,6 +251,7 @@ void clear_density()
 
 void pm_compute_force(Particles* const particles)
 {
+  timer("pm");
   // Compute density mesh, force mesh, forces on particles
   pm_compute_density(particles);
 
@@ -258,9 +260,10 @@ void pm_compute_force(Particles* const particles)
 #endif
 
   msg_printf(msg_verbose, "PM force computation...\n");
-  
+  timer("pm-delta-k");
   compute_delta_k();
 
+  timer("pm-force");
   for(int axis=0; axis<3; axis++) {
     // delta(k) -> f(x_i)
     compute_force_mesh(axis);
@@ -273,6 +276,7 @@ void pm_compute_force(Particles* const particles)
       pm_domain_buffer_forces());
   }
 
+  timer("pm-force-parallel");
   pm_domain_get_forces(particles);
 }
 
@@ -281,13 +285,16 @@ FFT* pm_compute_density(Particles* const particles)
   msg_printf(msg_verbose, "PM density computation...\n");
 
   pm_domain_init(fft_pm, particles);
+  timer("pm-send-particles");
   pm_domain_send_positions(particles);
 
+  timer("pm-cic");
   clear_density();
   pm_assign_cic_density<Particle>(particles->p, particles->np_local);
   pm_assign_cic_density<Pos>(pm_domain_buffer_positions(),
 			     pm_domain_buffer_np());
 
+  
   return fft_pm;
 }
 

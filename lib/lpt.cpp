@@ -16,6 +16,7 @@
 #include "particle.h"
 #include "fft.h"
 #include "lpt.h"
+#include "timer.h"
 
 using namespace std;
 
@@ -592,6 +593,7 @@ void lpt_compute_psi2_k(void)
 void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
 			   const double a, Particles* particles)
 {
+  timer("lpt");
   msg_printf(msg_verbose, "Computing 2LPT\n");
   assert(particles);
   size_t np_local= local_nx*nc*nc;

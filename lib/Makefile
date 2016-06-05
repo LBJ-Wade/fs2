@@ -13,6 +13,7 @@ lib: $(LIB)
 # Compile options
 #
 
+OPT += -DTIMELOG
 OPT += -DCHECK  # slow assersions (turn on if you encounter a problem)
 #OPT += -DNDEBUG # drop assertion (not recomended)
 
@@ -45,6 +46,7 @@ OBJS := comm.o msg.o config.o fft.o mem.o particle.o
 OBJS += power.o cosmology.o lpt.o pm.o cola.o leapfrog.o
 OBJS += gadget_file.o hdf5_write.o
 OBJS += pm_domain.o
+OBJS += timer.o
 
 #
 # Linking libraries
