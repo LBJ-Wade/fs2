@@ -3,14 +3,14 @@
 
 PyObject* py_cosmology_init(PyObject* self, PyObject* args)
 {
-  // _cosmology_init(omega_m0, h)
-  double omega_m, h;
+  // _cosmology_init(omega_m0)
+  double omega_m;
 
-  if(!PyArg_ParseTuple(args, "dd", &omega_m, &h)) {
+  if(!PyArg_ParseTuple(args, "d", &omega_m)) {
     return NULL;
   }
 
-  cosmology_init(omega_m, h);
+  cosmology_init(omega_m);
 
   Py_RETURN_NONE;
 }

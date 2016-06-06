@@ -9,18 +9,22 @@ fs documentation
 Python interface:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    py_lpt
+   py_cola
    py_particles
    py_pm
    py_msg
    py_power
+   py_fft
+   py_comm
+   py_cosmology
 
 C++ Library:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    lib_particle
    lib_comm

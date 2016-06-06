@@ -11,16 +11,16 @@
 #include "const.h"
 #include "cosmology.h"
 
-static double omega_m0, h;
+static double omega_m0;
 static double growth_normalisation;
 
 static double growth_integrand(double a, void* param);
 static double growth_unnormalised(const double a);
 
-void cosmology_init(const double omega_m0_, const double h_)
+void cosmology_init(const double omega_m0_)
 {
   omega_m0= omega_m0_;
-  h=h_;
+
   growth_normalisation= 1.0/growth_unnormalised(1.0); // D_growth=1 at a=1
 }
 
@@ -148,11 +148,6 @@ double growth_unnormalised(const double a)
 double cosmology_omega_m()
 {
   return omega_m0;
-}
-
-double cosmology_h()
-{
-  return h;
 }
 
 double cosmology_rho_m()

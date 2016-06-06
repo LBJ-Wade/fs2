@@ -14,9 +14,8 @@
 
 void gadget_file_write_particles(const char filebase[],
 				 Particles const * const particles,
-				 int use_long_id)
+				 int use_long_id, const double h)
 {
-  const double h= cosmology_h();
   char filename[256];
   if(comm_n_nodes() == 1) {
     sprintf(filename, "%s", filebase);

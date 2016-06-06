@@ -26,6 +26,6 @@ typedef struct {
 
 void gadget_file_write_particles(const char filebase[],
 				 Particles const * const particles,
-				 int use_long_id);
+				 const int use_long_id, const double h=1.0);
 
 #endif
