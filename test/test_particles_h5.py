@@ -31,6 +31,8 @@ def assert_almost_equal(x, y):
 
 if fs.comm_this_node() == 0:
     file = h5py.File(filename, 'r')
+    file_nc = file['parameters/nc'][()]
+    file_omegam = file['parameters/omega_m'][()]
     file_x = file['x'][:]
     file_id = file['id'][:]
     file.close()
@@ -41,6 +43,13 @@ if fs.comm_this_node() == 0:
 
     print('data shape OK')
 
+    #
+    # Test parameters
+    #
+    assert(file_nc == nc)
+    assert(file_omegam == omega_m)
+    print('parameters OK')
+    
     #
     # Test x_file
     #
