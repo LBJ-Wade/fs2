@@ -3,15 +3,27 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to fs's documentation!
+fs documentation
 ==============================
 
-Contents:
+Python interface:
 
 .. toctree::
    :maxdepth: 2
 
+   py_lpt
+   py_particles
+   py_pm
+   py_msg
+   py_power
 
+C++ Library:
+
+.. toctree::
+   :maxdepth: 2
+
+   lib_particle
+   lib_comm
 
 Indices and tables
 ==================

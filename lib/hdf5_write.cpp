@@ -57,8 +57,8 @@ void hdf5_write_particles(const char filename[],
   Particle const * const p= particles->p;
   const size_t np= particles->np_local;
 
-  msg_printf(msg_verbose, "writing header\n");
-  write_header(file, particles);
+  //msg_printf(msg_verbose, "writing header\n");
+  //write_header(file, particles);
 
   if(*var == 'i') {
     msg_printf(msg_verbose, "writing ids\n");

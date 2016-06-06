@@ -1,6 +1,6 @@
-TESTS :=
+TESTS := test_fft test_pm_cic test_pm_density test_particles_h5 
 TESTS += test_pm_force
-TESTS += test_particles_h5 test_pm_density test_pm_cic test_fft 
+TESTS += 
 
 
 # $(basename names...)

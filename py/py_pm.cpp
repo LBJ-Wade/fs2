@@ -1,6 +1,7 @@
 #include "fft.h"
 #include "error.h"
 #include "pm.h"
+#include "pm_domain.h"
 #include "py_assert.h"
 #include "py_fft.h"
 
@@ -79,3 +80,26 @@ PyObject* py_pm_compute_density(PyObject* self, PyObject* args)
   return PyCapsule_New(fft, "_FFT", NULL);
 }
 
+PyObject* py_pm_domain_init(PyObject* self, PyObject* args)
+{
+  // _pm_compute_density(_particles)
+  if(!pm_initialised) {
+    PyErr_SetString(PyExc_RuntimeError, "PM not initialised; call pm_init().");
+    return NULL;
+  }
+  
+  PyObject* py_particles;
+  
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles* const particles=
+    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+  
+}
+  
+PyObject* py_pm_send_positions(PyObject* self, PyObject* args)
+{
+
+}

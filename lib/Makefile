@@ -79,16 +79,28 @@ libfs.dylib: $(OBJS)
 $(OBJS): Makefile
 
 # g++ -MM -MG *.cpp
-comm.o: comm.cpp
+cola.o: cola.cpp particle.h config.h msg.h cola.h cosmology.h timer.h
+comm.o: comm.cpp msg.h comm.h error.h timer.h
 config.o: config.cpp config.h msg.h
-cosmology.o: cosmology.cpp msg.h cosmology.h
-fft.o: fft.cpp config.h mem.h msg.h util.h particle.h fft.h
+cosmology.o: cosmology.cpp msg.h const.h cosmology.h
+fft.o: fft.cpp config.h comm.h msg.h error.h mem.h util.h particle.h \
+  fft.h
+gadget_file.o: gadget_file.cpp msg.h comm.h error.h cosmology.h \
+  gadget_file.h particle.h config.h
+hdf5_write.o: hdf5_write.cpp config.h msg.h comm.h error.h cosmology.h \
+  hdf5_io.h particle.h
+leapfrog.o: leapfrog.cpp particle.h config.h msg.h leapfrog.h cosmology.h
 lpt.o: lpt.cpp msg.h mem.h config.h cosmology.h power.h particle.h fft.h \
-  lpt.h
-mem.o: mem.cpp config.h msg.h util.h particle.h mem.h fft.h
-msg.o: msg.cpp comm.h msg.h
+  lpt.h timer.h
+mem.o: mem.cpp config.h msg.h error.h util.h particle.h mem.h fft.h
+msg.o: msg.cpp comm.h msg.h error.h
 particle.o: particle.cpp msg.h util.h particle.h config.h fft.h mem.h
-power.o: power.cpp comm.h msg.h power.h
+pm.o: pm.cpp msg.h mem.h config.h cosmology.h comm.h error.h particle.h \
+  fft.h util.h pm.h pm_domain.h timer.h
+pm_domain.o: pm_domain.cpp msg.h comm.h error.h util.h particle.h \
+  config.h pm.h fft.h mem.h pm_domain.h
+power.o: power.cpp comm.h msg.h error.h power.h
+timer.o: timer.cpp
 
 
 .PHONY: clean run dependence

@@ -20,7 +20,7 @@ static double pm_factor;
 static size_t nc, ncz;
 static Float boxsize;
 
-static FFT* fft_pm;
+static FFT* fft_pm= 0;
 static complex_t* delta_k;
 
 static inline void grid_assign(Float * const d, 
@@ -284,7 +284,7 @@ FFT* pm_compute_density(Particles* const particles)
 {
   msg_printf(msg_verbose, "PM density computation...\n");
 
-  pm_domain_init(fft_pm, particles);
+  pm_domain_init(particles);
   timer("pm-send-particles");
   pm_domain_send_positions(particles);
 

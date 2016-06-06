@@ -120,7 +120,6 @@ static struct PyModuleDef module = {
 
 PyMODINIT_FUNC
 PyInit__fs(void) {
-  //py_power_module_init();
   py_particles_module_init();
   py_fft_module_init();
   

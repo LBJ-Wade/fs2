@@ -136,3 +136,4 @@ PyObject* py_power_i(PyObject* self, PyObject* args)
 
   return Py_BuildValue("dd", exp(ps->log_k[i]), exp(ps->log_P[i]));
 }
+

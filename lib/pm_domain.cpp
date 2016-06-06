@@ -12,6 +12,7 @@
 #include "msg.h"
 #include "comm.h"
 #include "util.h"
+#include "pm.h"
 #include "pm_domain.h"
 #include "error.h"
 
@@ -38,10 +39,19 @@ static void allocate_decomposition(const Float boxsize, const int local_ix0,
 static void packets_clear();
 static void packets_flush();
 
-void pm_domain_init(FFT const * const fft, Particles const * const particles)
+int Domain::packet_size= 1024/3*3;
+
+void pm_domain_init(Particles const * const particles)
 {
   if(buf_pos)
-    return;
+    return;  // already initialised
+
+  FFT const * const fft = pm_get_fft();
+  if(fft == 0) {
+    msg_printf(msg_error,
+	       "Error: pm_init must be called before pm_domain_init\n");
+    throw RuntimeError();
+  }
 
   // Initialise static variables  
   nc= fft->nc;
