@@ -15,7 +15,7 @@ ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 # Set 2LPT displacements at scale factor a
 particles = fs.lpt(nc, boxsize, a, ps, seed)
 
-fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize)
+fs.pm.init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 
 filename = 'particles_%d.h5' % fs.comm_n_nodes()
 

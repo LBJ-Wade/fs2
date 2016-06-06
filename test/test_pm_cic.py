@@ -16,7 +16,7 @@ def one_particle_test(x, y, z):
 
     particles.update_np_total()
 
-    fft = fs.pm_compute_density(particles)
+    fft = fs.pm.compute_density(particles)
     a = fft.asarray()
 
     # Test Total = 1
@@ -35,7 +35,7 @@ boxsize = 64
 fs.set_loglevel(3)
 
 np_buf = 10
-fs.pm_init(nc, 1, boxsize)
+fs.pm.init(nc, 1, boxsize)
 
 one_particle_test(0, 2, 2)
 one_particle_test(1, 2, 2)
