@@ -2,18 +2,17 @@ import fs._fs as c
 from fs.particles import Particles
 from fs.fft import FFT
 
+
 def cosmology_init(omega_m, h=1):
     c._cosmology_init(omega_m, h)
-
-#def lpt(nc, boxsize, a, ps, seed):
-#    return Particles(_particles=c._lpt(nc, boxsize, a, seed, ps._ps))
 
 
 def pm_compute_force(particles):
     c._pm_compute_force(particles._particles)
 
+
 def pm_compute_density(particles):
-    _fft= c._pm_compute_density(particles._particles)
+    _fft = c._pm_compute_density(particles._particles)
     return FFT(_fft)
 
 

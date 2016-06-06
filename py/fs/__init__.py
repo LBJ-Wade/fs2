@@ -1,4 +1,3 @@
-#from fs._fs import set_loglevel
 from fs.msg import set_loglevel
 from fs._fs import comm_mpi_finalise, comm_this_node, comm_n_nodes
 from fs._fs import pm_init, config_precision, timer_save

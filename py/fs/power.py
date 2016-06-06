@@ -11,13 +11,16 @@ import fs._fs as c
 
 class PowerSpectrum:
     """ps = PowerSpectrum(filename)
-    Read tabulated text file: k P(k)
+    Read tabulated text file, k P(k), compatible with CAMB matterpower.dat.
+
+    Args:
+        filename (str): Filename of tabulated power spectrum k P(k).
+
+    Raises:
+        IOError: If unable to read the file.
     """
+
     def __init__(self, filename):
-        """
-        Args:
-            filename (str): Filename of tabulated power spectrum k P(k).
-        """
         self._ps = c._power_alloc(filename)
 
     def __len__(self):
@@ -30,6 +33,14 @@ class PowerSpectrum:
     def __getitem__(self, i):
         """
         ps[i]
-        Return ith pair as a tuple (k, P).
+
+        Args:
+            i (int): index of the data
+
+        Returns:
+            ith pair as a tuple (k, P).
+
+        Raises:
+            IndexError: If i is out of range
         """
         return c._power_i(self._ps, i)

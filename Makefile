@@ -1,6 +1,6 @@
 DIRS = lib py
 
-.PHONY: lib py clean
+.PHONY: lib py test clean
 all: $(DIRS)
 
 #
@@ -22,6 +22,9 @@ lib:
 
 py:
 	cd py && $(MAKE) py
+
+test:
+	cd test && $(MAKE)
 
 clean:
 	for dir in $(DIRS); do (cd $$dir && $(MAKE) clean); done

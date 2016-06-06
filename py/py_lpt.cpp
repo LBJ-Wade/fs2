@@ -35,4 +35,3 @@ PyObject* py_lpt(PyObject* self, PyObject* args)
   
   return PyCapsule_New(particles, "_Particles", py_particles_free);  
 }
-

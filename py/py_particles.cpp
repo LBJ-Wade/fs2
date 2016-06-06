@@ -364,3 +364,15 @@ PyObject* py_particles_force_asarray(PyObject* self, PyObject* args)
 }
 
 
+PyObject* py_particles_np_total(PyObject* self, PyObject* args)
+{
+  PyObject* py_particles;
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles const * const particles=
+    (Particles const *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  return Py_BuildValue("k", (unsigned long) particles->np_total);
+}
