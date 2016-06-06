@@ -12,7 +12,7 @@ print(np.get_include())
 setup(name='fs',
       version='0.0.1',
       author='Jun Koda',
-      py_modules=['fs.power', 'fs.particles', 'fs.functions', 'fs.lpt',
+      py_modules=['fs.power', 'fs.particles', 'fs.functions', 'fs.lpt', 'fs.pm',
       ],
       ext_modules=[
           Extension('fs._fs',

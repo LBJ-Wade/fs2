@@ -1,14 +1,14 @@
 import fs._fs as c
 
 
-class Particles:
+class Particles(object):
     """
     A set of particles.
     Use lpt() to create a set of particles.
 
     Attributes:
         np_total [unsigned long]: total number of particles
-        id (np.array [uint64]): all particle IDs for node 0, None for node > 0.
+        id (np.array [uint64]): all particle IDs for node 0, `None` for node > 0.
         x (np.array [float]):  all particle positions for node 0
         force (np.array [float]):  all particle velocities for node 0
     """
@@ -19,38 +19,46 @@ class Particles:
         else:
             self._particles = c._particles_alloc(nc, boxsize)
 
-    def __getitem__(self, i):
+    def __getitem__(self, index):
         """
         a = particles.__getitem__(i:j:k) <==> particles[i:j:k]
-        Returns local particles as a np.array.
+
+        Returns:
+            local particles as a np.array.
+
+        * particles[i]:     ith particles.
+        * particles[i:j]:   particles with indeces [i, j).
+        * particles[i:j:k]: particles with indeces i + k*n smaller than j.
+
 
         Args:
-           particles[i]:     ith particles.
-           particles[i:j]:   particles with indeces [i, j).
-           particles[i:j:k]: particles with indeces i + k*n smaller than j.
+           index: an integer or a slice i:j:k
 
         Returns:
             particle data in internal units as np.array.
-            a[0:3]:  positions.
-            a[3:6]:  velocities (internal unit).
-            a[6:9]:  1st-order LPT displacements.
-            a[9:12]: 2nd-order LPT displacements.
+
+            * a[0:3]:  positions.
+            * a[3:6]:  velocities (internal unit).
+            * a[6:9]:  1st-order LPT displacements.
+            * a[9:12]: 2nd-order LPT displacements.
         """
         return c._particles_getitem(self._particles, i)
 
     def __len__(self):
         """
-        particles.__len__() <==> len(particles)
+        len(particles)
+
         Returns:
-            Number of particles in this MPI node.
+            local number of particles in this MPI node.
         """
         return c._particles_len(self._particles)
 
     def set_one(self, x, y, z):
         """
         Set one particle at x y z.
+
         Args:
-            x y z (float): positions
+            float x y z: positions
         """
         c._particles_one(self._particles, x, y, z)
 
@@ -73,6 +81,7 @@ class Particles:
         Args:
             filename (str): Output file name.
             var (str): Output variables, a subset of 'ixvf12' in this order.
+
                 * i: ID
                 * x: positions
                 * v: velocities

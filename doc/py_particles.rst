@@ -2,8 +2,7 @@
 Particles
 #########
 
-.. py:class:: Particles
-
-   abc
-
-.. code-block:: python
+.. automodule:: fs.particles
+    :members:
+    :undoc-members:
+    :show-inheritance:

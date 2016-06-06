@@ -3,18 +3,8 @@ from fs.particles import Particles
 from fs.fft import FFT
 
 
-def cosmology_init(omega_m, h=1):
-    c._cosmology_init(omega_m, h)
-
-
-def pm_compute_force(particles):
-    c._pm_compute_force(particles._particles)
-
-
-def pm_compute_density(particles):
-    _fft = c._pm_compute_density(particles._particles)
-    return FFT(_fft)
-
+def cosmology_init(omega_m):
+    c._cosmology_init(omega_m)
 
 def cola_kick(particles, a_vel):
     c._cola_kick(particles._particles, a_vel)

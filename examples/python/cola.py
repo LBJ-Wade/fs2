@@ -21,7 +21,7 @@ for i in range(nstep):
     a_vel = a_init + (a_final - a_init)/nstep*(i + 0.5)
     fs.pm_compute_force(particles)
     fs.cola_kick(particles, a_vel)
-    
+
     a_pos = a_init + (a_final - a_init)/nstep*(i + 1.0)
     fs.cola_drift(particles, a_pos)
 

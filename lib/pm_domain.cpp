@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <deque>
+#include <algorithm>
 #include <cstdlib>
 #include <cassert>
 #include <mpi.h>
@@ -15,6 +16,7 @@
 #include "pm.h"
 #include "pm_domain.h"
 #include "error.h"
+#include "hdf5_io.h"
 
 using namespace std;
 
@@ -324,4 +326,25 @@ void Domain::send_packet()
   
   vbuf.clear();
   vbuf_index.clear();
+}
+
+void pm_domain_write_packet_info(const char filename[])
+{
+  const int src_rank= comm_this_node();
+  const int npackets= packets_sent.size();
+
+  int* const dat= (int*) malloc(sizeof(int)*npackets*3); assert(dat);
+  
+
+  int i=0;
+  for(deque<Packet>::const_iterator p= packets_sent.begin();
+      p != packets_sent.end(); ++p) {
+    dat[3*i]= src_rank;
+    dat[3*i + 1]= p->dest_rank;
+    dat[3*i + 2]= p->n;
+    ++i;
+  }
+
+  hdf5_write_packet_data(filename, dat, npackets);
+  free(dat);
 }

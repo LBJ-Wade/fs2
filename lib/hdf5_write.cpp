@@ -130,6 +130,24 @@ void write_header(const hid_t loc, Particles const * const particles)
   assert(status >= 0);
 }
 
+void hdf5_write_packet_data(const char filename[], const int data[], const int n)
+{
+  // Parallel file access
+  hid_t plist= H5Pcreate(H5P_FILE_ACCESS);
+  H5Pset_fapl_mpio(plist, MPI_COMM_WORLD, MPI_INFO_NULL);
+
+  hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
+  if(file < 0) {
+    msg_printf(msg_error, "Error: unable to create HDF5 file, %s\n", filename);
+    throw IOError();
+  }
+
+  write_data_table(file, "packet", n, 3, 3, H5T_NATIVE_INT, H5T_STD_I32LE, data);
+
+  H5Pclose(plist);
+  H5Fclose(file);
+}
+		       
 //
 // Utilities
 //
@@ -190,6 +208,11 @@ void write_data_table(hid_t loc, const char name[],
   offset_ll -= nrow;
 
   long long nrow_total= comm_sum<long long>(nrow);
+  if(nrow_total == 0) {
+    msg_printf(msg_warn, "Warning: zero data given to write_data_table\n"); 
+    return;
+  }
+
 
   // Data structure in memory
   const hsize_t data_size_mem= nrow*stride;

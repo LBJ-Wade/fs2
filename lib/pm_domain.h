@@ -42,5 +42,6 @@ Pos const * pm_domain_buffer_positions();
 Float3* pm_domain_buffer_forces();
 int pm_domain_buffer_np();
 void pm_domain_get_forces(Particles* const particles);
+void pm_domain_write_packet_info(const char filename[]);
 
 #endif
