@@ -16,7 +16,6 @@
 using namespace std;
 
 
-
 FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
   nc(nc_), mode(fft_mode_unknown)
 {
@@ -64,14 +63,18 @@ FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
 
 FFT::~FFT()
 {
-  //FFTW(destroy_plan)(forward_plan);
-  //FFTW(destroy_plan)(inverse_plan);
+  if(comm_status() == comm_parallel) {
+    FFTW(destroy_plan)(forward_plan);
+    FFTW(destroy_plan)(inverse_plan);
+  }
 }
+
 
 void FFT::execute_forward()
 {
   if(mode != fft_mode_x) {
-    msg_printf(msg_warn, "FFT %s mode is %d not %d for execute_forward\n",
+    msg_printf(msg_warn,
+	       "Warning: FFT %s mode is %d not %d for execute_forward\n",
 	       name, mode, fft_mode_x);
     throw FFTError();
   }
@@ -80,7 +83,12 @@ void FFT::execute_forward()
 
 void FFT::execute_inverse()
 {
-  if(mode != fft_mode_k) throw FFTError();
+  if(mode != fft_mode_k) {
+    msg_printf(msg_warn,
+	       "Warning: FFT %s mode is %d not %d for execute_inverse\n",
+	       name, mode, fft_mode_x);
+    throw FFTError();
+  }
   FFTW(mpi_execute_dft_c2r)(inverse_plan, fk, fx);
 }
 
@@ -97,7 +105,6 @@ size_t fft_mem_size(const int nc, const int transposed)
   else
     n= FFTW(mpi_local_size_3d)(nc, nc, nc/2+1, MPI_COMM_WORLD,
 				      &local_nx, &local_ix0);
-
 
   return size_align(sizeof(complex_t)*n);
 }
@@ -123,7 +130,7 @@ void* fft_malloc(size_t size)
   return FFTW(malloc)(size);
 }
 
-// Quote
+// Quotes
 // "it is probably better for you to simply create multiple plans
 //  (creating a new plan is quick once one exists for a given size)
 // -- FFTW3 Manual for version 3.3.3 section 4.6

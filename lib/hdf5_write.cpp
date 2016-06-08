@@ -12,16 +12,17 @@
 
 using namespace std;
 
-static void write_header(const hid_t loc, Particles const * const particles);
+namespace {
+  void write_header(const hid_t loc, Particles const * const particles);
 
-static void write_data_double(hid_t loc, const char name[], const double val);
-static void write_data_int(hid_t loc, const char name[], const int val);
-static void write_data_table(hid_t loc, const char name[], 
-			     const hsize_t nrow, const hsize_t ncol,
-			     const hsize_t stride,
-			     const hid_t mem_type, const hid_t save_type,
-			     void const * const data);
-
+  void write_data_double(hid_t loc, const char name[], const double val);
+  void write_data_int(hid_t loc, const char name[], const int val);
+  void write_data_table(hid_t loc, const char name[], 
+			const hsize_t nrow, const hsize_t ncol,
+			const hsize_t stride,
+			const hid_t mem_type, const hid_t save_type,
+			void const * const data);
+}
 
 void hdf5_write_particles(const char filename[],
 			  Particles const * const particles,
@@ -103,6 +104,26 @@ void hdf5_write_particles(const char filename[],
 }
 
 
+void hdf5_write_packet_data(const char filename[], const int data[], const int n)
+{
+  // Parallel file access
+  hid_t plist= H5Pcreate(H5P_FILE_ACCESS);
+  H5Pset_fapl_mpio(plist, MPI_COMM_WORLD, MPI_INFO_NULL);
+
+  hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
+  if(file < 0) {
+    msg_printf(msg_error, "Error: unable to create HDF5 file, %s\n", filename);
+    throw IOError();
+  }
+
+  write_data_table(file, "packet", n, 3, 3, H5T_NATIVE_INT, H5T_STD_I32LE, data);
+
+  H5Pclose(plist);
+  H5Fclose(file);
+}
+
+
+namespace {
 void write_header(const hid_t loc, Particles const * const particles)
 {
   //hid_t plist = H5Pcreate(H5P_DATASET_XFER);
@@ -130,27 +151,7 @@ void write_header(const hid_t loc, Particles const * const particles)
   assert(status >= 0);
 }
 
-void hdf5_write_packet_data(const char filename[], const int data[], const int n)
-{
-  // Parallel file access
-  hid_t plist= H5Pcreate(H5P_FILE_ACCESS);
-  H5Pset_fapl_mpio(plist, MPI_COMM_WORLD, MPI_INFO_NULL);
 
-  hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
-  if(file < 0) {
-    msg_printf(msg_error, "Error: unable to create HDF5 file, %s\n", filename);
-    throw IOError();
-  }
-
-  write_data_table(file, "packet", n, 3, 3, H5T_NATIVE_INT, H5T_STD_I32LE, data);
-
-  H5Pclose(plist);
-  H5Fclose(file);
-}
-		       
-//
-// Utilities
-//
 
 void write_data_int(hid_t loc, const char name[], const int val)
 {
@@ -226,11 +227,11 @@ void write_data_table(hid_t loc, const char name[],
 
   // Data structure in file
   const hsize_t dim= ncol == 1 ? 1 : 2;
-  const hsize_t data_size_file[]= {nrow_total, ncol};
+  const hsize_t data_size_file[]= {hsize_t(nrow_total), ncol};
   hid_t filespace= H5Screate_simple(dim, data_size_file, NULL);
 
   // local subset of data for this node
-  const hsize_t offset_file[]= {offset_ll, 0};
+  const hsize_t offset_file[]= {hsize_t(offset_ll), 0};
   const hsize_t count_file[]= {nrow, ncol};
 
   H5Sselect_hyperslab(filespace, H5S_SELECT_SET,
@@ -255,3 +256,4 @@ void write_data_table(hid_t loc, const char name[],
   assert(status >= 0);
 }
 
+}

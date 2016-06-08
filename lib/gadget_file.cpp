@@ -78,7 +78,9 @@ void gadget_file_write_particles(const char filebase[],
 
   fwrite(&blklen, sizeof(blklen), 1, fp);
   for(int i=0; i<np; i++) {
-    float vout[]= {vfac*p[i].v[0], vfac*p[i].v[1], vfac*p[i].v[2]};
+    float vout[]= {float(vfac*p[i].v[0]),
+		   float(vfac*p[i].v[1]),
+		   float(vfac*p[i].v[2])};
     fwrite(vout, sizeof(float), 3, fp);
   }
   fwrite(&blklen, sizeof(blklen), 1, fp);

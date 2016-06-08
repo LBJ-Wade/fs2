@@ -18,9 +18,12 @@ void timer_write_h5(const char filename[]) {}
 
 using namespace std;
 
-static vector<double> vtime;
-static vector<string> vname;
-static double t0= 0.0;
+
+namespace {
+  vector<double> vtime;
+  vector<string> vname;
+  double t0= 0.0;
+}
 
 void timer_write_txt(const char filename[]);
 void timer_write_h5(const char filename[]);
@@ -105,8 +108,8 @@ void timer_write_h5(const char filename[])
   assert(status_group >= 0);
   */
   //
-  const int ncol= comm_n_nodes();
-  const int nrow= vtime.size();
+  const hsize_t ncol= comm_n_nodes();
+  const hsize_t nrow= vtime.size();
 
   // Data structure in memory (local)
   const hsize_t data_size_mem= nrow;
@@ -125,7 +128,7 @@ void timer_write_h5(const char filename[])
   hid_t filespace= H5Screate_simple(dim, data_size_file, NULL);
 
   // local subset of data for this node
-  const hsize_t offset_file[]= {0, comm_this_node()};
+  const hsize_t offset_file[]= {0, hsize_t(comm_this_node())};
   const hsize_t count_file[]= {nrow, 1};
 
   H5Sselect_hyperslab(filespace, H5S_SELECT_SET,

@@ -14,9 +14,11 @@
 #include "cosmology.h"
 #include "timer.h"
 
-static const double nLPT= -2.5f;
+namespace {
+  constexpr double nLPT= -2.5f;
 
-double Sq(double ai, double af, double aRef);
+  double Sq(double ai, double af, double aRef);
+}
 
 void cola_kick(Particles* const particles, const double avel1)
 {
@@ -105,6 +107,8 @@ void cola_drift(Particles* const particles, const double apos1)
   particles->a_x= af;
 }
 
+namespace {
+  
 double fun (double a, void * params) {
   double om= *(double*)params;
   return pow(a, nLPT)/(sqrt(om/(a*a*a)+1.0-om)*a*a*a);
@@ -133,4 +137,6 @@ double Sq(double ai, double af, double av) {
   gsl_integration_workspace_free (w);
      
   return result/pow(av, nLPT);
+}
+
 }

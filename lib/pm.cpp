@@ -16,12 +16,14 @@
 #include "pm_domain.h"
 #include "timer.h"
 
-static double pm_factor;
-static size_t nc, ncz;
-static Float boxsize;
-
-static FFT* fft_pm= 0;
-static complex_t* delta_k;
+namespace {
+  double pm_factor;
+  size_t nc, ncz;
+  Float boxsize;
+  
+  FFT* fft_pm= 0;
+  complex_t* delta_k;
+}
 
 static inline void grid_assign(Float * const d, 
 	    const size_t ix, const size_t iy, const size_t iz, const Float f)
@@ -39,10 +41,12 @@ static inline Float grid_val(Float const * const d,
 }
 
 
-static void check_total_density(Float const * const density);
-static void compute_delta_k();
-static void compute_force_mesh(const int axis);
-static void clear_density();
+namespace {
+  void check_total_density(Float const * const density);
+  void compute_delta_k();
+  void compute_force_mesh(const int axis);
+  void clear_density();
+}
 
 //
 // Template functions
@@ -235,19 +239,6 @@ void pm_init(const int nc_pm, const double pm_factor_,
   delta_k= (complex_t*) mem_density->use_from_zero(size_density_k);
 }
 
-void clear_density()
-{
-  Float* const density= fft_pm->fx;
-  const size_t local_nx= fft_pm->local_nx;
-    
-#ifdef _OPENMP
-  #pragma omp parallel for default(shared)
-#endif
-  for(size_t ix = 0; ix < local_nx; ix++)
-    for(size_t iy = 0; iy < nc; iy++)
-      for(size_t iz = 0; iz < nc; iz++)
-	density[(ix*nc + iy)*ncz + iz] = -1;
-}
 
 void pm_compute_force(Particles* const particles)
 {
@@ -280,6 +271,7 @@ void pm_compute_force(Particles* const particles)
   pm_domain_get_forces(particles);
 }
 
+
 FFT* pm_compute_density(Particles* const particles)
 {
   msg_printf(msg_verbose, "PM density computation...\n");
@@ -293,15 +285,35 @@ FFT* pm_compute_density(Particles* const particles)
   pm_assign_cic_density<Particle>(particles->p, particles->np_local);
   pm_assign_cic_density<Pos>(pm_domain_buffer_positions(),
 			     pm_domain_buffer_np());
-
   
+  return fft_pm;
+}
+
+FFT* pm_get_fft()
+{
   return fft_pm;
 }
 
 
 //
-// Static functions
+// Local functions
 //
+namespace {
+
+void clear_density()
+{
+  Float* const density= fft_pm->fx;
+  const size_t local_nx= fft_pm->local_nx;
+    
+#ifdef _OPENMP
+  #pragma omp parallel for default(shared)
+#endif
+  for(size_t ix = 0; ix < local_nx; ix++)
+    for(size_t iy = 0; iy < nc; iy++)
+      for(size_t iz = 0; iz < nc; iz++)
+	density[(ix*nc + iy)*ncz + iz] = -1;
+}
+
 
 void check_total_density(Float const * const density)
 {
@@ -414,7 +426,5 @@ void compute_force_mesh(const int axis)
   fft_pm->execute_inverse(); // f_k -> f(x)
 }
 
-FFT* pm_get_fft()
-{
-  return fft_pm;
 }
+

@@ -15,11 +15,11 @@ ps = fs.PowerSpectrum('../../data/planck_matterpower.dat')
 
 particles = fs.lpt(nc, boxsize, a_init, ps, seed)
 
-fs.pm_init(nc_pm, nc_pm/nc, boxsize)
+fs.pm.init(nc_pm, nc_pm/nc, boxsize)
 
 for i in range(nstep):
     a_vel = a_init + (a_final - a_init)/nstep*(i + 0.5)
-    fs.pm_compute_force(particles)
+    fs.pm.compute_force(particles)
     fs.cola_kick(particles, a_vel)
 
     a_pos = a_init + (a_final - a_init)/nstep*(i + 1.0)

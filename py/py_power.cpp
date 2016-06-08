@@ -2,8 +2,10 @@
 // wrapping power.cpp
 //
 #include "power.h"
+#include "error.h"
 #include "py_power.h"
 #include "py_assert.h"
+
 
 using namespace std;
 
@@ -27,9 +29,9 @@ PyObject* py_power_alloc(PyObject* self, PyObject* args)
   try {
     ps= new PowerSpectrum(filename);
   }
-  catch(PowerFileError) {
+  catch(IOError) {
     Py_DECREF(bytes);
-    PyErr_SetString(PyExc_IOError, "PowerFileError");
+    PyErr_SetString(PyExc_IOError, "PowerSpectrum File Error");
     return NULL;
   }
 

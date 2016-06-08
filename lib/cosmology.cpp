@@ -10,12 +10,16 @@
 #include "msg.h"
 #include "const.h"
 #include "cosmology.h"
+#include "error.h"
 
-static double omega_m0;
-static double growth_normalisation;
+namespace {
+  double omega_m0;
+  double growth_normalisation;
 
-static double growth_integrand(double a, void* param);
-static double growth_unnormalised(const double a);
+  void check_initialisation();
+  double growth_integrand(double a, void* param);
+  double growth_unnormalised(const double a);
+}
 
 void cosmology_init(const double omega_m0_)
 {
@@ -24,17 +28,9 @@ void cosmology_init(const double omega_m0_)
   growth_normalisation= 1.0/growth_unnormalised(1.0); // D_growth=1 at a=1
 }
 
-void cosmology_check(void)
-{
-  // Check if this module is initilised
-  if(growth_normalisation == 0.0)
-    msg_abort("Error: cosmology module not initialised.\n");
-  assert(growth_normalisation > 0.0);
-}
-    
 double cosmology_D_growth(const double a)
 {
-  cosmology_check();
+  check_initialisation();
   // Linear growth factor D
   if(a == 0.0) return 0.0;
   
@@ -74,7 +70,7 @@ double cosmology_D2a_growth(const double D1, const double D2)
 
 double cosmology_f_growth_rate(const double a)
 {
-  cosmology_check();
+  check_initialisation();
 
   if(a == 0.0) return 1.0;
   
@@ -89,7 +85,7 @@ double cosmology_f_growth_rate(const double a)
 void cosmology_growth(const double a,
 		      double* const D_result, double* const f_result)
 {
-  cosmology_check();
+  check_initialisation();
   // Both linear growth factor D(a) and growth rate f=dlnD/dlna
 
   if(a == 0.0) {
@@ -117,6 +113,29 @@ double cosmology_omega(const double a)
   return omega_m0/(omega_m0 + (1 - omega_m0)*(a*a*a));
 }
 
+double cosmology_omega_m()
+{
+  return omega_m0;
+}
+
+double cosmology_rho_m()
+{
+  return omega_m0*c::rho_crit_0;
+}
+
+
+namespace {
+
+void check_initialisation()
+{
+  // Check if this module is initilised
+  if(growth_normalisation == 0.0) {
+    msg_printf(msg_fatal, "Error: cosmology module not initialised.\n");
+    throw RuntimeError();
+  }
+}
+    
+
 double growth_integrand(double a, void* param)
 {
   // sqrt[(a*H/H0)^3]
@@ -124,6 +143,7 @@ double growth_integrand(double a, void* param)
   const double aHinv= 1.0/sqrt(omega_m0/a + (1 - omega_m0)*(a*a));
   return aHinv*aHinv*aHinv;
 }
+
 
 double growth_unnormalised(const double a)
 {
@@ -145,12 +165,4 @@ double growth_unnormalised(const double a)
   return cosmology_hubble_function(a) * result;
 }
 
-double cosmology_omega_m()
-{
-  return omega_m0;
-}
-
-double cosmology_rho_m()
-{
-  return omega_m0*c::rho_crit_0;
 }

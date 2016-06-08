@@ -7,15 +7,18 @@
 #include "comm.h"
 #include "timer.h"
 
-static int this_node= -1;
-static int n_nodes= 0;
-static int parallel_level= 0;
-  // 0: no MPI
-  // 1: MPI_THREAD_SINGLE, only one thread per MPI node
-  // 2: MPI_THREAD_FUNNELED, only the thread that called MPI_Init_thread will
-  //    make MPI calls.
+namespace {
+  int this_node= -1;
+  int n_nodes= 0;
+  int parallel_level= 0;
+    // 0: no MPI
+    // 1: MPI_THREAD_SINGLE, only one thread per MPI node
+    // 2: MPI_THREAD_FUNNELED, only the thread that called MPI_Init_thread will
+    //    make MPI calls.
 
-static CommStatus mpi_status= comm_uninitialised;
+  CommStatus mpi_status= comm_uninitialised;
+}
+
 //
 // Initialisation
 //
@@ -93,4 +96,3 @@ CommStatus comm_status()
 {
   return mpi_status;
 }
-
