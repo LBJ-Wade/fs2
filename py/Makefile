@@ -8,7 +8,7 @@ default:
 
 py: build install
 
-CC   ?= mpicc
+CC   ?= mpic++ -std=c++11
 SRC  := py_package.cpp py_msg.cpp
 
 build: $(SRC)

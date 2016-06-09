@@ -6,7 +6,7 @@ all: $(DIRS)
 #
 # Set compilers and options
 #
-CC      := mpicc
+CC      := mpic++ -std=c++11
 CXX     := mpic++ -std=c++11
 OPT     := -DDOUBLEPRECISION
 

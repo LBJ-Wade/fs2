@@ -62,13 +62,15 @@ void hdf5_write_particles(const char filename[],
   if(*var == 'i') {
     msg_printf(msg_verbose, "writing ids\n");
     assert(sizeof(Particle) % sizeof(uint64_t) == 0);
+
     const size_t istride= sizeof(Particle)/sizeof(uint64_t);
     write_data_table(file, "id", np, 1, istride,
 		     H5T_NATIVE_UINT64, H5T_STD_U64LE, &p->id);
     ++var;
   }
 
-  assert(sizeof(Particle) % sizeof(Float) == 0);
+  static_assert(sizeof(Particle) % sizeof(Float) == 0,
+		"Error: Sizeof(Particle) is not a multiple of sizeof(Float).");
   const size_t stride= sizeof(Particle)/sizeof(Float);
     
   if(*var == 'x') {

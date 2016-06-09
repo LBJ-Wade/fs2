@@ -517,7 +517,7 @@ void lpt_compute_psi2_k(void)
 	double kmag2= kvec[0]*kvec[0] + kvec[1]*kvec[1] + kvec[2]*kvec[2];
 
 #ifdef CHECK	
-	assert(kmag2 > 0); // !!! Heavy assert. Remove later.
+	assert(kmag2 > 0);
 #endif	
 	    
 	// Psi(2)_k = div.Psi(2)_k * k / (sqrt(-1) k^2)

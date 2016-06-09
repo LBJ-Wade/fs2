@@ -50,7 +50,7 @@ static int npy_type_num(const type_info& type_id)
 //
 template <class T>
 PyObject* py_particles_asarray(T const * dat,
-			       const size_t np_local, const size_t ncol,
+			       const size_t np_local, const int ncol,
 			       const size_t stride_bytes)
 {
   // T Float or uint64_t
@@ -65,7 +65,7 @@ PyObject* py_particles_asarray(T const * dat,
       
   if(comm_this_node() == 0) {
     const int nd= ncol == 1 ? 1 : 2;
-    npy_intp dims[]= {np_total, ncol};
+    npy_intp dims[]= {npy_intp(np_total), ncol};
 
     arr= PyArray_ZEROS(nd, dims, typenum, 0);
     py_assert_ptr(arr);

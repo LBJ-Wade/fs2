@@ -159,8 +159,8 @@ void timer_write_txt(const char filename[])
 {
   FILE* fp= fopen(filename, "w");
 
-  for(vector<string>::iterator p= vname.begin(); p != vname.end(); ++p)
-    fprintf(fp, "%s\n", p->c_str());
+  for(auto& name : vname)
+    fprintf(fp, "%s\n", name.c_str());
   
   fclose(fp);
 }

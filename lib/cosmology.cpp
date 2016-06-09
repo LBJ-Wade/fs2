@@ -25,6 +25,8 @@ void cosmology_init(const double omega_m0_)
 {
   omega_m0= omega_m0_;
 
+  msg_printf(msg_info, "Cosmology initialised with omega_m = %.7f\n", omega_m0);
+
   growth_normalisation= 1.0/growth_unnormalised(1.0); // D_growth=1 at a=1
 }
 
@@ -110,16 +112,19 @@ double cosmology_hubble_function(const double a)
 double cosmology_omega(const double a)
 {
   // Omega_m(a)
+  check_initialisation();
   return omega_m0/(omega_m0 + (1 - omega_m0)*(a*a*a));
 }
 
 double cosmology_omega_m()
 {
+  check_initialisation();
   return omega_m0;
 }
 
 double cosmology_rho_m()
 {
+  check_initialisation();
   return omega_m0*c::rho_crit_0;
 }
 

@@ -45,7 +45,6 @@ static inline void send(const int i, const Float x[], const Float boxsize);
 
 int Domain::packet_size= 1024/3*3;
 
-
 void pm_domain_init(Particles const * const particles)
 {
   if(buf_pos)
@@ -113,14 +112,13 @@ void pm_domain_get_forces(Particles* const particles)
   
   MPI_Win_fence(0, win_force);
 
-  for(deque<Packet>::const_iterator packet= packets_sent.begin();
-      packet != packets_sent.end(); ++packet) {
-    const Index nsent= packet->n;
+  for(auto& packet : packets_sent) {
+    const Index nsent= packet.n;
 
-    MPI_Get(packet_force, 3*nsent, FLOAT_TYPE, packet->dest_rank,
-	    packet->offset*3, 3*nsent, FLOAT_TYPE, win_force);
+    MPI_Get(packet_force, 3*nsent, FLOAT_TYPE, packet.dest_rank,
+	    packet.offset*3, 3*nsent, FLOAT_TYPE, win_force);
 
-    Index index0= packet->offset_index;
+    Index index0= packet.offset_index;
     for(Index i=0; i<nsent; ++i) {
       Index ii= index0 + i;
 #ifdef CHECK
@@ -151,11 +149,10 @@ void pm_domain_write_packet_info(const char filename[])
   
 
   int i=0;
-  for(deque<Packet>::const_iterator p= packets_sent.begin();
-      p != packets_sent.end(); ++p) {
+  for(auto& p : packets_sent) {
     dat[3*i]= src_rank;
-    dat[3*i + 1]= p->dest_rank;
-    dat[3*i + 2]= p->n;
+    dat[3*i + 1]= p.dest_rank;
+    dat[3*i + 2]= p.n;
     ++i;
   }
 
@@ -277,18 +274,15 @@ void allocate_decomposition(const Float boxsize, const int local_ix0,
 
 void packets_clear()
 {
-  for(vector<Domain>::iterator
-	dom= decomposition.begin(); dom != decomposition.end(); ++dom)
-    dom->clear();
+  for(auto& dom : decomposition)
+    dom.clear();
 }
 
 
 void packets_flush()
 {
-  for(vector<Domain>::iterator
-	dom= decomposition.begin(); dom != decomposition.end(); ++dom) {
-    dom->send_packet();
-  }
+  for(auto& dom : decomposition)
+    dom.send_packet();
 }
 
   
@@ -317,10 +311,10 @@ void Domain::send_packet()
   pkt.n= nsend;
 
   assert(0 <= nbuf_index && nbuf_index + nsend < nbuf_index_alloc);
-  for(vector<Index>::const_iterator
-	ind= vbuf_index.begin(); ind != vbuf_index.end(); ++ind) {
+  //for(auto ind= vbuf_index.begin(); ind != vbuf_index.end(); ++ind) {
+  for(auto ind : vbuf_index) {
     assert(0 <= nbuf_index && nbuf_index < nbuf_index_alloc);
-    buf_index[nbuf_index]= *ind;
+    buf_index[nbuf_index]= ind;
     nbuf_index++;
   }
 
@@ -358,12 +352,11 @@ void send(const int i, const Float x[], const Float boxsize)
 {
   // ToDo: this is naive linear search all; many better way possible
 
-  for(vector<Domain>::iterator
-	dom= decomposition.begin(); dom != decomposition.end(); ++dom) {
-    if((dom->xbuf_min < x[0] && x[0] < dom->xbuf_max) ||
-       (dom->xbuf_min < x[0] - boxsize && x[0] - boxsize < dom->xbuf_max) ||
-       (dom->xbuf_min < x[0] + boxsize && x[0] + boxsize < dom->xbuf_max)) {
-      dom->push(i, x);
+  for(auto& dom : decomposition) {
+    if((dom.xbuf_min < x[0] && x[0] < dom.xbuf_max) ||
+       (dom.xbuf_min < x[0] - boxsize && x[0] - boxsize < dom.xbuf_max) ||
+       (dom.xbuf_min < x[0] + boxsize && x[0] + boxsize < dom.xbuf_max)) {
+      dom.push(i, x);
     }
   }
 }
