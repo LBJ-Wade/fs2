@@ -13,9 +13,6 @@ class TestFFT(unittest.TestCase):
         self.fft = fs.FFT(self.nc)
         self.fft.set_test_data()
 
-    def tearDown(self):
-        fs.comm_mpi_finalise()
-
     def test_fft(self):
         nc = self.nc
         a = self.fft.asarray()

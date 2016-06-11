@@ -75,5 +75,3 @@ if fs.comm_this_node() == 0:
                 assert_almost_equal(z, file_x[index, 2])
 
     print('%s/x  OK' % filename)
-
-fs.comm_mpi_finalise()

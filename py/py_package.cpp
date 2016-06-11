@@ -18,6 +18,7 @@
 #include "py_fft.h"
 #include "py_config.h"
 #include "py_timer.h"
+#include "py_stat.h"
 
 using namespace std;
 
@@ -115,7 +116,13 @@ static PyMethodDef methods[] = {
 
   {"timer_save", py_timer_save, METH_VARARGS,
    "timer_save(filename)"},
-  
+
+  {"_stat_set_filename", py_stat_set_filename, METH_VARARGS,
+   "_stat_set_filename(filename)"},
+
+  {"_stat_record_pm_nbuf", py_stat_record_pm_nbuf, METH_VARARGS,
+   "_stat_record_pm_nbuf(group_name)"},
+
   {NULL, NULL, 0, NULL}
 };
 

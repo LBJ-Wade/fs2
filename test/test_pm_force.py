@@ -43,5 +43,3 @@ if fs.comm_this_node() == 0:
     assert(diff_rms < 20*eps)
     assert(diff_max < 1000*eps)
     print('pm_force OK')
-
-fs.comm_mpi_finalise()

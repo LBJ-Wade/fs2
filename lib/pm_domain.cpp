@@ -360,3 +360,8 @@ void send(const int i, const Float x[], const Float boxsize)
     }
   }
 }
+
+int pm_domain_nbuf()
+{
+  return nbuf;
+}

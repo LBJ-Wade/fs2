@@ -39,5 +39,3 @@ if fs.comm_this_node() == 0:
 
     print('max error %e; OK' % (a_max))
     print('rms error %e; OK' % (a_rms))
-
-fs.comm_mpi_finalise()

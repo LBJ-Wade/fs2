@@ -43,5 +43,3 @@ one_particle_test(1.5, 2, 2)
 one_particle_test(3, 2, 2)
 one_particle_test(3.5, 2, 2)
 one_particle_test(4, 2, 2)
-
-fs.comm_mpi_finalise()

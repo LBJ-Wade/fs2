@@ -41,5 +41,3 @@ if fs.comm_this_node() == 0:
     assert(max_error < 500.0*eps)
 
     print('pm_density OK')
-
-fs.comm_mpi_finalise()
