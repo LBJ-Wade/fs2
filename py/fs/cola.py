@@ -2,7 +2,7 @@ import fs._fs as c
 from fs.particles import Particles
 
 
-"""COLA (COmoving Lagrangian Acceleration) is a numerical time integration 
+"""COLA (COmoving Lagrangian Acceleration) is a numerical time integration
 method using Lagrantial Perturbation Theory (LPT).
 """
 
