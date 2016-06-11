@@ -9,7 +9,7 @@ a = 0.0
 seed = 1
 
 
-fs.cosmology_init(omega_m)
+fs.cosmology.init(omega_m)
 ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
 # Set 2LPT displacements at scale factor a

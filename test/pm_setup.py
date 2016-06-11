@@ -18,7 +18,7 @@ def setup_particles():
 
     # initial setup
     fs.set_loglevel(3)
-    fs.cosmology_init(omega_m)
+    fs.cosmology.init(omega_m)
     ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
     # Set 2LPT displacements at scale factor a

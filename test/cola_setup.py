@@ -11,7 +11,7 @@ def particles():
     seed = 1
     nstep = 9
 
-    fs.cosmology_init(omega_m)
+    fs.cosmology.init(omega_m)
     ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
     particles = fs.lpt.lpt(nc, boxsize, a_init, ps, seed)
