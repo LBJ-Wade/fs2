@@ -18,8 +18,11 @@ install:
 	python3 setup.py install
 
 
-.PHONY: clean
+.PHONY: clean check
 
 clean:
 	rm -rf build fs/*.so
+
+check:
+	cd fs && $(MAKE) check
 
