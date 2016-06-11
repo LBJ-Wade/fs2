@@ -69,6 +69,8 @@ static PyMethodDef methods[] = {
   
   {"_lpt", py_lpt, METH_VARARGS,
    "_lpt(nc, boxsize, a, _ps, rando_seed); setup 2LPT displacements"},
+  {"_lpt_set_offset", py_lpt_set_offset, METH_VARARGS,
+   "_lpt_set_offset(offset)"},
 
   {"_pm_init", py_pm_init, METH_VARARGS,
    "_pm_init(nc_pm, pm_factor, boxsize); initialise pm module"},

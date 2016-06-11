@@ -14,16 +14,16 @@ def particles():
     fs.cosmology_init(omega_m)
     ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
-    particles = fs.lpt(nc, boxsize, a_init, ps, seed)
+    particles = fs.lpt.lpt(nc, boxsize, a_init, ps, seed)
 
     fs.pm.init(nc_pm, nc_pm/nc, boxsize)
 
     for i in range(nstep):
         a_vel = a_init + (a_final - a_init)/nstep*(i + 0.5)
         fs.pm.compute_force(particles)
-        fs.cola_kick(particles, a_vel)
+        fs.cola.kick(particles, a_vel)
 
         a_pos = a_init + (a_final - a_init)/nstep*(i + 1.0)
-        fs.cola_drift(particles, a_pos)
+        fs.cola.drift(particles, a_pos)
 
     return particles

@@ -22,3 +22,16 @@ def lpt(nc, boxsize, a, ps, seed):
     """
 
     return Particles(_particles=c._lpt(nc, boxsize, a, seed, ps._ps))
+
+
+def set_offset(offset):
+    """Set offset with respect to grid points
+    x = (ix + offset)*dx,
+    where ix is an integer, dx = boxsize/nc.
+
+    Args:
+        offset (float): offset (0 <= offset < 1)
+
+    """
+
+    c._set_offset(offset)

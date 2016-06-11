@@ -13,7 +13,7 @@ fs.cosmology_init(omega_m)
 ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
 # Set 2LPT displacements at scale factor a
-particles = fs.lpt(nc, boxsize, a, ps, seed)
+particles = fs.lpt.lpt(nc, boxsize, a, ps, seed)
 
 fs.pm.init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 
@@ -49,7 +49,7 @@ if fs.comm_this_node() == 0:
     assert(file_nc == nc)
     assert(file_omegam == omega_m)
     print('parameters OK')
-    
+
     #
     # Test x_file
     #

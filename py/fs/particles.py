@@ -8,7 +8,8 @@ class Particles(object):
 
     Attributes:
         np_total [unsigned long]: total number of particles
-        id (np.array [uint64]): all particle IDs for node 0, `None` for node > 0.
+        id (np.array [uint64]): all particle IDs for node 0,
+                                `None` for node > 0.
         x (np.array [float]):  all particle positions for node 0
         force (np.array [float]):  all particle velocities for node 0
     """

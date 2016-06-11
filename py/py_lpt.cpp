@@ -35,3 +35,16 @@ PyObject* py_lpt(PyObject* self, PyObject* args)
   
   return PyCapsule_New(particles, "_Particles", py_particles_free);  
 }
+
+PyObject* py_lpt_set_offset(PyObject* self, PyObject* args)
+{
+  double offset;
+  
+  if(!PyArg_ParseTuple(args, "d", &offset)) {
+    return NULL;
+  }
+  
+  lpt_set_offset(offset);
+
+  Py_RETURN_NONE;
+}

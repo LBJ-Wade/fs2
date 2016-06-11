@@ -22,7 +22,7 @@ def setup_particles():
     ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
     # Set 2LPT displacements at scale factor a
-    particles = fs.lpt(nc, boxsize, a, ps, seed)
+    particles = fs.lpt.lpt(nc, boxsize, a, ps, seed)
 
     fs.pm.init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 
