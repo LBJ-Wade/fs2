@@ -85,6 +85,8 @@ static PyMethodDef methods[] = {
    "_pm_send_positions(_particles)"},
   {"_pm_write_packet_info", py_pm_write_packet_info, METH_VARARGS,
    "_pm_write_packet_info(filename)"},
+  {"_pm_set_packet_size", py_pm_set_packet_size, METH_VARARGS,
+   "_pm_set_packet_size(packet_size)"},
   
   {"_cola_kick", py_cola_kick, METH_VARARGS,
    "_cola_kick(_particles, a_vel); update particle velocities to a_vel"},

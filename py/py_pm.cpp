@@ -141,3 +141,22 @@ PyObject* py_pm_write_packet_info(PyObject* self, PyObject* args)
   Py_DECREF(bytes);
   Py_RETURN_NONE;
 }
+
+
+PyObject* py_pm_set_packet_size(PyObject* self, PyObject* args)
+{
+  int packet_size;
+  if(!PyArg_ParseTuple(args, "i", &packet_size)) {
+    return NULL;
+  }
+
+  try {
+    pm_domain_set_packet_size(packet_size);
+  }
+  catch(RuntimeError) {
+    PyErr_SetNone(PyExc_RuntimeError);
+    return NULL;
+  }
+  
+  Py_RETURN_NONE;
+}

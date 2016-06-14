@@ -79,3 +79,16 @@ def write_packet_info(filename):
     """
 
     c._pm_write_packet_info(filename)
+
+
+def set_packet_size(packet_size):
+    """Set packet size for PM position exchange.
+
+    To change the packet_size from the default value, this function must be
+    called before any PM force computation.
+
+    Args:
+        packet_size (int): number of floats in the packet
+    """
+
+    c._pm_set_packet_size(packet_size)

@@ -21,6 +21,8 @@ FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
 {
   // Allocates memory for FFT real and Fourier space and initilise fftw_plans
   assert(nc > 0);
+
+  msg_printf(msg_verbose, "Setting up FFT %s with FFTW_MEASURE\n", name);
   
   if(transposed) {
     ncomplex= FFTW(mpi_local_size_3d_transposed)(nc, nc, nc/2+1, MPI_COMM_WORLD,

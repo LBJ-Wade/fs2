@@ -337,7 +337,7 @@ void Domain::send_packet()
   MPI_Put(&vbuf.front(), nsend*3, FLOAT_TYPE,
 	  rank, offset*3, nsend*3, FLOAT_TYPE, win_pos);
 
-  msg_printf(msg_debug, "sending packet %d particles to %d, offset= %d\n",
+  msg_printf(msg_debug, "sending packet: %d particles to %d, offset= %d\n",
 	     nsend, rank, offset);
   
   // Record the information of position sending for later force get
@@ -364,4 +364,19 @@ void send(const int i, const Float x[], const Float boxsize)
 int pm_domain_nbuf()
 {
   return nbuf;
+}
+
+void pm_domain_set_packet_size(const int packet_size)
+{
+  if(buf_pos) {
+    msg_printf(msg_error,
+	       "Error: pm_domain already initialised. "
+	       "packet_size must be set earlier\n");
+    throw RuntimeError();
+  }
+
+  Domain::packet_size= packet_size/3*3;
+
+  msg_printf(msg_verbose, "Domain::packet_size set to %d\n",
+	     Domain::packet_size);
 }

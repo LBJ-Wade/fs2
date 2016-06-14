@@ -44,5 +44,5 @@ int pm_domain_buffer_np();
 void pm_domain_get_forces(Particles* const particles);
 void pm_domain_write_packet_info(const char filename[]);
 int pm_domain_nbuf();
-
+void pm_domain_set_packet_size(const int packet_size);
 #endif
