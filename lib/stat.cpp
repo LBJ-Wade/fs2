@@ -13,6 +13,7 @@ static string stat_filename("stat.h5");
 void stat_set_filename(const char filename[])
 {
   stat_filename = string(filename);
+  msg_printf(msg_verbose, "stat filename set to: %s\n", filename);
 }
 
 void stat_write_int(const char group_name[],
@@ -22,6 +23,7 @@ void stat_write_int(const char group_name[],
   //if(!stat) return;
   
   //H5Eset_auto2(H5E_DEFAULT, NULL, 0);
+  msg_printf(msg_verbose, "writing statistics: %s\n", stat_filename.c_str());
   
   // Open File
   hid_t plist_file= H5Pcreate(H5P_FILE_ACCESS);

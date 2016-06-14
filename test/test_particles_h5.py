@@ -17,7 +17,7 @@ particles = fs.lpt.lpt(nc, boxsize, a, ps, seed)
 
 fs.pm.init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 
-filename = 'particles_%d.h5' % fs.comm_n_nodes()
+filename = 'particles_%d.h5' % fs.comm.n_nodes()
 
 particles.save_hdf5(filename, 'ix')
 
@@ -29,7 +29,7 @@ def assert_almost_equal(x, y):
     assert(abs(x - y) < eps)
 
 
-if fs.comm_this_node() == 0:
+if fs.comm.this_node() == 0:
     file = h5py.File(filename, 'r')
     file_nc = file['parameters/nc'][()]
     file_omegam = file['parameters/omega_m'][()]

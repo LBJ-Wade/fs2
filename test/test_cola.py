@@ -26,7 +26,7 @@ x_par = particles.x
 # need to periodic wrapup the difference
 # must compare with dx=boxsize/nc
 
-if fs.comm_this_node() == 0:
+if fs.comm.this_node() == 0:
     a = x_par - x_ref
     a_max = np.max(np.abs(a))
     a_rms = np.std(a)

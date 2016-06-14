@@ -16,7 +16,7 @@ class TestFFT(unittest.TestCase):
     def test_fft(self):
         nc = self.nc
         a = self.fft.asarray()
-        if fs.comm_this_node() == 0:
+        if fs.comm.this_node() == 0:
             for ix in range(nc):
                 for iy in range(nc):
                     for iz in range(nc):

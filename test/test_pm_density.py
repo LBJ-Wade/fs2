@@ -14,7 +14,7 @@ delta = pm_setup.density()
 # Test total density is number of particles
 #
 
-if fs.comm_this_node() == 0:
+if fs.comm.this_node() == 0:
     nc = delta.shape
     nmesh = nc[0]*nc[1]*nc[2]
     eps = np.finfo(delta.dtype).eps

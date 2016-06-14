@@ -10,7 +10,7 @@ def one_particle_test(x, y, z):
     dx = boxsize/nc
     particles = fs.Particles(nc, boxsize)
 
-    if fs.comm_this_node() == 0:
+    if fs.comm.this_node() == 0:
         particles.set_one(x*dx, y*dx, z*dx)
         print("-- Testing %.1f %.1f %.1f -- " % (x*dx, y*dx, z*dx))
 
@@ -20,7 +20,7 @@ def one_particle_test(x, y, z):
     a = fft.asarray()
 
     # Test Total = 1
-    if fs.comm_this_node() == 0:
+    if fs.comm.this_node() == 0:
         total = np.sum(a + 1.0)
         if abs(total - 1.0) < 1.0e-15:
             print('%.2f OK' % total)
