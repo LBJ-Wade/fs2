@@ -16,6 +16,7 @@ def one_particle_test(x, y, z):
 
     particles.update_np_total()
 
+    fs.pm.send_positions(particles)
     fft = fs.pm.compute_density(particles)
     a = fft.asarray()
 

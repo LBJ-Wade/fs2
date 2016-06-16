@@ -17,10 +17,12 @@ x_ref = file['x'][:]
 file.close()
 
 # Cola simulation
+fs.set_loglevel(3)
 particles = cola_setup.particles()
 
 x_par = particles.x
 
+# TODO:
 # get boxsize a
 # parallelise diff and get diff= x_par - x_ref
 # need to periodic wrapup the difference

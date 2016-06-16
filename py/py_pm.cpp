@@ -30,6 +30,29 @@ PyObject* py_pm_init(PyObject* self, PyObject* args)
 }
 
 
+PyObject* py_pm_compute_density(PyObject* self, PyObject* args)
+{
+  // _pm_compute_density(_particles)
+  if(!pm_initialised) {
+    PyErr_SetString(PyExc_RuntimeError, "PM not initialised; call pm_init().");
+    return NULL;
+  }
+  
+  PyObject* py_particles;
+  
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles* const particles=
+    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+  
+  FFT* const fft= pm_compute_density(particles);
+
+  return PyCapsule_New(fft, "_FFT", NULL);
+}
+
+
 PyObject* py_pm_compute_force(PyObject* self, PyObject* args)
 {
   // _pm_compute_force(_particles)
@@ -58,50 +81,10 @@ PyObject* py_pm_compute_force(PyObject* self, PyObject* args)
   Py_RETURN_NONE;
 }
 
-PyObject* py_pm_compute_density(PyObject* self, PyObject* args)
-{
-  // _pm_compute_density(_particles)
-  if(!pm_initialised) {
-    PyErr_SetString(PyExc_RuntimeError, "PM not initialised; call pm_init().");
-    return NULL;
-  }
-  
-  PyObject* py_particles;
-  
-  if(!PyArg_ParseTuple(args, "O", &py_particles))
-    return NULL;
-
-  Particles* const particles=
-    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
-  py_assert_ptr(particles);
-  
-  FFT* const fft= pm_compute_density(particles);
-
-  return PyCapsule_New(fft, "_FFT", NULL);
-}
-
-
-PyObject* py_pm_domain_init(PyObject* self, PyObject* args)
-{
-  //_pm_domain_init(_particles)
-  PyObject* py_particles;
-  
-  if(!PyArg_ParseTuple(args, "O", &py_particles))
-    return NULL;
-
-  Particles* const particles=
-    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
-  py_assert_ptr(particles);
-
-  pm_domain_init(particles);
-  
-  Py_RETURN_NONE;
-}
-
 
 PyObject* py_pm_send_positions(PyObject* self, PyObject* args)
 {
-  //_pm_send_positions_init(_particles)
+  //_pm_send_positions(_particles)
   PyObject* py_particles;
   
   if(!PyArg_ParseTuple(args, "O", &py_particles))
@@ -111,11 +94,42 @@ PyObject* py_pm_send_positions(PyObject* self, PyObject* args)
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
-  pm_domain_init(particles);
   pm_domain_send_positions(particles);
 
   Py_RETURN_NONE;  
 }
+
+PyObject* py_pm_check_total_density(PyObject* self, PyObject* args)
+{
+  // _pm_check_total_density()
+  try {
+    pm_check_total_density();
+  }
+  catch(AssertionError) {
+    PyErr_SetNone(PyExc_AssertionError);
+    return NULL;
+  }
+  
+  Py_RETURN_NONE;  
+}
+
+PyObject* py_pm_get_forces(PyObject* self, PyObject* args)
+{
+  //_pm_get_forces(_particles)
+  PyObject* py_particles;
+  
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles* const particles=
+    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  pm_domain_get_forces(particles);
+
+  Py_RETURN_NONE;  
+}
+
 
 PyObject* py_pm_write_packet_info(PyObject* self, PyObject* args)
 {
@@ -139,6 +153,27 @@ PyObject* py_pm_write_packet_info(PyObject* self, PyObject* args)
   }
 
   Py_DECREF(bytes);
+  Py_RETURN_NONE;
+}
+
+
+//
+// Optional
+//
+PyObject* py_pm_domain_init(PyObject* self, PyObject* args)
+{
+  //_pm_domain_init(_particles)
+  PyObject* py_particles;
+  
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles* const particles=
+    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  pm_domain_init(particles);
+  
   Py_RETURN_NONE;
 }
 

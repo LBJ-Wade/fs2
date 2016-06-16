@@ -14,7 +14,6 @@
 #include "error.h"
 #include "pm.h"
 #include "pm_domain.h"
-#include "timer.h"
 
 namespace {
   double pm_factor;
@@ -42,7 +41,6 @@ static inline Float grid_val(Float const * const d,
 
 
 namespace {
-  void check_total_density(Float const * const density);
   void compute_delta_k();
   void compute_force_mesh(const int axis);
   void clear_density();
@@ -131,6 +129,7 @@ void pm_assign_cic_density(T const * const p, size_t np)
   fft_pm->mode= fft_mode_x;
   msg_printf(msg_verbose, "CIC density assignment finished.\n");
 }
+
 
 template <class T>
 void force_at_particle_locations(T const * const p, const int np, 
@@ -239,22 +238,20 @@ void pm_init(const int nc_pm, const double pm_factor_,
   delta_k= (complex_t*) mem_density->use_from_zero(size_density_k);
 }
 
-
+/*
 void pm_compute_force(Particles* const particles)
 {
-  timer("pm");
   // Compute density mesh, force mesh, forces on particles
+
+  pm_domain_send_positions(particles);
+
   pm_compute_density(particles);
 
-#ifndef NDEBUG
-  check_total_density(fft_pm->fx);
-#endif
+  pm_check_total_density();
 
   msg_printf(msg_verbose, "PM force computation...\n");
-  timer("pm-delta-k");
   compute_delta_k();
 
-  timer("pm-force");
   for(int axis=0; axis<3; axis++) {
     // delta(k) -> f(x_i)
     compute_force_mesh(axis);
@@ -267,8 +264,27 @@ void pm_compute_force(Particles* const particles)
       pm_domain_buffer_forces());
   }
 
-  timer("pm-force-parallel");
   pm_domain_get_forces(particles);
+}
+*/
+
+void pm_compute_force(Particles* const particles)
+{
+  // Compute density mesh, force mesh, forces on particles
+  msg_printf(msg_verbose, "PM force computation...\n");
+  compute_delta_k();
+
+  for(int axis=0; axis<3; axis++) {
+    // delta(k) -> f(x_i)
+    compute_force_mesh(axis);
+
+    force_at_particle_locations<Particle>(
+      particles->p, particles->np_local, axis, particles->force);
+
+    force_at_particle_locations<Pos>(
+      pm_domain_buffer_positions(), pm_domain_buffer_np(), axis,
+      pm_domain_buffer_forces());
+  }
 }
 
 
@@ -276,11 +292,8 @@ FFT* pm_compute_density(Particles* const particles)
 {
   msg_printf(msg_verbose, "PM density computation...\n");
 
-  pm_domain_init(particles);
-  timer("pm-send-particles");
-  pm_domain_send_positions(particles);
+  //pm_domain_send_positions(particles);
 
-  timer("pm-cic");
   clear_density();
   pm_assign_cic_density<Particle>(particles->p, particles->np_local);
   pm_assign_cic_density<Pos>(pm_domain_buffer_positions(),
@@ -288,6 +301,42 @@ FFT* pm_compute_density(Particles* const particles)
   
   return fft_pm;
 }
+
+void pm_check_total_density()
+{
+#ifdef CHECK
+  // Checks <delta> = 0
+  Float const * const density= fft_pm->fx;
+  assert(fft_pm->mode == fft_mode_x);
+  
+  double sum= 0.0;
+  const size_t local_nx= fft_pm->local_nx;
+  
+  for(size_t ix=0; ix<local_nx; ix++)
+    for(size_t iy=0; iy<nc; iy++)
+      for(size_t iz=0; iz<nc; iz++)
+	sum += density[(ix*nc + iy)*ncz + iz];
+
+  double sum_global;
+  MPI_Reduce(&sum, &sum_global, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+  if(comm_this_node() == 0) {
+    double tol= 10*FLOAT_EPS*nc*nc*nc;
+
+    if(fabs(sum_global) > tol) {
+      msg_printf(msg_error,
+		 "Error: total CIC density error is  too large: %le > %le\n", 
+		 sum_global, tol);
+      throw AssertionError();
+    }
+
+    msg_printf(msg_debug, 
+	      "Total CIC density OK within machine precision: %lf (< %.2lf).\n",
+	       sum_global, tol);
+  }
+#endif
+}
+
 
 FFT* pm_get_fft()
 {
@@ -315,36 +364,6 @@ void clear_density()
 }
 
 
-void check_total_density(Float const * const density)
-{
-  // Checks <delta> = 0
-  // Input: delta(x)
-  double sum= 0.0;
-  const size_t local_nx= fft_pm->local_nx;
-  
-  for(size_t ix=0; ix<local_nx; ix++)
-    for(size_t iy=0; iy<nc; iy++)
-      for(size_t iz=0; iz<nc; iz++)
-	sum += density[(ix*nc + iy)*ncz + iz];
-
-  double sum_global;
-  MPI_Reduce(&sum, &sum_global, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
-  if(comm_this_node() == 0) {
-    double tol= 10*FLOAT_EPS*nc*nc*nc;
-
-    if(fabs(sum_global) > tol) {
-      msg_printf(msg_error,
-		 "Error: total CIC density error is  too large: %le > %le\n", 
-		 sum_global, tol);
-      throw AssertionError();
-    }
-
-    msg_printf(msg_debug, 
-	      "Total CIC density OK within machine precision: %lf (< %.2lf).\n",
-	       sum_global, tol);
-  }
-}
 
 
 void compute_delta_k()

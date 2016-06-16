@@ -11,64 +11,98 @@ def init(nc_pm, pm_factor, boxsize):
         pm_factor (int): nc_pm/nc -- number of mesh / particle per dimension
         boxsize (float): Length of the periodic box
     """
-
     c._pm_init(nc_pm, pm_factor, boxsize)
 
 
-def compute_force(particles):
+def force(particles):
     """Compute particles.force from particles.x
 
     Prerequisite:
-        - call pm.init.
-        - set particles.x
+        pm.init()
 
     Args:
         particles (Particles)
     """
 
-    c._pm_compute_force(particles._particles)
+    send_positions(particles)
+    compute_density(particles)
+    check_total_density()
+    compute_force(particles)
+    get_forces(particles)
+
+
+def send_positions(particles):
+    """Send particle positions to other MPI nodes
+
+    Prerequisit:
+        pm.init().
+    """
+    c._pm_send_positions(particles._particles)
 
 
 def compute_density(particles):
-    """Compute density mesh from particles.x
+    """Compute density mesh from particles.x.
 
     Prerequisite:
-        - call pm.init
-        - set particles.x
+        pm.send_positions()
+        particles.x
 
     Args:
         particles (Particles)
 
     Returns:
-        fft (FFT): density mesh
+        delta (FFT): density mesh.
     """
-
     _fft = c._pm_compute_density(particles._particles)
     return FFT(_fft)
+
+
+def check_total_density():
+    """Check total density: <delta> = 0.
+
+    Prerequisite:
+        pm.compute_density().
+
+    Raises:
+        AssertionError: If the density is not zero
+        within floating point precision.
+    """
+    c._pm_check_total_density()
+
+
+def compute_force(particles):
+    """Compute particles.force from density mesh
+
+    Prerequisite:
+        pm.compute_density().
+
+    Args:
+        particles (Particles).
+    """
+    c._pm_compute_force(particles._particles)
+
+
+def get_forces(particles):
+    """Get particle.force from other MPI nodes
+
+    Prerequisite:
+        - pm.send_particles(), pm.compute_force().
+
+    Args:
+        particles (Particles).
+    """
+    c._pm_get_forces(particles._particles)
 
 
 def domain_init(particles):
     """Initialise pm_domain module.
 
-    This function is called automatically. No need to call, usually.
+    This function is called automatically. No need to call usually.
 
     Args:
         particles (Particles)
     """
-
     c._pm_domain_init(particles._particles)
-
-
-def send_positions(particles):
-    """Send particle positions to relevant PM domains.
-
-    This function is called automatically.
-
-    Args:
-        particles (Particles)
-    """
-
-    c._pm_send_positions(particles._particles)
 
 
 def write_packet_info(filename):
@@ -77,7 +111,6 @@ def write_packet_info(filename):
     Args:
         filename (str): output file name.
     """
-
     c._pm_write_packet_info(filename)
 
 
@@ -90,5 +123,4 @@ def set_packet_size(packet_size):
     Args:
         packet_size (int): number of floats in the packet
     """
-
     c._pm_set_packet_size(packet_size)

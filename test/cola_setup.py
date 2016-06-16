@@ -20,7 +20,7 @@ def particles():
 
     for i in range(nstep):
         a_vel = a_init + (a_final - a_init)/nstep*(i + 0.5)
-        fs.pm.compute_force(particles)
+        fs.pm.force(particles)
         fs.cola.kick(particles, a_vel)
 
         a_pos = a_init + (a_final - a_init)/nstep*(i + 1.0)

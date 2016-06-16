@@ -31,11 +31,12 @@ def setup_particles():
 
 def density():
     particles = setup_particles()
+    fs.pm.send_positions(particles)
     fft = fs.pm.compute_density(particles)
     return fft.asarray()
 
 
 def force():
     particles = setup_particles()
-    fs.pm.compute_force(particles)
+    fs.pm.force(particles)
     return particles

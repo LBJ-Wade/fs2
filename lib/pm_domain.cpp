@@ -73,8 +73,8 @@ void pm_domain_init(Particles const * const particles)
 
 void pm_domain_send_positions(Particles* const particles)
 {
-  // Send particle positions to other nodes
-  // Prerequisit: domain_init()
+  // Send particle positions to other nodes for PM density computation
+  pm_domain_init(particles);
   assert(buf_pos);
 
   msg_printf(msg_verbose, "sending positions\n");
