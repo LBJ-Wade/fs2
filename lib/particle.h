@@ -6,6 +6,7 @@
 #define PARTICLE_H 1
 
 #include <stdint.h>
+#include <vector>
 #include "config.h"
 
 struct Particle {
@@ -26,6 +27,7 @@ class Particles {
   ~Particles();
   
   Particle* p;
+  std::vector<Particle>* pv;
   double a_x, a_v;
   Float3* force;
 

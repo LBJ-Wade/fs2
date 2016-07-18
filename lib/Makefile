@@ -47,6 +47,7 @@ OBJS += power.o cosmology.o lpt.o pm.o cola.o leapfrog.o
 OBJS += gadget_file.o hdf5_write.o
 OBJS += pm_domain.o
 OBJS += timer.o stat.o
+OBJS += kdtree.o cluster.o
 
 #
 # Linking libraries
