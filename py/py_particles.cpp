@@ -50,8 +50,8 @@ static int npy_type_num(const type_info& type_id)
 //
 template <class T>
 PyObject* py_particles_asarray(T const * dat,
-			       const size_t np_local, const size_t ncol,
-			       const size_t stride_bytes)
+			       const size_t np_local, const int ncol,
+			       const size_t stride_size)
 {
   // T Float or uint64_t
   
@@ -65,7 +65,7 @@ PyObject* py_particles_asarray(T const * dat,
       
   if(comm_this_node() == 0) {
     const int nd= ncol == 1 ? 1 : 2;
-    npy_intp dims[]= {np_total, ncol};
+    npy_intp dims[]= {npy_intp(np_total), ncol};
 
     arr= PyArray_ZEROS(nd, dims, typenum, 0);
     py_assert_ptr(arr);
@@ -85,14 +85,13 @@ PyObject* py_particles_asarray(T const * dat,
   py_assert_ptr(sendbuf);
 
   size_t ibuf= 0;
-  assert(sizeof(char) == 1);
 
   for(size_t i=0; i<nsend; ++i) {
     for(size_t j=0; j<ncol; ++j) {
       sendbuf[ibuf++]= dat[j];
     }
     
-    dat = (T*) (((char*)dat) + stride_bytes);
+    dat = (T*) (((char*)dat) + stride_size);
   }
 
   const int n= comm_n_nodes();
@@ -364,3 +363,15 @@ PyObject* py_particles_force_asarray(PyObject* self, PyObject* args)
 }
 
 
+PyObject* py_particles_np_total(PyObject* self, PyObject* args)
+{
+  PyObject* py_particles;
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles const * const particles=
+    (Particles const *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  return Py_BuildValue("k", (unsigned long) particles->np_total);
+}

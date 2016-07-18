@@ -98,7 +98,7 @@ PyObject* py_fft_fx_global_as_array(PyObject* self, PyObject* args)
       (FFT *) PyCapsule_GetPointer(py_fft, "_FFT");
   py_assert_ptr(fft);
 
-  const size_t nc= fft->nc;
+  const int nc= fft->nc;
   const size_t ncz= 2*(nc/2 + 1);
   const size_t nx= fft->local_nx;
   

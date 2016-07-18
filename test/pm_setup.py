@@ -10,7 +10,6 @@ import sys
 def setup_particles():
     # parameters
     omega_m = 0.308
-    h = 0.67
     nc = 64
     pm_nc_factor = 1
     boxsize = 64
@@ -19,24 +18,25 @@ def setup_particles():
 
     # initial setup
     fs.set_loglevel(3)
-    fs.cosmology_init(omega_m)
+    fs.cosmology.init(omega_m)
     ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
     # Set 2LPT displacements at scale factor a
-    particles = fs.lpt(nc, boxsize, a, ps, seed)
+    particles = fs.lpt.lpt(nc, boxsize, a, ps, seed)
 
-    fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize)
+    fs.pm.init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 
     return particles
 
 
 def density():
     particles = setup_particles()
-    fft = fs.pm_compute_density(particles)
+    fs.pm.send_positions(particles)
+    fft = fs.pm.compute_density(particles)
     return fft.asarray()
 
 
 def force():
     particles = setup_particles()
-    fs.pm_compute_force(particles)
+    fs.pm.force(particles)
     return particles

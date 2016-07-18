@@ -8,6 +8,7 @@
 void pm_init(const int nc_pm, const double pm_factor, Mem* const mem_density, Mem* const mem_force, const Float boxsize);
 void pm_compute_force(Particles* const particles);
 FFT* pm_compute_density(Particles* const particles);
+void pm_check_total_density();
 
 FFT* pm_get_fft();
 

@@ -8,7 +8,7 @@ default:
 
 py: build install
 
-CC   ?= mpicc
+CC   ?= mpic++ -std=c++11
 SRC  := py_package.cpp py_msg.cpp
 
 build: $(SRC)
@@ -18,8 +18,11 @@ install:
 	python3 setup.py install
 
 
-.PHONY: clean
+.PHONY: clean check
 
 clean:
 	rm -rf build fs/*.so
+
+check:
+	cd fs && $(MAKE) check
 

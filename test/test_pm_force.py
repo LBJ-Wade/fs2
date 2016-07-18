@@ -24,7 +24,7 @@ particle_id = particles.id
 particle_force = particles.force
 
 # compare two forces
-if fs.comm_this_node() == 0:
+if fs.comm.this_node() == 0:
     assert(np.all(particle_id == ref_id))
     print('pm_force id OK')
 
@@ -43,5 +43,3 @@ if fs.comm_this_node() == 0:
     assert(diff_rms < 20*eps)
     assert(diff_max < 1000*eps)
     print('pm_force OK')
-
-fs.comm_mpi_finalise()

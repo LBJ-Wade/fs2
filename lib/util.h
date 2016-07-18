@@ -35,4 +35,6 @@ static inline Float periodic_wrapup(Float x, const Float boxsize)
   return x;
 }
 
+bool util_stat(const char filename);
+
 #endif

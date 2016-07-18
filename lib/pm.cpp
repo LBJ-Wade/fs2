@@ -15,12 +15,14 @@
 #include "pm.h"
 #include "pm_domain.h"
 
-static double pm_factor;
-static size_t nc, ncz;
-static Float boxsize;
-
-static FFT* fft_pm;
-static complex_t* delta_k;
+namespace {
+  double pm_factor;
+  size_t nc, ncz;
+  Float boxsize;
+  
+  FFT* fft_pm= 0;
+  complex_t* delta_k;
+}
 
 static inline void grid_assign(Float * const d, 
 	    const size_t ix, const size_t iy, const size_t iz, const Float f)
@@ -38,10 +40,11 @@ static inline Float grid_val(Float const * const d,
 }
 
 
-static void check_total_density(Float const * const density);
-static void compute_delta_k();
-static void compute_force_mesh(const int axis);
-static void clear_density();
+namespace {
+  void compute_delta_k();
+  void compute_force_mesh(const int axis);
+  void clear_density();
+}
 
 //
 // Template functions
@@ -126,6 +129,7 @@ void pm_assign_cic_density(T const * const p, size_t np)
   fft_pm->mode= fft_mode_x;
   msg_printf(msg_verbose, "CIC density assignment finished.\n");
 }
+
 
 template <class T>
 void force_at_particle_locations(T const * const p, const int np, 
@@ -234,31 +238,18 @@ void pm_init(const int nc_pm, const double pm_factor_,
   delta_k= (complex_t*) mem_density->use_from_zero(size_density_k);
 }
 
-void clear_density()
-{
-  Float* const density= fft_pm->fx;
-  const size_t local_nx= fft_pm->local_nx;
-    
-#ifdef _OPENMP
-  #pragma omp parallel for default(shared)
-#endif
-  for(size_t ix = 0; ix < local_nx; ix++)
-    for(size_t iy = 0; iy < nc; iy++)
-      for(size_t iz = 0; iz < nc; iz++)
-	density[(ix*nc + iy)*ncz + iz] = -1;
-}
-
+/*
 void pm_compute_force(Particles* const particles)
 {
   // Compute density mesh, force mesh, forces on particles
+
+  pm_domain_send_positions(particles);
+
   pm_compute_density(particles);
 
-#ifndef NDEBUG
-  check_total_density(fft_pm->fx);
-#endif
+  pm_check_total_density();
 
   msg_printf(msg_verbose, "PM force computation...\n");
-  
   compute_delta_k();
 
   for(int axis=0; axis<3; axis++) {
@@ -275,31 +266,49 @@ void pm_compute_force(Particles* const particles)
 
   pm_domain_get_forces(particles);
 }
+*/
+
+void pm_compute_force(Particles* const particles)
+{
+  // Compute density mesh, force mesh, forces on particles
+  msg_printf(msg_verbose, "PM force computation...\n");
+  compute_delta_k();
+
+  for(int axis=0; axis<3; axis++) {
+    // delta(k) -> f(x_i)
+    compute_force_mesh(axis);
+
+    force_at_particle_locations<Particle>(
+      particles->p, particles->np_local, axis, particles->force);
+
+    force_at_particle_locations<Pos>(
+      pm_domain_buffer_positions(), pm_domain_buffer_np(), axis,
+      pm_domain_buffer_forces());
+  }
+}
+
 
 FFT* pm_compute_density(Particles* const particles)
 {
   msg_printf(msg_verbose, "PM density computation...\n");
 
-  pm_domain_init(fft_pm, particles);
-  pm_domain_send_positions(particles);
+  //pm_domain_send_positions(particles);
 
   clear_density();
   pm_assign_cic_density<Particle>(particles->p, particles->np_local);
   pm_assign_cic_density<Pos>(pm_domain_buffer_positions(),
 			     pm_domain_buffer_np());
-
+  
   return fft_pm;
 }
 
-
-//
-// Static functions
-//
-
-void check_total_density(Float const * const density)
+void pm_check_total_density()
 {
+#ifdef CHECK
   // Checks <delta> = 0
-  // Input: delta(x)
+  Float const * const density= fft_pm->fx;
+  assert(fft_pm->mode == fft_mode_x);
+  
   double sum= 0.0;
   const size_t local_nx= fft_pm->local_nx;
   
@@ -325,7 +334,36 @@ void check_total_density(Float const * const density)
 	      "Total CIC density OK within machine precision: %lf (< %.2lf).\n",
 	       sum_global, tol);
   }
+#endif
 }
+
+
+FFT* pm_get_fft()
+{
+  return fft_pm;
+}
+
+
+//
+// Local functions
+//
+namespace {
+
+void clear_density()
+{
+  Float* const density= fft_pm->fx;
+  const size_t local_nx= fft_pm->local_nx;
+    
+#ifdef _OPENMP
+  #pragma omp parallel for default(shared)
+#endif
+  for(size_t ix = 0; ix < local_nx; ix++)
+    for(size_t iy = 0; iy < nc; iy++)
+      for(size_t iz = 0; iz < nc; iz++)
+	density[(ix*nc + iy)*ncz + iz] = -1;
+}
+
+
 
 
 void compute_delta_k()
@@ -407,7 +445,5 @@ void compute_force_mesh(const int axis)
   fft_pm->execute_inverse(); // f_k -> f(x)
 }
 
-FFT* pm_get_fft()
-{
-  return fft_pm;
 }
+

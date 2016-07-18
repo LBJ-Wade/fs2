@@ -17,6 +17,8 @@
 #include "py_hdf5_io.h"
 #include "py_fft.h"
 #include "py_config.h"
+#include "py_timer.h"
+#include "py_stat.h"
 
 using namespace std;
 
@@ -25,15 +27,15 @@ static PyMethodDef methods[] = {
    "set loglevel: 0=debug, 1=verbose, ..."},
 
   {"comm_mpi_init", py_comm_mpi_init, METH_VARARGS,
-   "initialize MPI"},
+   "Initialize MPI; called automatically by __init__.py"},
   {"comm_mpi_finalise", py_comm_mpi_finalise, METH_VARARGS,
-   "finalise MPI"},
+   "Finalise MPI"},
   {"comm_hello", py_comm_hello, METH_VARARGS,
-   "test print statiment with MPI"},
+   "Test print statiment with MPI"},
   {"comm_this_node", py_comm_this_node, METH_VARARGS,
-   "return index (rank) of this node"},
+   "Return the index (rank) of this node"},
   {"comm_n_nodes", py_comm_n_nodes, METH_VARARGS,
-   "return number of MPI nodes (size)"}, 
+   "Return the number of MPI nodes (MPI size)"}, 
 
   {"_cosmology_init", py_cosmology_init, METH_VARARGS,
    "cosmology_init(omega_m0, h=0.7); set omega_m and h"},   
@@ -50,7 +52,9 @@ static PyMethodDef methods[] = {
   {"_particles_slice", py_particles_slice, METH_VARARGS,
    "return a slice of particles as np.array"},
   {"_particles_len", py_particles_len, METH_VARARGS,
-   "return the number particles"},
+   "return the local number of particles"},
+  {"_particles_np_total", py_particles_np_total, METH_VARARGS,
+   "return the total number of particles"},
   {"_particles_getitem", py_particles_getitem, METH_VARARGS,
    "_particles_getitem(_particles, row, col)"},
   {"_particles_one", py_particles_one, METH_VARARGS,
@@ -66,13 +70,29 @@ static PyMethodDef methods[] = {
   
   {"_lpt", py_lpt, METH_VARARGS,
    "_lpt(nc, boxsize, a, _ps, rando_seed); setup 2LPT displacements"},
+  {"_lpt_set_offset", py_lpt_set_offset, METH_VARARGS,
+   "_lpt_set_offset(offset)"},
 
-  {"pm_init", py_pm_init, METH_VARARGS,
+  {"_pm_init", py_pm_init, METH_VARARGS,
    "_pm_init(nc_pm, pm_factor, boxsize); initialise pm module"},
   {"_pm_compute_force", py_pm_compute_force, METH_VARARGS,
    "_pm_compute_force(_particles)"},   
   {"_pm_compute_density", py_pm_compute_density, METH_VARARGS,
    "_pm_compute_density(_particles); returns density mesh as np.array."},
+  {"_pm_domain_init", py_pm_domain_init, METH_VARARGS,
+   "_pm_domain_init(_particles)"},
+  {"_pm_send_positions", py_pm_send_positions, METH_VARARGS,
+   "_pm_send_positions(_particles)"},
+  {"_pm_check_total_density", py_pm_check_total_density, METH_VARARGS,
+   "_pm_check_total_density"},
+  {"_pm_get_forces", py_pm_get_forces, METH_VARARGS,
+   "_pm_get_forces(_particles)"},
+
+  
+  {"_pm_write_packet_info", py_pm_write_packet_info, METH_VARARGS,
+   "_pm_write_packet_info(filename)"},
+  {"_pm_set_packet_size", py_pm_set_packet_size, METH_VARARGS,
+   "_pm_set_packet_size(packet_size)"},
   
   {"_cola_kick", py_cola_kick, METH_VARARGS,
    "_cola_kick(_particles, a_vel); update particle velocities to a_vel"},
@@ -101,7 +121,16 @@ static PyMethodDef methods[] = {
 
   {"config_precision", py_config_precision, METH_VARARGS,
    "get 'single' or 'double'"},
-  
+
+  {"timer_save", py_timer_save, METH_VARARGS,
+   "timer_save(filename)"},
+
+  {"_stat_set_filename", py_stat_set_filename, METH_VARARGS,
+   "_stat_set_filename(filename)"},
+
+  {"_stat_record_pm_nbuf", py_stat_record_pm_nbuf, METH_VARARGS,
+   "_stat_record_pm_nbuf(group_name)"},
+
   {NULL, NULL, 0, NULL}
 };
 
@@ -116,7 +145,6 @@ static struct PyModuleDef module = {
 
 PyMODINIT_FUNC
 PyInit__fs(void) {
-  //py_power_module_init();
   py_particles_module_init();
   py_fft_module_init();
   

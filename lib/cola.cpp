@@ -12,24 +12,27 @@
 #include "msg.h"
 #include "cola.h"
 #include "cosmology.h"
+#include "timer.h"
 
-static const double nLPT= -2.5f;
+namespace {
+  constexpr double nLPT= -2.5f;
 
-double Sq(double ai, double af, double aRef);
+  double Sq(double ai, double af, double aRef);
+}
 
 void cola_kick(Particles* const particles, const double avel1)
 {
+  timer("cola-kick");
+  
   const double ai=  particles->a_v;  // t - 0.5*dt
   const double a=   particles->a_x;  // t
   const double af=  avel1;           // t + 0.5*dt
 
   const double om= cosmology_omega_m();
-  printf("omega= %e\n", om);
   msg_printf(msg_info, "Kick %lg -> %lg\n", ai, avel1);
 
   const Float kick_factor= (pow(af, nLPT) - pow(ai, nLPT))/
                              (nLPT*pow(a, nLPT)*sqrt(om/a + (1.0 - om)*a*a));
-  printf("kick_factor= %e\n", kick_factor);
   
   const double growth1= cosmology_D_growth(a);
   const double growth2= cosmology_D2_growth(a, growth1);
@@ -67,6 +70,8 @@ void cola_kick(Particles* const particles, const double avel1)
 
 void cola_drift(Particles* const particles, const double apos1)
 {
+  timer("cola-drift");
+  
   const double ai= particles->a_x;
   const double af= apos1;
   
@@ -100,6 +105,8 @@ void cola_drift(Particles* const particles, const double apos1)
   particles->a_x= af;
 }
 
+namespace {
+  
 double fun (double a, void * params) {
   double om= *(double*)params;
   return pow(a, nLPT)/(sqrt(om/(a*a*a)+1.0-om)*a*a*a);
@@ -111,7 +118,6 @@ double Sq(double ai, double af, double av) {
   // = \int_ai^af (a/a(av))^nLPT da/(a^3 H(a))
   //
   assert(ai > 0.0);
-  printf("Sq %e %e %e\n", ai, af, av); //abort();
   gsl_integration_workspace * w 
     = gsl_integration_workspace_alloc (5000);
   
@@ -130,3 +136,4 @@ double Sq(double ai, double af, double av) {
   return result/pow(av, nLPT);
 }
 
+}

@@ -10,6 +10,7 @@
 #include "comm.h"
 #include "msg.h"
 #include "power.h"
+#include "error.h"
 
 PowerSpectrum::PowerSpectrum(const char filename[]) :
   log_k(0), interp_(0), acc_(0)
@@ -37,12 +38,14 @@ PowerSpectrum::PowerSpectrum(const char filename[]) :
   gsl_interp_init(interp_, log_k, log_P, n);
 }
 
+
 PowerSpectrum::~PowerSpectrum()
 {
   if(interp_) gsl_interp_free(interp_);
   if(acc_) gsl_interp_accel_free(acc_);
   if(log_k) free(log_k);
 }
+
 
 double PowerSpectrum::P(const double k) const
 {
@@ -66,7 +69,7 @@ void PowerSpectrum::read_file_(const char filename[])
   FILE* fp= fopen(filename, "r");
   if(fp == 0) {
     msg_printf(msg_fatal, "Error: Unable to open input power spectrum file: %s\n",filename);
-    throw PowerFileError();
+    throw IOError();
   }
 
   int nalloc= 1000;
@@ -94,7 +97,9 @@ void PowerSpectrum::read_file_(const char filename[])
 
     int ret= sscanf(line, "%lg %lg", &k, &P);
     if(ret != 2) {
-      msg_printf(msg_warn, "Warning: Unable to understand a line in the power spectrum file; following data are ignored: %s", line);
+      msg_printf(msg_warn,
+		 "Warning: Unable to understand a line in the power spectrum "
+		 "file; following data are ignored: %s", line);
       break;
     }
 
@@ -104,10 +109,13 @@ void PowerSpectrum::read_file_(const char filename[])
     }
       
     if(k < k_prev) {
-      msg_printf(msg_fatal, "Error: wavenumber k in the power spectrum file must be sorted in increasing order. %dth data k=%e > previous k= %e\n", nlines, k_prev, k);
-      throw PowerFileError();
+      msg_printf(msg_fatal,
+		 "Error: wavenumber k in the power spectrum file must be sorted"
+		 " in increasing order. %dth data k=%e > previous k= %e\n",
+		 nlines, k_prev, k);
+      throw IOError();
     }
-      
+
     buf[2*nlines    ]= k;
     buf[2*nlines + 1]= P;
 

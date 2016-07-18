@@ -44,9 +44,10 @@ static inline MPI_Datatype mpi_datatype(const std::type_info& type_id)
 }
 
 
-template<class T> void comm_bcast(T x, MPI_Datatype datatype)
+//template<class T> void comm_bcast(T x, MPI_Datatype datatype)
+template<class T> void comm_bcast(T x)
 {
-  MPI_Bcast(&x, 1, datatype, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&x, 1, mpi_datatype(typeid(T)), 0, MPI_COMM_WORLD);
 }
 
 template<class T> T comm_sum(T x)

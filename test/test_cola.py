@@ -17,16 +17,18 @@ x_ref = file['x'][:]
 file.close()
 
 # Cola simulation
+fs.set_loglevel(3)
 particles = cola_setup.particles()
 
 x_par = particles.x
 
+# TODO:
 # get boxsize a
 # parallelise diff and get diff= x_par - x_ref
 # need to periodic wrapup the difference
 # must compare with dx=boxsize/nc
 
-if fs.comm_this_node() == 0:
+if fs.comm.this_node() == 0:
     a = x_par - x_ref
     a_max = np.max(np.abs(a))
     a_rms = np.std(a)
@@ -39,5 +41,3 @@ if fs.comm_this_node() == 0:
 
     print('max error %e; OK' % (a_max))
     print('rms error %e; OK' % (a_rms))
-
-fs.comm_mpi_finalise()

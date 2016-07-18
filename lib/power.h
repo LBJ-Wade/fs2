@@ -21,8 +21,4 @@ class PowerSpectrum {
   void read_file_(const char filename[]);    
 };
 
-class PowerFileError {
-
-};
-
 #endif

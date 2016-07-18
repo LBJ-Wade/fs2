@@ -1,8 +1,3 @@
-///
-/// \file  msg.c
-/// \brief Prints message to standard output
-///
-
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -10,16 +5,19 @@
 #include "comm.h"
 #include "msg.h"
 
-static enum LogLevel log_level;
-static char prefix[8]= "";
+namespace {
+  enum LogLevel log_level;
+  char prefix[8]= "";
+}
+
 
 void msg_set_loglevel(const enum LogLevel lv)
 {
   log_level= lv;
-  //msg_printf(msg_fatal, "loglevel is set to %d\n", log_level);
 
   comm_mpi_msg();
 }
+
 
 void msg_set_prefix(const char prefix_[])
 {
@@ -44,6 +42,7 @@ void msg_printf(const enum LogLevel msg_level, char const * const fmt, ...)
   }
 }
 
+
 void msg_abort(char const * const fmt, ...)
 {
   va_list argp;
@@ -56,14 +55,3 @@ void msg_abort(char const * const fmt, ...)
 
   comm_abort();
 }
-
-/*
-void assert_double(const char file[], const unsigned int line, const double x, const double x_expected, const double eps)
-{
-  double rel_error= fabs(x-x_expected)/x_expected;
-  if(rel_error >= eps) {
-    msg_abort("Assesion error at %s %u: %e != %e, %e error > %e required\n",
-	  file, line, x, x_expected, rel_error, eps);
-  }
-}
-*/

@@ -9,15 +9,15 @@ a = 0.0
 seed = 1
 
 
-fs.cosmology_init(omega_m)
+fs.cosmology.init(omega_m)
 ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
 # Set 2LPT displacements at scale factor a
-particles = fs.lpt(nc, boxsize, a, ps, seed)
+particles = fs.lpt.lpt(nc, boxsize, a, ps, seed)
 
-fs.pm_init(nc*pm_nc_factor, pm_nc_factor, boxsize)
+fs.pm.init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 
-filename = 'particles_%d.h5' % fs.comm_n_nodes()
+filename = 'particles_%d.h5' % fs.comm.n_nodes()
 
 particles.save_hdf5(filename, 'ix')
 
@@ -29,8 +29,10 @@ def assert_almost_equal(x, y):
     assert(abs(x - y) < eps)
 
 
-if fs.comm_this_node() == 0:
+if fs.comm.this_node() == 0:
     file = h5py.File(filename, 'r')
+    file_nc = file['parameters/nc'][()]
+    file_omegam = file['parameters/omega_m'][()]
     file_x = file['x'][:]
     file_id = file['id'][:]
     file.close()
@@ -40,6 +42,13 @@ if fs.comm_this_node() == 0:
     assert(file_x.shape == (np, 3))
 
     print('data shape OK')
+
+    #
+    # Test parameters
+    #
+    assert(file_nc == nc)
+    assert(file_omegam == omega_m)
+    print('parameters OK')
 
     #
     # Test x_file
@@ -66,5 +75,3 @@ if fs.comm_this_node() == 0:
                 assert_almost_equal(z, file_x[index, 2])
 
     print('%s/x  OK' % filename)
-
-fs.comm_mpi_finalise()
