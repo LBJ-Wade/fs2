@@ -8,10 +8,10 @@ method using Lagrantial Perturbation Theory (LPT).
 
 
 def kick(particles, a_vel):
-    """Update particle velocities to scale factor a_vel using COLA
+    """Update particle velocities to scale factor a_vel using COLA.
 
     Args:
-        particles (Particles)
+        particles (Particles).
         a_vel (float): Scale factor after kick.
     """
 
@@ -19,10 +19,10 @@ def kick(particles, a_vel):
 
 
 def drift(particles, a_pos):
-    """Update particle positions to scale factor a_pos using COLA
+    """Update particle positions to scale factor a_pos using COLA.
 
     Args:
-        particles (Particles)
+        particles (Particles).
         a_pos (float): Scale factor after drift.
     """
 
