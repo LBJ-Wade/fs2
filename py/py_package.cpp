@@ -6,6 +6,7 @@
 
 #include "py_msg.h"
 #include "py_comm.h"
+#include "py_mem.h"
 #include "py_cosmology.h"
 #include "py_power.h"
 #include "py_particles.h"
@@ -37,6 +38,11 @@ static PyMethodDef methods[] = {
   {"comm_n_nodes", py_comm_n_nodes, METH_VARARGS,
    "Return the number of MPI nodes (MPI size)"}, 
 
+  {"_mem_alloc", py_mem_alloc, METH_VARARGS,
+   "create a new Mem object"},
+  {"_mem", py_mem, METH_VARARGS,
+   "return mem allocated and using"},
+  
   {"_cosmology_init", py_cosmology_init, METH_VARARGS,
    "cosmology_init(omega_m0, h=0.7); set omega_m and h"},   
   

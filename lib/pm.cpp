@@ -15,9 +15,14 @@
 #include "pm.h"
 #include "pm_domain.h"
 
+//
+// Module variables
+// Initialisation is checked by nc = 0
+
 namespace {
+  PmStatus status;
   double pm_factor;
-  size_t nc, ncz;
+  size_t nc=0, ncz;
   Float boxsize;
   
   FFT* fft_pm= 0;
@@ -58,6 +63,7 @@ void pm_assign_cic_density(T const * const p, size_t np)
   // Result: density field delta(x) in fft_pm->fx
 
   // particles are assumed to be periodiclly wraped up in y,z direction
+  
 
   msg_printf(msg_verbose, "Computing PM density with %lu particles\n", np);
 	     
@@ -128,6 +134,7 @@ void pm_assign_cic_density(T const * const p, size_t np)
 
   fft_pm->mode= fft_mode_x;
   msg_printf(msg_verbose, "CIC density assignment finished.\n");
+  status= PmStatus::density_done;
 }
 
 
@@ -217,15 +224,33 @@ void pm_init(const int nc_pm, const double pm_factor_,
 	     Mem* const mem_pm, Mem* const mem_density,
 	     const Float boxsize_)
 {
-  msg_printf(msg_verbose, "PM module init\n");
+  // pm_init may be called multiple times with same parameters
+  //
+  // Prerequisite:
+  //    ???
+  //
+
+  if(nc > 0) {
+    if(nc_pm != nc || pm_factor != pm_factor_ || boxsize !=  boxsize_)
+      pm_free();
+    else
+      return;
+  }
+  
   nc= nc_pm;
   pm_factor= pm_factor_;
   ncz= 2*(nc/2 + 1);
   boxsize= boxsize_;
 
   if(nc <= 1) {
-    msg_printf(msg_fatal, "Error: nc_pm (= %d) must be larger than 1\n",
+    msg_printf(msg_fatal, "Error: nc_pm (= %d) must be larger than 1.\n",
 	       nc_pm);
+    throw RuntimeError();
+  }
+
+  if(boxsize <= 0) {
+    msg_printf(msg_fatal, "Error: boxsize (= %f) must be positive.\n",
+	       boxsize);
     throw RuntimeError();
   }
 
@@ -236,6 +261,16 @@ void pm_init(const int nc_pm, const double pm_factor_,
 
   size_t size_density_k= nc*(fft_pm->local_nky)*nckz*sizeof(complex_t);
   delta_k= (complex_t*) mem_density->use_from_zero(size_density_k);
+
+  msg_printf(msg_verbose, "PM module inititialised\n");
+
+  status = PmStatus::done;
+}
+
+void pm_free()
+{
+  nc = 0;
+  delete fft_pm; fft_pm= 0;
 }
 
 /*
@@ -271,6 +306,13 @@ void pm_compute_force(Particles* const particles)
 void pm_compute_force(Particles* const particles)
 {
   // Compute density mesh, force mesh, forces on particles
+  // Raises: AssertionError
+
+  if(status != PmStatus::density_done) {
+    msg_printf(msg_error, "Error: PM density not ready.");
+    throw RuntimeError();
+  }
+  
   msg_printf(msg_verbose, "PM force computation...\n");
   compute_delta_k();
 
@@ -285,6 +327,8 @@ void pm_compute_force(Particles* const particles)
       pm_domain_buffer_positions(), pm_domain_buffer_np(), axis,
       pm_domain_buffer_forces());
   }
+
+  status= PmStatus::force_done;
 }
 
 
@@ -300,6 +344,8 @@ FFT* pm_compute_density(Particles* const particles)
 			     pm_domain_buffer_np());
   
   return fft_pm;
+
+  status= PmStatus::density_done;
 }
 
 void pm_check_total_density()
@@ -341,6 +387,16 @@ void pm_check_total_density()
 FFT* pm_get_fft()
 {
   return fft_pm;
+}
+
+PmStatus pm_get_status()
+{
+  return status;
+}
+
+void pm_set_status(PmStatus pm_status)
+{
+  status= pm_status;
 }
 
 

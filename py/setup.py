@@ -17,6 +17,7 @@ setup(name='fs',
       ext_modules=[
           Extension('fs._fs',
                     ['py_package.cpp', 'py_msg.cpp', 'py_comm.cpp',
+                     'py_mem.cpp',
                      'py_cosmology.cpp', 'py_power.cpp', 'py_particles.cpp',
                      'py_lpt.cpp', 'py_pm.cpp', 'py_cola.cpp','py_leapfrog.cpp',
                      'py_write.cpp', 'py_fft.cpp', 'py_hdf5_io.cpp',

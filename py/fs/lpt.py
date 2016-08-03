@@ -2,7 +2,7 @@ import fs._fs as c
 from fs.particles import Particles
 
 
-def lpt(nc, boxsize, a, ps, seed):
+def init(nc, boxsize, a, ps, seed):
     """Generate 2LPT displacements and particle positions.
 
     This function generates a random Gaussian initial condition and

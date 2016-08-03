@@ -53,7 +53,7 @@ void pm_domain_init(Particles const * const particles)
   FFT const * const fft = pm_get_fft();
   if(fft == 0) {
     msg_printf(msg_error,
-	       "Error: pm_init must be called before pm_domain_init\n");
+	       "Error: pm_init must be called before pm_domain_init/pm_domain_send_positions\n");
     throw RuntimeError();
   }
 
@@ -74,6 +74,7 @@ void pm_domain_init(Particles const * const particles)
 void pm_domain_send_positions(Particles* const particles)
 {
   // Send particle positions to other nodes for PM density computation
+  // Raises RuntimeError if pm module not initialised
   pm_domain_init(particles);
   assert(buf_pos);
 

@@ -1,5 +1,6 @@
 import fs._fs as c
 
+
 class Mem:
     """Mem is a memory allocation utility.
 
@@ -17,11 +18,11 @@ class Mem:
     """
 
     def __init__(self, name, size=0):
-        self._mem= c._mem_alloc(name, size)
-        self.name= name
-        mem= c._mem(self._mem)
-        self.mem_allocated= mem[0]
-        self.mem_using= mem[1]
+        self._mem = c._mem_alloc(name, size)
+        self.name = name
+        mem = c._mem(self._mem)
+        self.mem_allocated = mem[0]
+        self.mem_using = mem[1]
 
     def __repr__(self):
         return "Mem %s, using %d/%d bytes" % (

@@ -10,6 +10,7 @@ static bool pm_initialised= false;
 PyObject* py_pm_init(PyObject* self, PyObject* args)
 {
   // pm_init(nc_pm, pm_factor, boxsize)
+  
 
   int nc_pm;
   double pm_factor, boxsize;
@@ -33,10 +34,12 @@ PyObject* py_pm_init(PyObject* self, PyObject* args)
 PyObject* py_pm_compute_density(PyObject* self, PyObject* args)
 {
   // _pm_compute_density(_particles)
+  /*
   if(!pm_initialised) {
     PyErr_SetString(PyExc_RuntimeError, "PM not initialised; call pm_init().");
     return NULL;
   }
+  */
   
   PyObject* py_particles;
   
@@ -85,6 +88,8 @@ PyObject* py_pm_compute_force(PyObject* self, PyObject* args)
 PyObject* py_pm_send_positions(PyObject* self, PyObject* args)
 {
   //_pm_send_positions(_particles)
+  // raises RuntimeError()
+  
   PyObject* py_particles;
   
   if(!PyArg_ParseTuple(args, "O", &py_particles))
@@ -94,7 +99,13 @@ PyObject* py_pm_send_positions(PyObject* self, PyObject* args)
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
-  pm_domain_send_positions(particles);
+  try {
+    pm_domain_send_positions(particles);
+  }
+  catch (RuntimeError e) {
+    PyErr_SetNone(PyExc_RuntimeError);
+    return NULL;
+  }
 
   Py_RETURN_NONE;  
 }
@@ -125,7 +136,14 @@ PyObject* py_pm_get_forces(PyObject* self, PyObject* args)
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
-  pm_domain_get_forces(particles);
+  try {
+    pm_domain_get_forces(particles);
+  }
+  catch (RuntimeError e) {
+    PyErr_SetNone(PyExc_RuntimeError);
+    return NULL;
+  }
+
 
   Py_RETURN_NONE;  
 }
