@@ -37,6 +37,8 @@ struct Packet {
 };
 
 void pm_domain_init(Particles const * const particles);
+void pm_domain_free();
+
 void pm_domain_send_positions(Particles* const particles);
 Pos const * pm_domain_buffer_positions();
 Float3* pm_domain_buffer_forces();

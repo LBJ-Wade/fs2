@@ -226,9 +226,7 @@ void pm_init(const int nc_pm, const double pm_factor_,
 {
   // pm_init may be called multiple times with same parameters
   //
-  // Prerequisite:
-  //    ???
-  //
+
 
   if(nc > 0) {
     if(nc_pm != nc || pm_factor != pm_factor_ || boxsize !=  boxsize_)
