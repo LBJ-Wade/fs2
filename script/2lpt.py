@@ -3,8 +3,11 @@
 #
 # mpirun -n 4 2lpt.py
 #
+import signal
 import fs
 
+
+signal.signal(signal.SIGINT, signal.SIG_DFL) # enable cancel with ctrl-c
 
 # parameters
 omega_m = 0.308

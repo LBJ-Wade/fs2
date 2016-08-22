@@ -14,7 +14,7 @@ def particles():
     fs.cosmology.init(omega_m)
     ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
-    particles = fs.lpt.lpt(nc, boxsize, a_init, ps, seed)
+    particles = fs.lpt.init(nc, boxsize, a_init, ps, seed)
 
     fs.pm.init(nc_pm, nc_pm/nc, boxsize)
 

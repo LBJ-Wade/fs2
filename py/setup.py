@@ -8,7 +8,6 @@ print(np.get_include())
 #os.environ["CC"] = "mpicc"
 #os.environ["CXX"] = "mpic++"
 
-
 setup(name='fs',
       version='0.0.1',
       author='Jun Koda',
@@ -22,6 +21,7 @@ setup(name='fs',
                      'py_lpt.cpp', 'py_pm.cpp', 'py_cola.cpp','py_leapfrog.cpp',
                      'py_write.cpp', 'py_fft.cpp', 'py_hdf5_io.cpp',
                      'py_config.cpp', 'py_timer.cpp', 'py_stat.cpp',
+                     'py_fof.cpp',
                     ],
                     include_dirs = ['../lib', np.get_include()],
                     #define_macros = [('DOUBLEPRECISION','1')],

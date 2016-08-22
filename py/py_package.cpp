@@ -20,6 +20,8 @@
 #include "py_config.h"
 #include "py_timer.h"
 #include "py_stat.h"
+#include "py_fof.h"
+#include "py_array.h"
 
 using namespace std;
 
@@ -73,6 +75,8 @@ static PyMethodDef methods[] = {
    "_particles_x_asarray(_particles)"},
   {"_particles_force_asarray", py_particles_force_asarray, METH_VARARGS,
    "_particles_force_asarray(_particles)"},
+  {"_particles_periodic_wrapup", py_particles_periodic_wrapup, METH_VARARGS,
+   "_particles_periodic_wrapup(_particles)"},
   
   {"_lpt", py_lpt, METH_VARARGS,
    "_lpt(nc, boxsize, a, _ps, rando_seed); setup 2LPT displacements"},
@@ -137,6 +141,10 @@ static PyMethodDef methods[] = {
   {"_stat_record_pm_nbuf", py_stat_record_pm_nbuf, METH_VARARGS,
    "_stat_record_pm_nbuf(group_name)"},
 
+  py(PyObject* self, PyObject* args)
+  {"_fof_find_groups", py_fof_init, METH_VARARGS,
+   "_fof_find_groups(_particles, linking_length, quota"},
+
   {NULL, NULL, 0, NULL}
 };
 
@@ -153,6 +161,7 @@ PyMODINIT_FUNC
 PyInit__fs(void) {
   py_particles_module_init();
   py_fft_module_init();
+  py_array_module_init();
   
   return PyModule_Create(&module);
 }

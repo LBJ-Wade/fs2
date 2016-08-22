@@ -33,7 +33,7 @@ def one_particle_test(x, y, z):
 
 nc = 4
 boxsize = 64
-fs.set_loglevel(3)
+fs.msg.set_loglevel(3)
 
 np_buf = 10
 fs.pm.init(nc, 1, boxsize)

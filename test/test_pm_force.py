@@ -17,7 +17,7 @@ ref_force = file['f'][:]
 file.close()
 
 # compute PM force
-fs.set_loglevel(0)
+fs.msg.set_loglevel(0)
 
 particles = pm_setup.force()
 particle_id = particles.id

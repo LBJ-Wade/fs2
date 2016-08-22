@@ -31,7 +31,10 @@ typedef float Float;
 #endif
 
 typedef Float Float3[3];
-typedef int   Index;     // local index
+typedef int   Index;
+// number of particles in one MPI node must not overflow Index
+// (however, number of bytes allocated for particles may be larger
+// than int range)
 
 
 #ifndef M_PI

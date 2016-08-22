@@ -23,7 +23,7 @@ static inline void periodic_wrapup_p(Particle& p, const Float boxsize)
   }
 }
 
-static inline Float periodic_wrapup(Float x, const Float boxsize)
+static inline Float periodic_wrapup_x(Float x, const Float boxsize)
 {
   if(x < 0) x += boxsize;
   if(x >= boxsize) x -= boxsize;
@@ -36,5 +36,7 @@ static inline Float periodic_wrapup(Float x, const Float boxsize)
 }
 
 bool util_stat(const char filename);
+
+void util_periodic_wrapup(Particles* const particles);
 
 #endif

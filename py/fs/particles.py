@@ -92,6 +92,11 @@ class Particles(object):
         """
         c._hdf5_write_particles(self._particles, filename, var)
 
+    def periodic_wrapup(self):
+        """Periodic wrap up particle poisitions
+        """
+        c._particles_periodic_wrapup(self._particles)
+
     @property
     def np_total(self):
         return c._particles_np_total(self._particles)

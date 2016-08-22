@@ -375,3 +375,18 @@ PyObject* py_particles_np_total(PyObject* self, PyObject* args)
 
   return Py_BuildValue("k", (unsigned long) particles->np_total);
 }
+
+PyObject* py_particles_periodic_wrapup(PyObject* self, PyObject* args)
+{
+  PyObject* py_particles;
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+
+  Particles* const particles=
+    (Particles*) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  util_periodic_wrapup(particles);
+
+  Py_RETURN_NONE;
+}

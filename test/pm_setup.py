@@ -17,12 +17,12 @@ def setup_particles():
     seed = 1
 
     # initial setup
-    fs.set_loglevel(3)
+    fs.msg.set_loglevel(3)
     fs.cosmology.init(omega_m)
     ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
     # Set 2LPT displacements at scale factor a
-    particles = fs.lpt.lpt(nc, boxsize, a, ps, seed)
+    particles = fs.lpt.init(nc, boxsize, a, ps, seed)
 
     fs.pm.init(nc*pm_nc_factor, pm_nc_factor, boxsize)
 

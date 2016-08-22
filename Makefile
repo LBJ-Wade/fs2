@@ -26,6 +26,9 @@ py:
 test:
 	cd test && $(MAKE)
 
+libtest:
+	cd lib/test && $(MAKE) libtest
+
 clean:
 	for dir in $(DIRS); do (cd $$dir && $(MAKE) clean); done
 
