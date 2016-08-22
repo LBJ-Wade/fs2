@@ -21,10 +21,10 @@
 using namespace std;
 
 namespace {
-  unsigned int* seedtable;
+  unsigned int* seedtable= 0;
   double boxsize;
 
-  size_t nc;
+  size_t nc= 0;
   size_t local_nx;
   size_t local_ix0;
   Float offset= 0.5f;
@@ -42,12 +42,17 @@ namespace {
 
 void lpt_init(const int nc_, const double boxsize_, Mem* mem)
 {
+  // nc_: number of particles per dimension
+  // boxsize_: box length on a side
+  // Mem: Memory object for LPT, can be 0.
+  //      If mem = 0, memory is allocated exclusively for LPT
   boxsize= boxsize_;
   nc= nc_;
 
   msg_printf(msg_debug, "lpt_init(nc= %d, boxsize= %.1lf)\n", nc, boxsize);
-  
-  mem->use_from_zero(0);
+
+  if(mem)
+    mem->use_from_zero(0);
   
   for(int i=0; i<3; i++)
     fft_psi[i]= new FFT("Psi_i", nc, mem, 0);
@@ -78,9 +83,30 @@ void lpt_init(const int nc_, const double boxsize_, Mem* mem)
   }
 }
 
+void lpt_free()
+{
+  for(int i=0; i<3; i++)
+    delete fft_psi[i];
+
+  for(int i=0; i<6; i++)
+    delete fft_psi_ij[i];
+
+  free(seedtable);
+  seedtable= 0;
+
+  nc= 0;
+}
+
+
 void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
 			   const double a, Particles* particles)
 {
+  if(nc == 0 || seedtable == 0) {
+    msg_printf(msg_error,
+	       "Error: lpt_init() not called before lpt_set_displacements");
+    return;
+  }
+  
   timer("lpt");
   msg_printf(msg_verbose, "Computing 2LPT\n");
   assert(particles);
@@ -144,8 +170,6 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
                                     // multiply by cosmology_D2_growth() for a
        p->v[k]= 0;                  // velocity in comoving 2LPT
 
-       //cerr << "x= " << p->x[0] << endl;
-       
        sum2 += (D1*dis + D2*dis2)*(D1*dis + D2*dis2);
      }
      p->id= id++;

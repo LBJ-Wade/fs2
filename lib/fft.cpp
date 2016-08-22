@@ -17,7 +17,7 @@ using namespace std;
 
 
 FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
-  nc(nc_), mode(fft_mode_unknown)
+  nc(nc_), mode(fft_mode_unknown), own_mem(nullptr)
 {
   // Allocates memory for FFT real and Fourier space and initilise fftw_plans
   assert(nc > 0);
@@ -39,8 +39,10 @@ FFT::FFT(const char name[], const int nc_, Mem* mem, const bool transposed) :
   assert(local_nx >= 0); assert(local_ix0 >= 0);
   
     
-  if(mem == 0)
+  if(mem == 0) {
     mem= new Mem(name, size);
+    own_mem= mem;
+  }
   
   void* buf= mem->use_remaining(size);
   // Call mem_use_from_zero(mem, 0) before this to use mem from the beginning.
@@ -69,6 +71,9 @@ FFT::~FFT()
     FFTW(destroy_plan)(forward_plan);
     FFTW(destroy_plan)(inverse_plan);
   }
+
+  if(own_mem)
+    delete own_mem;
 }
 
 
