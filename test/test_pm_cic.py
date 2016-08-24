@@ -10,11 +10,16 @@ def one_particle_test(x, y, z):
     dx = boxsize/nc
     particles = fs.Particles(nc, boxsize)
 
+    a = None
     if fs.comm.this_node() == 0:
-        particles.set_one(x*dx, y*dx, z*dx)
         print("-- Testing %.1f %.1f %.1f -- " % (x*dx, y*dx, z*dx))
+        a = np.zeros((1, 3))
+        a[0, :] = [x*dx, y*dx, z*dx]
 
-    particles.update_np_total()
+    print(a)
+    particles.append(a)
+
+    print('particle one')
 
     fs.pm.send_positions(particles)
     fft = fs.pm.compute_density(particles)
@@ -33,7 +38,7 @@ def one_particle_test(x, y, z):
 
 nc = 4
 boxsize = 64
-fs.msg.set_loglevel(3)
+fs.msg.set_loglevel('debug')
 
 np_buf = 10
 fs.pm.init(nc, 1, boxsize)

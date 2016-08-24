@@ -55,6 +55,9 @@ void fof_find_groups(Particles* const particles, const Float linking_length, con
   grp.reserve(particles->np_allocated);
 
   // nfof[i] is a vector of number of FoF member particles for
+  nfof.clear();
+  nfof.reserve(particles->np_allocated);
+
   
   Index n= particles->np_local;
   for(Index i=0; i<n; ++i)
@@ -83,7 +86,7 @@ void fof_find_groups(Particles* const particles, const Float linking_length, con
     nfof.push_back(ngrp);
   }
 
-  msg_printf(msg_info, "fof %lu groups found\n", (unsigned long) ngrp);
+  msg_printf(msg_info, "fof %lu groups found.\n", (unsigned long) ngrp);
   
 }
 

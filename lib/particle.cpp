@@ -1,6 +1,9 @@
 #include <cstdlib>
 #include <cassert>
+#include <mpi.h>
+
 #include "msg.h"
+#include "comm.h"
 #include "util.h"
 #include "fft.h"
 #include "particle.h"
@@ -16,6 +19,7 @@ Particles::Particles(const int nc, const double boxsize_) :
   pv= new vector<Particle>(np_alloc);
   p= &pv->front();
   //p= (Particle*) malloc(np_alloc*sizeof(Particle)); assert(p);
+
   force= (Float3*) calloc(3*np_alloc, sizeof(Float)); assert(force);
   np_allocated= np_alloc;
   boxsize= boxsize_;
@@ -29,6 +33,13 @@ Particles::Particles(const int nc, const double boxsize_) :
 
 Particles::~Particles()
 {
-  free(p);
+
 }
 
+void Particles::update_np_total()
+{
+  // MPI Communicate and update total number of particles
+  np_total= comm_sum<long long>(np_local);
+
+  msg_printf(msg_debug, "Update np_total(%d) = %lu\n", comm_this_node(), np_total);
+}

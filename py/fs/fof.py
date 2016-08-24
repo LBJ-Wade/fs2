@@ -19,4 +19,4 @@ def find_groups(particles, **kwargs):
     l = kwargs.get('l', 0.2)
     quota = kwargs.get('quota', 32)
 
-    return c._fof_find_groupsinit(particles._particles, l, quota)
+    return c._fof_find_groups(particles._particles, l, quota)

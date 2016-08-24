@@ -79,7 +79,7 @@ PyObject* py_particles_asarray(T const * dat,
   //
 
     
-  const int nsend= np_local;
+  const size_t nsend= np_local;
 
   T* const sendbuf= (T*) malloc(sizeof(T)*nsend*ncol);
   py_assert_ptr(sendbuf);
@@ -87,7 +87,7 @@ PyObject* py_particles_asarray(T const * dat,
   size_t ibuf= 0;
 
   for(size_t i=0; i<nsend; ++i) {
-    for(size_t j=0; j<ncol; ++j) {
+    for(int j=0; j<ncol; ++j) {
       sendbuf[ibuf++]= dat[j];
     }
     
@@ -269,30 +269,6 @@ PyObject* py_particles_getitem(PyObject* self, PyObject* args)
   return PyArray_SimpleNewFromData(nd, dims, NPY_FLOAT, &(v->front()));
 }
 
-PyObject* py_particles_one(PyObject* self, PyObject* args)
-{
-  // _particles_add(_particles, x, y, z)
-  PyObject* py_particles;
-  double x, y, z;
-  
-  if(!PyArg_ParseTuple(args, "Oddd", &py_particles, &x, &y, &z))
-     return NULL;
-
-  Particles* const particles=
-    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
-  py_assert_ptr(particles);
-
-  if(particles->np_allocated < 1) {
-    PyErr_SetString(PyExc_RuntimeError, "Particle no space for one particle");
-    return NULL;
-  }
-  
-  Particle* const p= particles->p;
-  p->x[0]= x; p->x[1]= y; p->x[2]= z;
-  particles->np_local= 1;
-  
-  Py_RETURN_NONE;
-}
 
 PyObject* py_particles_update_np_total(PyObject* self, PyObject* args)
 {
@@ -306,16 +282,11 @@ PyObject* py_particles_update_np_total(PyObject* self, PyObject* args)
     (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
-  unsigned long long np_local= particles->np_local;
-  unsigned long long np_total;
-  
-  MPI_Allreduce(&np_local, &np_total, 1, MPI_UNSIGNED_LONG_LONG,
-		MPI_SUM, MPI_COMM_WORLD);
-
-  particles->np_total= np_total;
+  particles->update_np_total();
 
   Py_RETURN_NONE;
 }
+
 
 PyObject* py_particles_id_asarray(PyObject* self, PyObject* args)
 {
@@ -388,5 +359,83 @@ PyObject* py_particles_periodic_wrapup(PyObject* self, PyObject* args)
 
   util_periodic_wrapup(particles);
 
+  Py_RETURN_NONE;
+}
+
+PyObject* py_particles_clear(PyObject* self, PyObject* args)
+{
+  PyObject *py_particles;
+  if(!PyArg_ParseTuple(args, "O", &py_particles))
+    return NULL;
+  
+  Particles* const particles=
+    (Particles*) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  particles->pv->clear();
+  particles->np_local= particles->pv->size();
+  particles->update_np_total();
+
+  Py_RETURN_NONE;
+}
+  
+PyObject* py_particles_append(PyObject* self, PyObject* args)
+{
+  PyObject *py_particles, *py_arr;
+  if(!PyArg_ParseTuple(args, "OO", &py_particles, &py_arr))
+    return NULL;
+
+  Particles* const particles=
+    (Particles*) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  if(py_arr != Py_None) {
+    Py_buffer view;
+
+    if(PyObject_GetBuffer(py_arr, &view,
+			  PyBUF_ANY_CONTIGUOUS | PyBUF_FORMAT) == -1) {
+      return NULL;
+    }
+
+    if(view.ndim != 2) {
+      PyErr_SetString(PyExc_TypeError, "Expected a 2-dimensional array");
+      PyBuffer_Release(&view);
+      return NULL;
+    }
+    if(strcmp(view.format, "d") != 0) {
+      PyErr_SetString(PyExc_TypeError, "Expected an array of doubles");
+      PyBuffer_Release(&view);
+      return NULL;
+    }
+    
+    const int n= view.shape[0];
+    const int ncol= view.shape[1];
+    
+    if(ncol < 3) {
+      PyErr_SetString(PyExc_TypeError, "Expected at least 3 columns for x y z");
+      return NULL;
+    }
+    
+    const size_t next_row= view.strides[0]/sizeof(double);
+    const size_t next_col= view.strides[1]/sizeof(double);
+    
+    double* arr= (double*) view.buf;
+    const size_t n_new= particles->np_local + n;
+    
+    for(size_t i= particles->np_local; i<n_new; ++i) {
+      Float* x= particles->pv->at(i).x;
+      x[0]= *arr;
+      x[1]= *(arr + next_col);
+      x[2]= *(arr + 2*next_col);
+      
+      arr += next_row;
+    }
+    
+    PyBuffer_Release(&view);
+
+    particles->np_local= n_new;
+  }
+  particles->update_np_total();
+      
   Py_RETURN_NONE;
 }

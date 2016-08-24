@@ -1,9 +1,15 @@
 #include <cmath>
+#include "config.h"
 #include "particle.h"
+#include "comm.h"
 #include "kdtree.h"
 #include "fof.h"
 #include "py_fof.h"
+#include "py_array.h"
 #include "py_assert.h"
+
+using namespace std;
+
 
 PyObject* py_fof_find_groups(PyObject* self, PyObject* args)
 {
@@ -27,6 +33,6 @@ PyObject* py_fof_find_groups(PyObject* self, PyObject* args)
   
   fof_find_groups(particles, linking_length, quota);
 
-  return py_array_from_vector(fof_nfof());
+  return py_vector_asarray<Index>(fof_nfof());
 }
 

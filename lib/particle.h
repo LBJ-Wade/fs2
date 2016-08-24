@@ -26,6 +26,7 @@ class Particles {
  public:
   Particles(const int nc, const double boxsize);
   ~Particles();
+  void update_np_total();
   
   Particle* p;
   std::vector<Particle>* pv;
@@ -36,5 +37,7 @@ class Particles {
   uint64_t np_total;
   double boxsize;
 };
+
+void particles_update_np_total(Particles* const particles);
 
 #endif

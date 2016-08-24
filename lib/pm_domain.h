@@ -17,7 +17,7 @@ class Domain {
     vbuf.push_back(x[2]);
     vbuf_index.push_back(i);
 
-    if(vbuf.size() >= packet_size)
+    if(vbuf.size() >= (size_t) packet_size)
       send_packet();
   }
   Float xbuf_min, xbuf_max;

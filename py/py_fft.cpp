@@ -98,7 +98,7 @@ PyObject* py_fft_fx_global_as_array(PyObject* self, PyObject* args)
       (FFT *) PyCapsule_GetPointer(py_fft, "_FFT");
   py_assert_ptr(fft);
 
-  const int nc= fft->nc;
+  const size_t nc= fft->nc;
   const size_t ncz= 2*(nc/2 + 1);
   const size_t nx= fft->local_nx;
   
@@ -110,7 +110,7 @@ PyObject* py_fft_fx_global_as_array(PyObject* self, PyObject* args)
     
   if(comm_this_node() == 0) {
     const int nd= 3;
-    npy_intp dims[]= {nc, nc, nc};
+    npy_intp dims[]= {(npy_intp)nc, (npy_intp)nc, (npy_intp)nc};
 
     arr= PyArray_ZEROS(nd, dims, NPY_FLOAT_TYPE, 0);
     py_assert_ptr(arr);
