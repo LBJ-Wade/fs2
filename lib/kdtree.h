@@ -24,6 +24,11 @@ static inline size_t right_child(const size_t i)
   return (i << 1) + 2;
 }
 
+static inline bool is_leaf(KdTree const * const tree)
+{
+  return (tree->iend - tree->ibegin) < KdTree::quota;
+}
+
 //void kdtree_construct(std::vector<Cluster>& v, const Float boxsize[]);
 KdTree* kdtree_init(Particles* const particles, const Float boxsize[], const int quota_=32);
 

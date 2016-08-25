@@ -20,7 +20,7 @@ static size_t height;
 int KdTree::quota;
 
 
-
+//static void traverse_tree_recursive(const size_t inode);
 
 static inline void set_left_right(KdTree * const tree, const int k,
 			     const Float left[], const Float right[])
@@ -96,6 +96,7 @@ void construct_recursive_balanced(vector<T>& v, const size_t inode,
   
   if(iend - ibegin <= KdTree::quota) {
     compute_bounding_box(v, ibegin, iend, left, right);
+    set_left_right(tree, tree->k, left, right);
     return;
   }
   
@@ -107,14 +108,14 @@ void construct_recursive_balanced(vector<T>& v, const size_t inode,
 	      CompPoints<T>(k));
 
   const size_t ileft= left_child(inode);
-  construct_recursive_balanced(v, ileft, ibegin, imid, left, right, boxsize3);
   kdtree[ileft].k= k;
+  construct_recursive_balanced(v, ileft, ibegin, imid, left, right, boxsize3);
   set_left_right(kdtree + ileft, k, left, right);
 
   Float left1[3], right1[3];
   const size_t iright= right_child(inode);
-  construct_recursive_balanced(v, iright, imid, iend, left1, right1, boxsize3);
   kdtree[iright].k= k;
+  construct_recursive_balanced(v, iright, imid, iend, left1, right1, boxsize3);
   set_left_right(kdtree + iright, k, left1, right1);
 
   left[0]= min(left[0], left1[0]);
@@ -133,7 +134,8 @@ void construct_recursive_balanced(vector<T>& v, const size_t inode,
 //
 // Global functions
 //
-KdTree* kdtree_init(Particles* const particles, const Float boxsize3[], const int quota_)
+KdTree* kdtree_init(Particles* const particles,
+		    Float const * const boxsize3, const int quota)
 {
   // boxsize3: the size of the cuboid containing particles. This is only used
   //           to determine the direction of cut, does not have to be an exact
@@ -141,34 +143,54 @@ KdTree* kdtree_init(Particles* const particles, const Float boxsize3[], const in
   // quota (optional): the maximum number of particles in the leaf.
   //                   Empirically, default 32 is OK.
   
-  KdTree::quota= quota_;
-  
   const size_t np= particles->np_allocated;
   Index nleaf= 1;
-  height= 0;
-  while(KdTree::quota*nleaf < np) {
+  int height_new= 0;
+  while(quota*nleaf < np) {
     nleaf= nleaf << 1;
-    height++;
+    height_new++;
   }
 
-  assert(nleaf == (1 << height));
+  assert(nleaf == (1 << height_new));
+
+  KdTree::quota= quota;
   
-  ntree_alloc= 2*nleaf - 1;
-  kdtree= (KdTree*) malloc(sizeof(KdTree)*ntree_alloc);
-  size_t mem_size= mbytes(sizeof(KdTree)*ntree_alloc);
+  size_t ntree_alloc_new= 2*nleaf - 1;
 
-  if(kdtree) {
-    msg_printf(msg_info, "Allocated %lu Mbytes for kdtree\n", mem_size);
-    msg_printf(msg_verbose, "Tree depth= %d, leaves= %d\n", height, nleaf);
-  }
-  else {	       
-    msg_printf(msg_fatal, "Error: unable to allocate memory for %lu kdtrees, "
-	       "%lu mbytes required\n", ntree_alloc, mem_size);
-    throw MemoryError();
+  if(ntree_alloc_new > ntree_alloc) {
+    // Allocate (more) memory for KdTree
+    ntree_alloc= ntree_alloc_new;
+    height= height_new;
+    
+    free(kdtree);
+    kdtree= (KdTree*) malloc(sizeof(KdTree)*ntree_alloc);
+    size_t mem_size= mbytes(sizeof(KdTree)*ntree_alloc);
+    
+  
+    if(kdtree) {
+      msg_printf(msg_info, "Allocated %lu Mbytes for kdtree\n", mem_size);
+      msg_printf(msg_verbose, "Tree depth= %d, leaves= %d\n", height, nleaf);
+    }
+    else {	       
+      msg_printf(msg_fatal, "Error: unable to allocate memory for %lu kdtrees, "
+		 "%lu mbytes required\n", ntree_alloc, mem_size);
+      throw MemoryError();
+    }
   }
 
   Float left[3], right[3];
-  Float boxsize3_copy[]= {boxsize3[0], boxsize3[1], boxsize3[2]};
+  Float boxsize3_copy[3];
+  if(boxsize3) {
+    boxsize3_copy[0]= boxsize3[0];
+    boxsize3_copy[1]= boxsize3[1];
+    boxsize3_copy[2]= boxsize3[2];
+  }
+  else {
+    compute_bounding_box(*particles->pv, 0, particles->np_local, left, right);
+    boxsize3_copy[0]= right[0] - left[0];
+    boxsize3_copy[1]= right[1] - left[1];
+    boxsize3_copy[2]= right[2] - left[2];
+  }
 
   construct_recursive_balanced(*particles->pv, 0, 0, particles->np_local,
 			       left, right, boxsize3_copy);
@@ -176,6 +198,20 @@ KdTree* kdtree_init(Particles* const particles, const Float boxsize3[], const in
   kdtree->k= 0;
   set_left_right(kdtree, 0, left, right);
 
+  //traverse_tree_recursive(0); // !!! debug
+  
   return kdtree;
 }
 
+/*
+void traverse_tree_recursive(const size_t inode)
+{
+  KdTree* const tree= kdtree + inode;
+  fprintf(stderr, "%zu %d [%f %f]\n", inode, tree->k, tree->left, tree->right);
+
+  if(is_leaf(tree)) return;
+
+  traverse_tree_recursive(left_child(inode));
+  traverse_tree_recursive(right_child(inode));
+}
+*/

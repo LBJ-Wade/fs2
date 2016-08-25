@@ -2,6 +2,7 @@
 // Helper function to handle np.array
 //
 
+#include <iostream>
 #include "py_array.h"
 #include "msg.h"
 #include "error.h"

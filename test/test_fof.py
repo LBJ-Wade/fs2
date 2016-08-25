@@ -3,6 +3,10 @@
 import unittest
 import numpy as np
 import fs
+import signal
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)  # enable cancel with ctrl-c
+
 
 nc = 4
 boxsize = 1.0
@@ -31,24 +35,39 @@ def set_line(x, dx, n):
 
 class TestFFT(unittest.TestCase):
     def setUp(self):
-        fs.msg.set_loglevel('debug')
+        fs.msg.set_loglevel(3)
 
     def test_line_sparse(self):
         """Test FoF with a line of particles separated larger than
-        the linking length. Expected to find 10 groups.
+        the linking length. Expected to find n groups.
         """
+
         a = set_line([0.5*dx, 0.5*dx, 0.5*dx], [1.1*ll, 0, 0], n)
         particles = fs.Particles(nc, boxsize)
         particles.append(a)
 
-        nfof = fs.fof.find_groups(particles, linking_factor=0.2, quota=16)
+        nfof = fs.fof.find_groups(particles, ll, quota=16)
         self.assertEqual(len(nfof), n)
 
-        nfof = fs.fof.find_groups(particles, linking_factor=0.2, quota=2)
+        nfof = fs.fof.find_groups(particles, ll, quota=2)
         self.assertEqual(len(nfof), n)
 
-        print('test_line_sparse OK')
         return True
+
+    def test_line_dense(self):
+        """Test FoF with a line of particles separated smaller than
+        the linking length. Expected to find 1 groups.
+        """
+
+        a = set_line([0.5*dx, 0.5*dx, 0.5*dx], [0.99*ll, 0, 0], n)
+        particles = fs.Particles(nc, boxsize)
+        particles.append(a)
+
+        nfof = fs.fof.find_groups(particles, ll, quota=16)
+        self.assertEqual(len(nfof), 1)
+
+        nfof = fs.fof.find_groups(particles, ll, quota=2)
+        self.assertEqual(len(nfof), 1)
 
 
 if __name__ == '__main__':

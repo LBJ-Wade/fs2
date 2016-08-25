@@ -53,14 +53,10 @@ template<class T> void comm_bcast(T x)
 template<class T> T comm_sum(T x)
 {
   T x_reduced;
-  //MPI_Allreduce(&x, &x_reduced, 1, mpi_datatype(typeid(T)),
-  //MPI_SUM, MPI_COMM_WORLD);
-  MPI_Reduce(&x, &x_reduced,1,  mpi_datatype(typeid(T)), MPI_SUM, 0, MPI_COMM_WORLD);
-  if(comm_this_node() == 0) std::cerr << "reduced " << x_reduced << std::endl;
-  MPI_Bcast(&x_reduced, 1, mpi_datatype(typeid(T)), 0, MPI_COMM_WORLD);
-  // ??? Bcast is not necessary if Allreduce works correctly ???
-
-  std::cerr << "comm_sum " << x << " " << x_reduced << std::endl;
+  MPI_Allreduce(&x, &x_reduced, 1, mpi_datatype(typeid(T)),
+		MPI_SUM, MPI_COMM_WORLD);
+  //MPI_Reduce(&x, &x_reduced,1,  mpi_datatype(typeid(T)), MPI_SUM, 0, MPI_COMM_WORLD);
+  //MPI_Bcast(&x_reduced, 1, mpi_datatype(typeid(T)), 0, MPI_COMM_WORLD);
 
   return x_reduced;
 }

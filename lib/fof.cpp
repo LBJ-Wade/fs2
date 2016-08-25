@@ -37,18 +37,23 @@ static void link_particles_recursive(const size_t inode, const Index i);
 
 
 
-void fof_find_groups(Particles* const particles, const Float linking_length, const int quota)
+void fof_find_groups(Particles* const particles,
+		     const Float linking_length,
+		     Float const * const boxsize3,
+		     const int quota)
 {
   // Apply Friends-of-Friends (FoF) halo finder on particles
   // A pair of particles x and y will be in the same member if
   // |x - y| < linking_length
   // particles will be suffled by kdtree_init()
-  
+
   boxsize= particles->boxsize;
   half_boxsize= particles->boxsize / 2;
   ll= linking_length;
   ll2= linking_length*linking_length;
   assert(q.empty());
+
+  msg_printf(msg_info, "Linking length %f\n", ll);
 
   // grp[i] is the group number that particle i belongs to
   grp.clear();
@@ -63,7 +68,6 @@ void fof_find_groups(Particles* const particles, const Float linking_length, con
   for(Index i=0; i<n; ++i)
     grp.push_back(i);
 
-  Float boxsize3[]= {boxsize, boxsize, boxsize};
   kdtree= kdtree_init(particles, boxsize3, quota);
   
   p= particles->p;
@@ -86,8 +90,7 @@ void fof_find_groups(Particles* const particles, const Float linking_length, con
     nfof.push_back(ngrp);
   }
 
-  msg_printf(msg_info, "fof %lu groups found.\n", (unsigned long) ngrp);
-  
+  msg_printf(msg_info, "fof %lu groups found.\n", (unsigned long) nfof.size());
 }
 
 size_t fof_ngroups()
@@ -109,14 +112,16 @@ void link_particles_recursive(const size_t inode, const Index i)
   const int k= kdtree->k;
   Float x= p[i].x[k];
 
-  if((x < tree->left - ll  && x + boxsize > tree->right + ll) ||
-     (x > tree->right + ll && x - boxsize < tree->left - ll))
+  if((x < tree->left  - ll && x + boxsize > tree->right + ll) ||
+     (x > tree->right + ll && x - boxsize < tree->left  - ll)) {
+
     return; // This node is far enough from particle i
+  }
 
   // Add neightbor particles if inode is a leaf
   if(tree->iend - tree->ibegin <= KdTree::quota) {
     for(Index j=tree->ibegin; j<tree->iend; ++j) {
-      if(grp[j] != j && dist2(p[i].x, p[j].x) < ll2) {
+      if(grp[j] != grp[i] && dist2(p[i].x, p[j].x) < ll2) {
 	q.push(j);
 	grp[j]= grp[i];
       }
