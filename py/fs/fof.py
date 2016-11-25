@@ -10,7 +10,7 @@ def find_groups(particles, ll, **kwargs):
         ll (float): linking length
 
     Options:
-        boxsize3 (Tuble of 3 Doubles): Length of the box enclosing particles
+        boxsize3 (Sequence of 3 floats): Length of the box enclosing particles
         quota=32 (int): maximum number of particles in kdtree leaves
 
     Returns:
@@ -19,5 +19,6 @@ def find_groups(particles, ll, **kwargs):
 
     quota = kwargs.get('quota', 32)
     boxsize3 = kwargs.get('boxsize3', None)
+    # bounding box will be computed if boxsize = None
 
     return c._fof_find_groups(particles._particles, ll, boxsize3, quota)
