@@ -6,7 +6,7 @@ import h5py
 import fs
 import pm_setup
 
-fs.set_loglevel(0)
+fs.msg.set_loglevel(0)
 
 delta = pm_setup.density()
 

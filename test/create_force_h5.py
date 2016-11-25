@@ -10,7 +10,7 @@ a = 1.0
 seed = 1
 
 # initial setup
-fs.set_loglevel(1)
+fs.msg.set_loglevel(1)
 
 particles = pm_setup.force()
 

@@ -7,8 +7,6 @@
 #include "py_assert.h"
 
 
-using namespace std;
-
 static void py_power_free(PyObject *obj);
 
 PyObject* py_power_alloc(PyObject* self, PyObject* args)
@@ -138,4 +136,3 @@ PyObject* py_power_i(PyObject* self, PyObject* args)
 
   return Py_BuildValue("dd", exp(ps->log_k[i]), exp(ps->log_P[i]));
 }
-

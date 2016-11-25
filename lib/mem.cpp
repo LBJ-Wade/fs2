@@ -32,6 +32,7 @@ Mem::Mem(const char name_[]) :
 Mem::Mem(const char name_[], const size_t size) :
   buf(0), size_alloc(0), size_using(0)
 {
+  // Raises: MemoryError
   name= new string(name_);
   
   reserve(size, 0);
@@ -116,4 +117,3 @@ void* Mem::use_remaining(size_t size)
 
   return p+n;
 }
-

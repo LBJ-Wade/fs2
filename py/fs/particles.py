@@ -54,17 +54,20 @@ class Particles(object):
         """
         return c._particles_len(self._particles)
 
-    def set_one(self, x, y, z):
-        """
-        Set one particle at x y z.
-
-        Args:
-            float x y z: positions
-        """
-        c._particles_one(self._particles, x, y, z)
-
     def update_np_total(self):
         c._particles_update_np_total(self._particles)
+
+    def append(self, x):
+        """Append particles with positions x.
+        Args:
+           x: np.array with 3 columns for x,y,z
+              x can be None, resulting in no change in particles
+        """
+        c._particles_append(self._particles, x)
+
+    def clear(self):
+        """Remove all particles"""
+        c._particles_clear(self._particles)
 
     def slice(self, frac):
         return c._particles_slice(self._particles, frac)
@@ -91,6 +94,11 @@ class Particles(object):
                 * 2: 2nd-order displacements
         """
         c._hdf5_write_particles(self._particles, filename, var)
+
+    def periodic_wrapup(self):
+        """Periodic wrap up particle poisitions
+        """
+        c._particles_periodic_wrapup(self._particles)
 
     @property
     def np_total(self):

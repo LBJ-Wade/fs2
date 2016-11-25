@@ -17,7 +17,7 @@ class Domain {
     vbuf.push_back(x[2]);
     vbuf_index.push_back(i);
 
-    if(vbuf.size() >= packet_size)
+    if(vbuf.size() >= (size_t) packet_size)
       send_packet();
   }
   Float xbuf_min, xbuf_max;
@@ -37,6 +37,8 @@ struct Packet {
 };
 
 void pm_domain_init(Particles const * const particles);
+void pm_domain_free();
+
 void pm_domain_send_positions(Particles* const particles);
 Pos const * pm_domain_buffer_positions();
 Float3* pm_domain_buffer_forces();

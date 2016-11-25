@@ -32,6 +32,7 @@ class FFT {
  private:
   FFTW(plan)  forward_plan, inverse_plan;
   ptrdiff_t   ncomplex;
+  Mem*        own_mem; // Allocated memory soley for this FFT
 };
 
 class FFTError{};

@@ -6,6 +6,7 @@
 
 #include "py_msg.h"
 #include "py_comm.h"
+#include "py_mem.h"
 #include "py_cosmology.h"
 #include "py_power.h"
 #include "py_particles.h"
@@ -19,6 +20,8 @@
 #include "py_config.h"
 #include "py_timer.h"
 #include "py_stat.h"
+#include "py_fof.h"
+#include "py_array.h"
 
 using namespace std;
 
@@ -37,6 +40,11 @@ static PyMethodDef methods[] = {
   {"comm_n_nodes", py_comm_n_nodes, METH_VARARGS,
    "Return the number of MPI nodes (MPI size)"}, 
 
+  {"_mem_alloc", py_mem_alloc, METH_VARARGS,
+   "create a new Mem object"},
+  {"_mem", py_mem, METH_VARARGS,
+   "return mem allocated and using"},
+  
   {"_cosmology_init", py_cosmology_init, METH_VARARGS,
    "cosmology_init(omega_m0, h=0.7); set omega_m and h"},   
   
@@ -55,18 +63,24 @@ static PyMethodDef methods[] = {
    "return the local number of particles"},
   {"_particles_np_total", py_particles_np_total, METH_VARARGS,
    "return the total number of particles"},
+  {"_particles_update_np_total", py_particles_update_np_total, METH_VARARGS,
+   "update particles->np_total"},
+
   {"_particles_getitem", py_particles_getitem, METH_VARARGS,
    "_particles_getitem(_particles, row, col)"},
-  {"_particles_one", py_particles_one, METH_VARARGS,
-   "_particles_one(_particles, x, y, z)"},
-  {"_particles_update_np_total", py_particles_update_np_total, METH_VARARGS,
-   "_particles_update_np_total(_particles)"},
   {"_particles_id_asarray", py_particles_id_asarray, METH_VARARGS,
    "_particles_id_asarray(_particles)"},
   {"_particles_x_asarray", py_particles_x_asarray, METH_VARARGS,
    "_particles_x_asarray(_particles)"},
   {"_particles_force_asarray", py_particles_force_asarray, METH_VARARGS,
    "_particles_force_asarray(_particles)"},
+  {"_particles_periodic_wrapup", py_particles_periodic_wrapup, METH_VARARGS,
+   "_particles_periodic_wrapup(_particles)"},
+
+  {"_particles_clear", py_particles_clear,  METH_VARARGS,
+   "_particles_clear(_particles)"},
+  {"_particles_append", py_particles_append,  METH_VARARGS,
+   "_particles_append(_particles, x)"},
   
   {"_lpt", py_lpt, METH_VARARGS,
    "_lpt(nc, boxsize, a, _ps, rando_seed); setup 2LPT displacements"},
@@ -131,6 +145,9 @@ static PyMethodDef methods[] = {
   {"_stat_record_pm_nbuf", py_stat_record_pm_nbuf, METH_VARARGS,
    "_stat_record_pm_nbuf(group_name)"},
 
+  {"_fof_find_groups", py_fof_find_groups, METH_VARARGS,
+   "_fof_find_groups(_particles, linking_length, quota"},
+
   {NULL, NULL, 0, NULL}
 };
 
@@ -147,6 +164,7 @@ PyMODINIT_FUNC
 PyInit__fs(void) {
   py_particles_module_init();
   py_fft_module_init();
+  py_array_module_init();
   
   return PyModule_Create(&module);
 }

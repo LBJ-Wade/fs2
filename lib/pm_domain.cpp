@@ -21,6 +21,7 @@
 using namespace std;
 
 namespace {
+  FFT const * fft = 0;
   int nc;
   int nbuf, nbuf_alloc;
   int nbuf_index, nbuf_index_alloc;
@@ -47,15 +48,20 @@ int Domain::packet_size= 1024/3*3;
 
 void pm_domain_init(Particles const * const particles)
 {
-  if(buf_pos)
-    return;  // already initialised
-
-  FFT const * const fft = pm_get_fft();
-  if(fft == 0) {
+  // Initialise pm_domain module
+  // May be called several times
+  
+  if(pm_get_fft() == 0) {
     msg_printf(msg_error,
-	       "Error: pm_init must be called before pm_domain_init\n");
+	       "Error: pm_init must be called before pm_domain_init/pm_domain_send_positions\n");
     throw RuntimeError();
   }
+
+  if(fft == pm_get_fft())
+    return;  // already initialised and pm_fft stays the same
+
+  pm_domain_free();  
+  fft = pm_get_fft();
 
   // Initialise static variables  
   nc= fft->nc;
@@ -68,12 +74,27 @@ void pm_domain_init(Particles const * const particles)
 		     fft->local_nx);
 
   allocate_decomposition(boxsize, fft->local_ix0, fft->local_nx);
+
+  msg_printf(msg_verbose, "pm_domain initilised\n");
+}
+
+void pm_domain_free()
+{
+  if(fft == 0) return;
+  
+  MPI_Win_free(&win_nbuf);
+  MPI_Win_free(&win_pos);
+  MPI_Win_free(&win_force);
+
+  free(buf_index);
+  free(packet_force);
 }
 
 
 void pm_domain_send_positions(Particles* const particles)
 {
   // Send particle positions to other nodes for PM density computation
+  // Raises RuntimeError if pm module not initialised
   pm_domain_init(particles);
   assert(buf_pos);
 
@@ -223,7 +244,6 @@ void allocate_pm_buffer(const size_t np_alloc, const double np_total,
 	     mbytes(2*size_buf + size_index_buf));
 }
 
-
 void allocate_decomposition(const Float boxsize, const int local_ix0,
 			    const int local_nx)
 {
@@ -242,6 +262,7 @@ void allocate_decomposition(const Float boxsize, const int local_ix0,
   const int n_dest= n - 1;
   const int this_node= comm_this_node();
 
+  decomposition.clear();
   decomposition.reserve(n_dest);
   Domain d;
   for(int i=1; i<=n/2; ++i) {

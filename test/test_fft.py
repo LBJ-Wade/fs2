@@ -9,7 +9,7 @@ import fs
 class TestFFT(unittest.TestCase):
     def setUp(self):
         self.nc = 4
-        fs.set_loglevel(0)
+        fs.msg.set_loglevel(0)
         self.fft = fs.FFT(self.nc)
         self.fft.set_test_data()
 

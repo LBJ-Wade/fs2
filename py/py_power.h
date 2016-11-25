@@ -1,7 +1,6 @@
 #ifndef PY_POWER_H
 #define PY_POWER_H 1
 
-#include <vector>
 #include "Python.h"
 
 PyObject* py_power_alloc(PyObject* self, PyObject* args);

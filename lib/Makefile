@@ -24,7 +24,7 @@ OPT += -DCHECK  # slow assersions (turn on if you encounter a problem)
 # Define OPENMP to enable MPI+OpenMP hybrid parallelization
 # OPENMP  = -fopenmp # -openmp for Intel, -fopenmp for gcc, llvm doesn't support
 
-#CXX      = mpic++
+# CXX is defined in ../Makefile
 
 WOPT    ?= -Wall
 CPPFLAGS  := -O3 $(WOPT) $(OPENMP) $(OPT)
@@ -42,11 +42,12 @@ CPPFLAGS  += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
 LIBS      += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
 
 
-OBJS := comm.o msg.o config.o fft.o mem.o particle.o
+OBJS := comm.o msg.o config.o fft.o mem.o particle.o util.o
 OBJS += power.o cosmology.o lpt.o pm.o cola.o leapfrog.o
 OBJS += gadget_file.o hdf5_write.o
 OBJS += pm_domain.o
 OBJS += timer.o stat.o
+OBJS += kdtree.o fof.o
 
 #
 # Linking libraries
@@ -74,6 +75,11 @@ libfs.a: $(OBJS)
 libfs.dylib: $(OBJS)
 	echo $(OPT)
 	$(CXX) -dynamiclib $(LIBS) $(OBJS) -o $@
+
+
+#
+# Library
+#
 
 # Dependences
 $(OBJS): Makefile

@@ -2,8 +2,12 @@
 # Generate a 2LPT initial condition at a and save as gadget binary files
 #
 # mpirun -n 4 2lpt.py
-
+#
+import signal
 import fs
+
+
+signal.signal(signal.SIGINT, signal.SIG_DFL) # enable cancel with ctrl-c
 
 # parameters
 omega_m = 0.308
@@ -12,14 +16,15 @@ boxsize = 64
 a = 0.1
 seed = 1
 
-# initial setup
+
+# Initial setup
 fs.set_loglevel(1)
-fs.cosmology_init(omega_m)
-ps = fs.PowerSpectrum('../../data/planck_matterpower.dat')
+fs.cosmology.init(omega_m)
+ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
 # Set 2LPT displacements at scale factor a
-particles = fs.lpt(nc, boxsize, a, ps, seed)
+particles = fs.lpt.init(nc, boxsize, a, ps, seed)
 
 particles.save_gadget_binary('2lpt.gadget', False)
 
-fs.comm_mpi_finalise()
+

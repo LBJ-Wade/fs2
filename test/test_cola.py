@@ -17,7 +17,7 @@ x_ref = file['x'][:]
 file.close()
 
 # Cola simulation
-fs.set_loglevel(3)
+fs.msg.set_loglevel(3)
 particles = cola_setup.particles()
 
 x_par = particles.x
