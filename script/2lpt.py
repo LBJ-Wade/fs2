@@ -18,7 +18,7 @@ seed = 1
 
 
 # Initial setup
-fs.set_loglevel(1)
+fs.msg.set_loglevel(1)
 fs.cosmology.init(omega_m)
 ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
