@@ -8,18 +8,17 @@ def set_loglevel(loglevel):
     """Set the amount of standard output messages.
 
     Args:
-        loglevel (int or string): 0 -- 7
+        loglevel (int or string):
 
-      int / str
-    * 0 'debug'  : msg_debug
-    * 1 'verbose': msg_verbose
-    * 2 'info'   : msg_info
-    * 3 'warn'   : msg_warn
-    * 4 'error'  : msg_error
-    * 5 'fatal'  : msg_fatal
+    * 0 'debug'
+    * 1 'verbose'
+    * 2 'info'
+    * 3 'warn'
+    * 4 'error'
+    * 5 'fatal'
     """
 
     if isinstance(loglevel, str):
         loglevel = dict_loglevel[loglevel]
 
-    return c.set_loglevel(loglevel)
+    c.set_loglevel(loglevel)
