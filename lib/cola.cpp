@@ -12,7 +12,6 @@
 #include "msg.h"
 #include "cola.h"
 #include "cosmology.h"
-#include "timer.h"
 
 namespace {
   constexpr double nLPT= -2.5f;
@@ -22,8 +21,6 @@ namespace {
 
 void cola_kick(Particles* const particles, const double avel1)
 {
-  timer("cola-kick");
-  
   const double ai=  particles->a_v;  // t - 0.5*dt
   const double a=   particles->a_x;  // t
   const double af=  avel1;           // t + 0.5*dt
@@ -49,7 +46,7 @@ void cola_kick(Particles* const particles, const double avel1)
 
   
   // Kick using acceleration at scale factor a
-  // Assume forces at a is in particles->force
+  // Assume forces at 'a' is in particles->force
 #ifdef _OPENMP
   #pragma omp parallel for default(shared)
 #endif
@@ -64,14 +61,12 @@ void cola_kick(Particles* const particles, const double avel1)
 
   }
 
-  //velocity is now at a= avel1
+  // velocity is now at a= avel1
   particles->a_v= avel1;
 }
 
 void cola_drift(Particles* const particles, const double apos1)
 {
-  timer("cola-drift");
-  
   const double ai= particles->a_x;
   const double af= apos1;
   
@@ -109,7 +104,7 @@ namespace {
   
 double fun (double a, void * params) {
   double om= *(double*)params;
-  return pow(a, nLPT)/(sqrt(om/(a*a*a)+1.0-om)*a*a*a);
+  return pow(a, nLPT)/(sqrt(om/(a*a*a) + 1.0 - om)*a*a*a);
 }
 
 double Sq(double ai, double af, double av) {
@@ -118,20 +113,20 @@ double Sq(double ai, double af, double av) {
   // = \int_ai^af (a/a(av))^nLPT da/(a^3 H(a))
   //
   assert(ai > 0.0);
-  gsl_integration_workspace * w 
-    = gsl_integration_workspace_alloc (5000);
+  const int n_workspace= 5000;
+  gsl_integration_workspace* w= gsl_integration_workspace_alloc(n_workspace);
   
   double result, error;
   double omega_m= cosmology_omega_m();
   
   gsl_function F;
-  F.function = &fun;
-  F.params = &omega_m;
+  F.function= &fun;
+  F.params= &omega_m;
   
-  gsl_integration_qag (&F, ai, af, 0, 1e-5, 5000, 6,
-		       w, &result, &error); 
+  gsl_integration_qag(&F, ai, af, 0, 1e-5, n_workspace, 6,
+		      w, &result, &error); 
   
-  gsl_integration_workspace_free (w);
+  gsl_integration_workspace_free(w);
      
   return result/pow(av, nLPT);
 }

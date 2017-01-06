@@ -37,21 +37,26 @@ void hdf5_write_particles(const char filename[],
   //  1: 1LPT displacements (at a=1)
   //  2: 2LPT displacements (at a=1)
 
-  //H5Eset_auto2(H5E_DEFAULT, NULL, 0);
+  H5Eset_auto2(H5E_DEFAULT, NULL, 0);
     
   // Parallel file access
   hid_t plist= H5Pcreate(H5P_FILE_ACCESS);
   H5Pset_fapl_mpio(plist, MPI_COMM_WORLD, MPI_INFO_NULL);
 
-  //hid_t file= H5Fopen(filename, H5F_ACC_RDWR, plist);
-  //if(file < 0) {
-  hid_t file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
+  hid_t file= H5Fopen(filename, H5F_ACC_RDWR, plist);
   if(file < 0) {
-    msg_printf(msg_error, "Error: unable to create HDF5 file, %s\n", filename);
-    throw IOError();
+    file= H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, plist);
+    if(file < 0) {
+      msg_printf(msg_error, "Error: unable to create HDF5 file, %s\n",
+		 filename);
+      throw IOError();
+    }
+    
+    msg_printf(msg_debug, "Created a new HDF5 file, %s\n", filename);
   }
-  //}
-
+  else {
+    msg_printf(msg_debug, "Opened HDF5 file, %s\n", filename);
+  }
   
   Particle const * const p= particles->p;
   const size_t np= particles->np_local;
@@ -88,8 +93,25 @@ void hdf5_write_particles(const char filename[],
   }
 
   if(*var == 'f') {
+    msg_printf(msg_verbose, "writing forces\n");
     write_data_table(file, "f", np, 3, 3,
 		     FLOAT_MEM_TYPE, FLOAT_SAVE_TYPE, particles->force);
+    
+    ++var;
+  }
+
+  if(*var == '1') {
+    msg_printf(msg_verbose, "writing 1st-order LPT displacements\n");    
+    write_data_table(file, "dx1", np, 3, stride,
+		     FLOAT_MEM_TYPE, FLOAT_SAVE_TYPE, p->dx1);
+    
+    ++var;
+  }
+
+  if(*var == '2') {
+    msg_printf(msg_verbose, "writing 2nd-order LPT displacements\n");    
+    write_data_table(file, "dx2", np, 3, stride,
+		     FLOAT_MEM_TYPE, FLOAT_SAVE_TYPE, p->dx2);
     
     ++var;
   }
@@ -98,8 +120,6 @@ void hdf5_write_particles(const char filename[],
     msg_printf(msg_error, "Error: unknown option for hdf5_write, %s\n", var);
     throw ValError();
   }
-
-  // ToDo write "12" LPT
 
   H5Pclose(plist);
   H5Fclose(file);

@@ -90,8 +90,8 @@ class Particles(object):
                 * x: positions
                 * v: velocities
                 * f: force
-                * 1: 1LPT displacements
-                * 2: 2nd-order displacements
+                * 1: 1LPT displacements (a=1)
+                * 2: 2nd-order displacements (a=1)
         """
         c._hdf5_write_particles(self._particles, filename, var)
 

@@ -81,6 +81,7 @@ void gadget_file_write_particles(const char filebase[],
     float vout[]= {float(vfac*p[i].v[0]),
 		   float(vfac*p[i].v[1]),
 		   float(vfac*p[i].v[2])};
+    // v_2LPT not added, this is v_res??
     fwrite(vout, sizeof(float), 3, fp);
   }
   fwrite(&blklen, sizeof(blklen), 1, fp);
