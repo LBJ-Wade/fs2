@@ -18,7 +18,6 @@
 #include "py_hdf5_io.h"
 #include "py_fft.h"
 #include "py_config.h"
-#include "py_timer.h"
 #include "py_stat.h"
 #include "py_fof.h"
 #include "py_array.h"
@@ -135,9 +134,6 @@ static PyMethodDef methods[] = {
 
   {"config_precision", py_config_precision, METH_VARARGS,
    "get 'single' or 'double'"},
-
-  {"timer_save", py_timer_save, METH_VARARGS,
-   "timer_save(filename)"},
 
   {"_stat_set_filename", py_stat_set_filename, METH_VARARGS,
    "_stat_set_filename(filename)"},
