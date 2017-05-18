@@ -5,7 +5,7 @@
 default:
 	cd .. && $(MAKE) lib
 
-LIB = libfs.a libfs.dylib
+LIB = libfs.a libfs.so #libfs.dylib
 lib: $(LIB)
 
 
@@ -27,8 +27,8 @@ OPT += -DCHECK  # slow assersions (turn on if you encounter a problem)
 # CXX is defined in ../Makefile
 
 WOPT    ?= -Wall
-CPPFLAGS  := -O3 $(WOPT) $(OPENMP) $(OPT)
-LIBS    := -lm -lhdf5
+CPPFLAGS  := -O3 $(WOPT) $(OPENMP) $(OPT) -fPIC
+LIBS    := -lm 
 
 # Define paths of FFTW3 & GSL libraries if necessary.
 
@@ -42,6 +42,7 @@ CPPFLAGS  += $(foreach dir, $(DIR_PATH), -I$(dir)/include)
 LIBS      += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
 
 
+
 OBJS := comm.o msg.o config.o fft.o mem.o particle.o util.o
 OBJS += power.o cosmology.o lpt.o pm.o cola.o leapfrog.o
 OBJS += gadget_file.o hdf5_write.o
@@ -53,7 +54,7 @@ OBJS += kdtree.o fof.o
 # Linking libraries
 #
 # LIBS += -llua -ldl 
-LIBS += -lgsl -lgslcblas
+LIBS += -lgsl -lgslcblas -lhdf5
 
 ifeq (,$(findstring -DDOUBLEPRECISION, $(OPT)))
   # Single precision FFTW
@@ -76,7 +77,8 @@ libfs.dylib: $(OBJS)
 	echo $(OPT)
 	$(CXX) -dynamiclib $(LIBS) $(OBJS) -o $@
 
-
+libfs.so: $(OBJS)
+	$(CXX) -shared $(LIBS) $(OBJS) -o $@
 #
 # Library
 #
