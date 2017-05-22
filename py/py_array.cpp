@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <typeinfo>
 #include "py_array.h"
 #include "msg.h"
 #include "error.h"
