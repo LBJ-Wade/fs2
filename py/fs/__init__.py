@@ -5,7 +5,6 @@ import fs.lpt
 import fs.pm
 import fs.cola
 import fs.leapfrog
-import fs.stat
 import fs.fof
 import fs.msg
 from fs._fs import config_precision

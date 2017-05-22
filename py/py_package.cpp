@@ -18,7 +18,6 @@
 #include "py_hdf5_io.h"
 #include "py_fft.h"
 #include "py_config.h"
-#include "py_stat.h"
 #include "py_fof.h"
 #include "py_array.h"
 
@@ -134,12 +133,6 @@ static PyMethodDef methods[] = {
 
   {"config_precision", py_config_precision, METH_VARARGS,
    "get 'single' or 'double'"},
-
-  {"_stat_set_filename", py_stat_set_filename, METH_VARARGS,
-   "_stat_set_filename(filename)"},
-
-  {"_stat_record_pm_nbuf", py_stat_record_pm_nbuf, METH_VARARGS,
-   "_stat_record_pm_nbuf(group_name)"},
 
   {"_fof_find_groups", py_fof_find_groups, METH_VARARGS,
    "_fof_find_groups(_particles, linking_length, quota"},
