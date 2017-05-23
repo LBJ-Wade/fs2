@@ -3,7 +3,7 @@
 #   
 
 default:
-	cd .. && $(MAKE) lib
+	cd .. && $(MAKE) lib py
 
 LIB = libfs.a libfs.so #libfs.dylib
 lib: $(LIB)

@@ -1,3 +1,4 @@
+#include "cosmology.h"
 #include "particle.h"
 #include "lpt.h"
 #include "py_assert.h"
@@ -45,6 +46,34 @@ PyObject* py_lpt_set_offset(PyObject* self, PyObject* args)
   }
   
   lpt_set_offset(offset);
+
+  Py_RETURN_NONE;
+}
+
+PyObject* py_lpt_set_zeldovich_force(PyObject* self, PyObject* args)
+{
+  // _lpt_set_zeldovich_force(_particles, a)
+  PyObject *py_particles;
+  double a;
+  
+  if(!PyArg_ParseTuple(args, "Od", &py_particles, &a)) {
+    return NULL;
+  }
+
+  Particles* const particles=
+    (Particles *) PyCapsule_GetPointer(py_particles, "_Particles");
+  py_assert_ptr(particles);
+
+  const Float growth1= cosmology_D_growth(a);
+
+  const size_t n= particles->np_local;
+  Float3 * const f= particles->force;
+  Particle const * const p= particles->p;
+  
+  for(size_t i=0; i<n; ++i) {
+    for(int k=0; k<3; ++k)
+      f[i][k]= growth1*p[i].dx1[k];
+  }
 
   Py_RETURN_NONE;
 }

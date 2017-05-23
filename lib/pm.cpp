@@ -76,6 +76,7 @@ void pm_assign_cic_density(T const * const p, size_t np)
 
   const Float dx_inv= nc/boxsize;
   const Float fac= pm_factor*pm_factor*pm_factor;
+  const int nci= static_cast<int>(nc);
 
 #ifdef _OPENMP
   #pragma omp parallel for default(shared)
@@ -105,26 +106,26 @@ void pm_assign_cic_density(T const * const p, size_t np)
     Float wy0= 1 - wy1;
     Float wz0= 1 - wz1;
 
-    if(ix0 >= nc) ix0= 0;
-    if(iy0 >= nc) iy0= 0; 
-    if(iz0 >= nc) iz0= 0;
+    if(ix0 >= nci) ix0= 0;
+    if(iy0 >= nci) iy0= 0; 
+    if(iz0 >= nci) iz0= 0;
 
-    int ix1= ix0 + 1; if(ix1 >= nc) ix1 -= nc;
-    int iy1= iy0 + 1; if(iy1 >= nc) iy1 -= nc; // assumes y,z < boxsize
-    int iz1= iz0 + 1; if(iz1 >= nc) iz1 -= nc;
+    int ix1= ix0 + 1; if(ix1 >= nci) ix1 -= nci;
+    int iy1= iy0 + 1; if(iy1 >= nci) iy1 -= nci; // assumes y,z < boxsize
+    int iz1= iz0 + 1; if(iz1 >= nci) iz1 -= nci;
 
     ix0 -= local_ix0;
     ix1 -= local_ix0;
 
 
-    if(0 <= ix0 && ix0 < local_nx) {
+    if(0 <= ix0 && ix0 < static_cast<int>(local_nx)) {
       grid_assign(density, ix0, iy0, iz0, fac*wx0*wy0*wz0);
       grid_assign(density, ix0, iy0, iz1, fac*wx0*wy0*wz1);
       grid_assign(density, ix0, iy1, iz0, fac*wx0*wy1*wz0);
       grid_assign(density, ix0, iy1, iz1, fac*wx0*wy1*wz1);
     }
 
-    if(0 <= ix1 && ix1 < local_nx) {
+    if(0 <= ix1 && ix1 < static_cast<int>(local_nx)) {
       grid_assign(density, ix1, iy0, iz0, fac*wx1*wy0*wz0);
       grid_assign(density, ix1, iy0, iz1, fac*wx1*wy0*wz1);
       grid_assign(density, ix1, iy1, iz0, fac*wx1*wy1*wz0);
@@ -139,13 +140,14 @@ void pm_assign_cic_density(T const * const p, size_t np)
 
 
 template <class T>
-void force_at_particle_locations(T const * const p, const int np, 
+void force_at_particle_locations(T const * const p, const size_t np, 
 				 const int axis, Float3* const f)
 {
   const Float dx_inv= nc/boxsize;
   const size_t local_nx= fft_pm->local_nx;
   const size_t local_ix0= fft_pm->local_ix0;
   const Float* fx= fft_pm->fx;
+  const int nci= static_cast<int>(nc);
 
 #ifdef _OPENMP
   #pragma omp parallel for default(shared)     
@@ -174,25 +176,25 @@ void force_at_particle_locations(T const * const p, const int np,
     Float wy0= 1 - wy1;
     Float wz0= 1 - wz1;
 
-    if(ix0 >= nc) ix0= 0;
-    if(iy0 >= nc) iy0= 0;
-    if(iz0 >= nc) iz0= 0;
+    if(ix0 >= nci) ix0= 0;
+    if(iy0 >= nci) iy0= 0;
+    if(iz0 >= nci) iz0= 0;
 
 #ifdef CHECK
-    assert(0 <= ix0 && ix0 < nc &&
-	   0 <= iy0 && iy0 < nc &&
-	   0 <= iz0 && iz0 < nc);
+    assert(0 <= ix0 && ix0 < nci &&
+	   0 <= iy0 && iy0 < nci &&
+	   0 <= iz0 && iz0 < nci);
 #endif
 
             
-    int ix1= ix0 + 1; if(ix1 >= nc) ix1 -= nc;
-    int iy1= iy0 + 1; if(iy1 >= nc) iy1 -= nc;
-    int iz1= iz0 + 1; if(iz1 >= nc) iz1 -= nc;
+    int ix1= ix0 + 1; if(ix1 >= nci) ix1 -= nci;
+    int iy1= iy0 + 1; if(iy1 >= nci) iy1 -= nci;
+    int iz1= iz0 + 1; if(iz1 >= nci) iz1 -= nci;
 
 #ifdef CHECK
-    assert(0 <= ix1 && ix1 < nc &&
-	   0 <= iy1 && iy1 < nc &&
-	   0 <= iz1 && iz1 < nc);
+    assert(0 <= ix1 && ix1 < nci &&
+	   0 <= iy1 && iy1 < nci &&
+	   0 <= iz1 && iz1 < nci);
 #endif
 
     ix0 -= local_ix0;
@@ -200,14 +202,14 @@ void force_at_particle_locations(T const * const p, const int np,
 
     f[i][axis]= 0;
 
-    if(0 <= ix0 && ix0 < local_nx) {
+    if(0 <= ix0 && ix0 < static_cast<int>(local_nx)) {
       f[i][axis] += 
 	grid_val(fx, ix0, iy0, iz0)*wx0*wy0*wz0 +
 	grid_val(fx, ix0, iy0, iz1)*wx0*wy0*wz1 +
 	grid_val(fx, ix0, iy1, iz0)*wx0*wy1*wz0 +
 	grid_val(fx, ix0, iy1, iz1)*wx0*wy1*wz1;
     }
-    if(0 <= ix1 && ix1 < local_nx) {
+    if(0 <= ix1 && ix1 < static_cast<int>(local_nx)) {
       f[i][axis] += 
 	grid_val(fx, ix1, iy0, iz0)*wx1*wy0*wz0 +
 	grid_val(fx, ix1, iy0, iz1)*wx1*wy0*wz1 +
@@ -220,7 +222,7 @@ void force_at_particle_locations(T const * const p, const int np,
 //
 // Public functions
 //
-void pm_init(const int nc_pm, const double pm_factor_,
+void pm_init(const size_t nc_pm, const double pm_factor_,
 	     Mem* const mem_pm, Mem* const mem_density,
 	     const Float boxsize_)
 {
@@ -340,10 +342,10 @@ FFT* pm_compute_density(Particles* const particles)
   pm_assign_cic_density<Particle>(particles->p, particles->np_local);
   pm_assign_cic_density<Pos>(pm_domain_buffer_positions(),
 			     pm_domain_buffer_np());
-  
-  return fft_pm;
 
   status= PmStatus::density_done;
+
+  return fft_pm;
 }
 
 void pm_check_total_density()
@@ -465,20 +467,20 @@ void compute_force_mesh(const int axis)
   const size_t nckz=nc/2+1;
   const size_t local_nky= fft_pm->local_nky;
   const size_t local_iky0= fft_pm->local_iky0;
-
+  const int nci= static_cast<int>(nc);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(shared)
 #endif
   for(size_t iy_local=0; iy_local<local_nky; iy_local++) {
     int iy= iy_local + local_iky0;
-    int iy0= iy <= (nc/2) ? iy : iy - nc;
+    int iy0= iy <= (nci/2) ? iy : iy - nci;
 
     Float k[3];
     k[1]= (Float) iy0;
 
     for(size_t ix=0; ix<nc; ix++) {
-      int ix0= ix <= (nc/2) ? ix : ix - nc;
+      int ix0= ix <= (nc/2) ? ix : static_cast<int>(ix) - nc;
       k[0]= (Float) ix0;
 
       int kzmin= (ix==0 && iy==0); // skip (0,0,0) to avoid zero division

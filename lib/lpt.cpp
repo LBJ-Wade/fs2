@@ -72,13 +72,13 @@ void lpt_init(const int nc_, const double boxsize_, Mem* mem)
   
   for(int i=0; i<3; i++) {
     assert(fft_psi[i]->nc == nc);
-    assert(fft_psi[i]->local_nx == local_nx);
-    assert(fft_psi[i]->local_ix0 == local_ix0);
+    assert(fft_psi[i]->local_nx == static_cast<ptrdiff_t>(local_nx));
+    assert(fft_psi[i]->local_ix0 == static_cast<ptrdiff_t>(local_ix0));
   }
   for(int i=0; i<6; i++) {
     assert(fft_psi_ij[i]->nc == nc);
-    assert(fft_psi_ij[i]->local_nx == local_nx);
-    assert(fft_psi_ij[i]->local_ix0 == local_ix0);
+    assert(fft_psi_ij[i]->local_nx == static_cast<ptrdiff_t>(local_nx));
+    assert(fft_psi_ij[i]->local_ix0 == static_cast<ptrdiff_t>(local_ix0));
   }
 }
 
@@ -153,7 +153,7 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
    x[0]= (local_ix0 + ix + offset)*dx;
    for(size_t iy=0; iy<nc; iy++) {
     x[1]= (iy + offset)*dx;
-    for(int iz=0; iz<nc; iz++) {
+    for(size_t iz=0; iz<nc; iz++) {
      x[2]= (iz + offset)*dx;
 
      size_t index= (ix*nc + iy)*nczr + iz;
@@ -195,6 +195,7 @@ void lpt_set_offset(Float offset_)
 {
   offset= offset_;
 }
+
 
 namespace {
   
@@ -368,7 +369,7 @@ void lpt_generate_psi_k(const unsigned long seed, PowerSpectrum* const ps)
 	      iix = nc - ix;
 	      if(iix == nc)
 		iix = 0;
-	      int iiy = nc - iy;
+	      size_t iiy = nc - iy;
 	      if(iiy == nc)
 		iiy = 0;
 	      
@@ -554,7 +555,6 @@ void lpt_compute_psi2_k(void)
   for(int i=0; i<3; i++) {
     fft_psi2[i]->mode= fft_mode_k;
   }
-
 }
 
-}
+} // Unnamed namespace

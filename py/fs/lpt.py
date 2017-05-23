@@ -35,3 +35,14 @@ def set_offset(offset):
     """
 
     c._set_offset(offset)
+
+
+def set_zeldovich_force(particles, a):
+    """Set Zel'dovich (1LPT) force to particles.force
+
+    Args:
+        a (float): scale factor of the force
+
+    """
+
+    c._set_zeldovich_force(particles._particles, a)

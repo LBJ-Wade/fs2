@@ -285,7 +285,7 @@ void allocate_decomposition(const Float boxsize, const int local_ix0,
     }
   }
   free(xbuf_all);  
-  assert(decomposition.size() == n_dest);
+  assert(decomposition.size() == static_cast<size_t>(n_dest));
 
   assert(Domain::packet_size % 3 == 0);
   packet_force= (Float3*) malloc(sizeof(Float)*Domain::packet_size);

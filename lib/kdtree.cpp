@@ -146,7 +146,7 @@ KdTree* kdtree_init(Particles* const particles,
   const size_t np= particles->np_allocated;
   Index nleaf= 1;
   int height_new= 0;
-  while(quota*nleaf < np) {
+  while(static_cast<size_t>(quota*nleaf) < np) {
     nleaf= nleaf << 1;
     height_new++;
   }

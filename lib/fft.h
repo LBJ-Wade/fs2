@@ -23,7 +23,8 @@ class FFT {
   void execute_inverse();
   
   char*       name;
-  int         nc;
+  //int         nc;
+  size_t    nc;
   Float*    fx;
   complex_t*  fk;
   ptrdiff_t   local_nx, local_ix0;

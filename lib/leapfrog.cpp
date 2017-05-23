@@ -50,7 +50,7 @@ void leapfrog_kick(Particles* const particles, const double avel1)
   msg_printf(msg_debug, "kick_factor = %lg\n", kick_factor);
 
   Particle* const p= particles->p;
-  const int np= particles->np_local;
+  const size_t np= particles->np_local;
   Float3* const f= particles->force;
 
   // Kick using acceleration at scale factor a
@@ -84,7 +84,7 @@ void leapfrog_drift(Particles* const particles, const double apos1)
 #ifdef _OPENMP
   #pragma omp parallel for default(shared)
 #endif
-  for(int i=0; i<np; i++) {
+  for(size_t i=0; i<np; i++) {
     p[i].x[0] += p[i].v[0]*dt;
     p[i].x[1] += p[i].v[1]*dt;
     p[i].x[2] += p[i].v[2]*dt;
