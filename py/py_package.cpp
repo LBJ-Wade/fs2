@@ -142,6 +142,8 @@ static PyMethodDef methods[] = {
 
   {"_fof_find_groups", py_fof_find_groups, METH_VARARGS,
    "_fof_find_groups(_particles, linking_length, quota"},
+  {"_fof_grp", py_fof_grp, METH_VARARGS,
+   "_fof_grp()"},
 
   {NULL, NULL, 0, NULL}
 };

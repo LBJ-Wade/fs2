@@ -18,8 +18,9 @@ PyObject* py_fof_find_groups(PyObject* self, PyObject* args)
   PyObject *py_particles, *py_boxsize3;
   double linking_length;
   int quota;
-  if(!PyArg_ParseTuple(args, "OdOi", &py_particles, &linking_length,
-		       &py_boxsize3, &quota))
+  int return_nfof;
+  if(!PyArg_ParseTuple(args, "OdOii", &py_particles, &linking_length,
+		       &py_boxsize3, &quota, &return_nfof))
     return NULL;
 
   py_assert_ptr(comm_n_nodes() == 1);
@@ -45,8 +46,19 @@ PyObject* py_fof_find_groups(PyObject* self, PyObject* args)
     fof_find_groups(particles, linking_length, boxsize3, quota);
   }
 
+  if(return_nfof) {
+    vector<Index>& v_nfof= fof_compute_nfof();
+    return py_vector_asarray<Index>(v_nfof);
+  }
 
-
-  return py_vector_asarray<Index>(fof_nfof());
+  Py_RETURN_NONE;
 }
 
+PyObject* py_fof_grp(PyObject* self, PyObject* args)
+{
+  vector<Index>& v_grp= fof_grp();
+  if(v_grp.size() > 0)
+    return py_vector_asarray<Index>(v_grp);
+
+  Py_RETURN_NONE;  
+}

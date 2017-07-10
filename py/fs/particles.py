@@ -7,11 +7,14 @@ class Particles(object):
     Use lpt() to create a set of particles.
 
     Attributes:
+        x (np.array [float]): positions (np_local, 3)
+        id (np.array [uint64]):
+        force (np.array [float]):
+        dx1
+        dx2
+        fof_group
         np_total [unsigned long]: total number of particles
-        id (np.array [uint64]): all particle IDs for node 0,
-                                `None` for node > 0.
-        x (np.array [float]):  all particle positions for node 0
-        force (np.array [float]):  all particle velocities for node 0
+
     """
     def __init__(self, nc=0, boxsize=0.0, **kwargs):
         # Particles(nc, boxsize) or Particles(_particles=particles)
@@ -124,3 +127,10 @@ class Particles(object):
     @property
     def force(self):
         return c._particles_force_asarray(self._particles)
+
+    @property
+    def fof_group(self):
+        """fof_group[i] is the group index that particle i belongs to.
+           i (0 <= i < np_local)
+        """
+        return c._fof_grp()

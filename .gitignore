@@ -7,4 +7,4 @@
 build
 __pycache__
 trash
-
+.DS_Store

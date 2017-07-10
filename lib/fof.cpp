@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <queue>
 #include <cassert>
@@ -14,6 +15,7 @@ static vector<Index> grp;
 static vector<Index> nfof;
 static queue<Index> q;
 static Particle const * p;
+static size_t n_reserve= 0;
 
 static inline Float periodic_dx(Float dx)
 {
@@ -56,15 +58,16 @@ void fof_find_groups(Particles* const particles,
   msg_printf(msg_info, "Linking length %f\n", ll);
 
   // grp[i] is the group number that particle i belongs to
+  n_reserve= particles->np_allocated;
   grp.clear();
-  grp.reserve(particles->np_allocated);
+  grp.reserve(n_reserve);
 
   // nfof[i] is a vector of number of FoF member particles for
-  nfof.clear();
-  nfof.reserve(particles->np_allocated);
+  //nfof.clear();
+  //nfof.reserve(particles->np_allocated);
 
-  
-  Index n= particles->np_local;
+  // Each particles is a group
+  const Index n= particles->np_local;
   for(Index i=0; i<n; ++i)
     grp.push_back(i);
 
@@ -73,9 +76,10 @@ void fof_find_groups(Particles* const particles,
   p= particles->p;
 
   Index ngrp= 0;
-  
+
   for(Index i=0; i<n; ++i) {
-    if(grp[i] != i) continue;
+    if(grp[i] != i)
+      continue; // already belongs to other group
 
     // Start finding a new FoF group
     ngrp++;
@@ -83,15 +87,33 @@ void fof_find_groups(Particles* const particles,
     q.push(i);
 
     while(!q.empty()) {
+      // Find friends of particle q.front
       link_particles_recursive(0, q.front());
       q.pop();
     }
 
-    nfof.push_back(ngrp);
+    //nfof.push_back(nfriends);
   }
 
-  msg_printf(msg_info, "fof %lu groups found.\n", (unsigned long) nfof.size());
+  //msg_printf(msg_info, "fof %lu groups found.\n", (unsigned long) nfof.size());
 }
+
+vector<Index>& fof_compute_nfof()
+{
+  // nfof[i] is a vector of number of FoF member particles for
+  nfof.clear();
+  nfof.reserve(n_reserve);
+  nfof.assign(grp.size(), 0);
+
+  const Index n= grp.size();
+  for(Index i=0; i<n; ++i) {
+    nfof[grp[i]]++;
+  }
+
+  return nfof;
+}
+
+
 
 size_t fof_ngroups()
 {
@@ -102,6 +124,13 @@ vector<Index>& fof_nfof()
 {
   return nfof;
 }
+
+vector<Index>& fof_grp()
+{
+  return grp;
+}
+
+
 
 void link_particles_recursive(const size_t inode, const Index i)
 {

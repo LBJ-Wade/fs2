@@ -2,7 +2,7 @@ import fs._fs as c
 from fs.particles import Particles
 
 
-def find_groups(particles, ll, **kwargs):
+def find_groups(particles, ll, *, quota=32, boxsize3=None, compute_nfof=False):
     """Run FoF halo finder find_groups(particles, ll, boxsize3=None, quota=32)
 
     Args:
@@ -11,14 +11,15 @@ def find_groups(particles, ll, **kwargs):
 
     Options:
         boxsize3 (Sequence of 3 floats): Length of the box enclosing particles
+                  computed automatically if None (default)
         quota=32 (int): maximum number of particles in kdtree leaves
 
     Returns:
-        an array of group sizes (number of FoF member particles)
+        nfof: an array of group sizes (number of FoF member particles)
+
+    nfof[i] is the number of FoF members of group i (0 <= i < np_local)
+    0 if particle i does not represent a group (i.e., belongs to a different group != i)
     """
 
-    quota = kwargs.get('quota', 32)
-    boxsize3 = kwargs.get('boxsize3', None)
-    # bounding box will be computed if boxsize = None
-
-    return c._fof_find_groups(particles._particles, ll, boxsize3, quota)
+    return c._fof_find_groups(particles._particles, ll, boxsize3, quota,
+                              compute_nfof)
