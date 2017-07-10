@@ -44,8 +44,12 @@ static PyMethodDef methods[] = {
    "return mem allocated and using"},
   
   {"_cosmology_init", py_cosmology_init, METH_VARARGS,
-   "cosmology_init(omega_m0, h=0.7); set omega_m and h"},   
-  
+   "cosmology_init(omega_m0, h=0.7); set omega_m and h"},
+  {"_cosmology_D_growth", py_cosmology_D_growth, METH_VARARGS,
+   "_cosmology_D_growth(a)"},
+  {"_cosmology_D2_growth", py_cosmology_D2_growth, METH_VARARGS,
+   "_cosmology_D2_growth(a)"},
+
   {"_power_alloc", py_power_alloc, METH_VARARGS,
    "allocate a new _ps opbject"},
   {"_power_n", py_power_alloc, METH_VARARGS,

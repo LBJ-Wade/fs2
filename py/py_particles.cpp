@@ -314,18 +314,21 @@ PyObject* py_particles_x_asarray(PyObject* self, PyObject* args)
   PyObject* py_particles;
   int x_type;
   
-  if(!PyArg_ParseTuple(args, "Od", &py_particles, &x_type))
+  if(!PyArg_ParseTuple(args, "Oi", &py_particles, &x_type))
     return NULL;
+
 
   Particles const * const particles=
     (Particles const *) PyCapsule_GetPointer(py_particles, "_Particles");
   py_assert_ptr(particles);
 
   Float* p = 0;
-  if(x_type == 0)
+  if(x_type == 0) {
     p = particles->p[0].x;
-  else if(x_type == 1)
+  }
+  else if(x_type == 1) {
     p = particles->p[0].dx1;
+  }
   else if(x_type == 2)
     p = particles->p[0].dx2;
   else

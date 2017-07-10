@@ -4,6 +4,7 @@
 #include "Python.h"
 
 PyObject* py_cosmology_init(PyObject* self, PyObject* args);
-
+PyObject* py_cosmology_D_growth(PyObject* self, PyObject* args);
+PyObject* py_cosmology_D2_growth(PyObject* self, PyObject* args);
 
 #endif
