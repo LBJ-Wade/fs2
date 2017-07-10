@@ -16,3 +16,4 @@ from fs.fft import FFT
 _fs.comm_mpi_init()
 
 atexit.register(_fs.comm_mpi_finalise)
+

@@ -110,7 +110,16 @@ class Particles(object):
 
     @property
     def x(self):
-        return c._particles_x_asarray(self._particles)
+        return c._particles_x_asarray(self._particles, 0)
+
+    @property
+    def dx1(self):
+        return c._particles_x_asarray(self._particles, 1)
+
+    @property
+    def dx2(self):
+        return c._particles_x_asarray(self._particles, 2)
+
 
     @property
     def force(self):
