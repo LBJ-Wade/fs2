@@ -31,6 +31,7 @@ else:
     
 # external libraries
 libs = os.environ['LIBS'].split()
+print('libs', libs)
 
 lib_files = ['../lib/comm.cpp', '../lib/msg.cpp', '../lib/config.cpp',
                      '../lib/fft.cpp', '../lib/mem.cpp', '../lib/particle.cpp',
@@ -47,7 +48,7 @@ py_files = ['../lib/kdtree.cpp', '../lib/fof.cpp',
                      'py_mem.cpp',
                      'py_cosmology.cpp', 'py_power.cpp', 'py_particles.cpp',
                      'py_lpt.cpp', 'py_pm.cpp', 'py_cola.cpp','py_leapfrog.cpp',
-                     'py_write.cpp', 'py_fft.cpp', 'py_hdf5_io.cpp',
+                     'py_write.cpp', 'py_fft.cpp', #'py_hdf5_io.cpp',
                      'py_config.cpp',
                      'py_fof.cpp', 'py_array.cpp',]
 

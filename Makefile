@@ -12,7 +12,7 @@ CXX     := mpic++ -std=c++11
 # Extra compile options
 OPT     :=
 #OPT     += -DUSEHDF5
-OPT     += -DDOUBLEPRECISION
+#OPT     += -DDOUBLEPRECISION
 
 #
 # Define library locations if they are not in statndard path

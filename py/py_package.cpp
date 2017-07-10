@@ -103,8 +103,8 @@ static PyMethodDef methods[] = {
    "_pm_get_forces(_particles)"},
 
   
-  {"_pm_write_packet_info", py_pm_write_packet_info, METH_VARARGS,
-   "_pm_write_packet_info(filename)"},
+  //{"_pm_write_packet_info", py_pm_write_packet_info, METH_VARARGS,
+  // "_pm_write_packet_info(filename)"},
   {"_pm_set_packet_size", py_pm_set_packet_size, METH_VARARGS,
    "_pm_set_packet_size(packet_size)"},
   
@@ -123,8 +123,8 @@ static PyMethodDef methods[] = {
   {"_write_gadget_binary", py_write_gadget_binary, METH_VARARGS,
    "_write_gadget_binary(_particles, filename, use_long_id"},   
 
-  {"_hdf5_write_particles", py_hdf5_write_particles, METH_VARARGS,
-   "_hdf5_write_particles(_particles, filename)"},
+  //  {"_hdf5_write_particles", py_hdf5_write_particles, METH_VARARGS,
+  // "_hdf5_write_particles(_particles, filename)"},
 
   {"_fft_alloc", py_fft_alloc, METH_VARARGS,
    "_fft_alloc(nc)"},

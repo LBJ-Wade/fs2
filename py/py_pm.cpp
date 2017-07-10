@@ -149,6 +149,7 @@ PyObject* py_pm_get_forces(PyObject* self, PyObject* args)
 }
 
 
+/*
 PyObject* py_pm_write_packet_info(PyObject* self, PyObject* args)
 {
   PyObject* bytes;
@@ -173,6 +174,7 @@ PyObject* py_pm_write_packet_info(PyObject* self, PyObject* args)
   Py_DECREF(bytes);
   Py_RETURN_NONE;
 }
+*/
 
 
 //

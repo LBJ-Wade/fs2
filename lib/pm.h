@@ -7,8 +7,11 @@
 
 enum class PmStatus {density_done, force_done, done};
 
+void pm_init(const size_t nc_pm, const double pm_factor_,
+	     Mem* const mem_pm, Mem* const mem_density,
+	     const Float boxsize_);
 
-void pm_init(const int nc_pm, const double pm_factor, Mem* const mem_density, Mem* const mem_force, const Float boxsize);
+//void pm_init(const int nc_pm, const double pm_factor, Mem* const mem_density, Mem* const mem_force, const Float boxsize);
 void pm_free();
 
 void pm_compute_force(Particles* const particles);
