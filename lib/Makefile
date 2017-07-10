@@ -3,7 +3,7 @@
 #   
 
 default:
-	cd .. && $(MAKE) lib py
+	cd .. && $(MAKE) lib
 
 LIB = libfs.a libfs.so #libfs.dylib
 lib: $(LIB)
@@ -44,10 +44,13 @@ LIBS      += $(foreach dir, $(DIR_PATH), -L$(dir)/lib)
 
 OBJS := comm.o msg.o config.o fft.o mem.o particle.o util.o
 OBJS += power.o cosmology.o lpt.o pm.o cola.o leapfrog.o
-OBJS += gadget_file.o hdf5_write.o
+OBJS += gadget_file.o
 OBJS += pm_domain.o
-OBJS += stat.o
 OBJS += kdtree.o fof.o
+
+ifdef USE_HDF5
+OBJS += hdf5_write.o
+endif
 
 #
 # Linking libraries
@@ -73,7 +76,6 @@ libfs.a: $(OBJS)
 	ar r $@ $(OBJS)
 
 libfs.dylib: $(OBJS)
-	echo $(OPT)
 	$(CXX) -dynamiclib $(LIBS) $(OBJS) -o $@
 
 libfs.so: $(OBJS)

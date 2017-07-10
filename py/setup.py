@@ -30,34 +30,38 @@ else:
 
     
 # external libraries
-libs = os.environ['LIBS'].split(' ')
+libs = os.environ['LIBS'].split()
 
-setup(name='fs',
-      version='0.0.1',
-      author='Jun Koda',
-      py_modules=['fs.msg', 'fs.power', 'fs.particles', 'fs.functions',
-                  'fs.lpt', 'fs.pm', 'fs.fof',
-      ],
-      ext_modules=[
-          Extension('fs._fs',
-                    ['../lib/comm.cpp', '../lib/msg.cpp', '../lib/config.cpp',
+lib_files = ['../lib/comm.cpp', '../lib/msg.cpp', '../lib/config.cpp',
                      '../lib/fft.cpp', '../lib/mem.cpp', '../lib/particle.cpp',
                      '../lib/util.cpp', '../lib/power.cpp',
                      '../lib/cosmology.cpp', '../lib/lpt.cpp', '../lib/pm.cpp',
                      '../lib/cola.cpp', '../lib/leapfrog.cpp',
-                     '../lib/hdf5_write.cpp', '../lib/pm_domain.cpp',
-                     '../lib/gadget_file.cpp',
-                     '../lib/kdtree.cpp', '../lib/fof.cpp',
+                     '../lib/pm_domain.cpp',
+                     '../lib/gadget_file.cpp',]
+
+# '../lib/hdf5_write.cpp',
+
+py_files = ['../lib/kdtree.cpp', '../lib/fof.cpp',
                      'py_package.cpp', 'py_msg.cpp', 'py_comm.cpp',
                      'py_mem.cpp',
                      'py_cosmology.cpp', 'py_power.cpp', 'py_particles.cpp',
                      'py_lpt.cpp', 'py_pm.cpp', 'py_cola.cpp','py_leapfrog.cpp',
                      'py_write.cpp', 'py_fft.cpp', 'py_hdf5_io.cpp',
                      'py_config.cpp',
-                     'py_fof.cpp', 'py_array.cpp',
-                    ],
+                     'py_fof.cpp', 'py_array.cpp',]
+
+
+setup(name='fs',
+      version='0.0.1',
+      author='Jun Koda',
+      py_modules=['fs.msg', 'fs.power', 'fs.particles', 'fs.functions',
+                  'fs.lpt', 'fs.pm', 'fs.fof',],
+      ext_modules=[
+          Extension('fs._fs',
+                    lib_files + py_files,
                     include_dirs = idirs,
-                    extra_compile_args = [os.environ["OPT"]],
+                    extra_compile_args = [os.environ["OPT"].strip()],
                     library_dirs =  ldirs,
                     libraries = libs,
                     undef_macros = ['NDEBUG'],

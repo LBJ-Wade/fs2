@@ -16,7 +16,7 @@
 #include "pm.h"
 #include "pm_domain.h"
 #include "error.h"
-#include "hdf5_io.h"
+//#include "hdf5_io.h"
 
 using namespace std;
 
@@ -161,6 +161,7 @@ void pm_domain_get_forces(Particles* const particles)
 }
 
 
+/*
 void pm_domain_write_packet_info(const char filename[])
 {
   const int src_rank= comm_this_node();
@@ -180,6 +181,7 @@ void pm_domain_write_packet_info(const char filename[])
   hdf5_write_packet_data(filename, dat, npackets);
   free(dat);
 }
+*/
 
 
 Pos const * pm_domain_buffer_positions()
@@ -387,6 +389,7 @@ int pm_domain_nbuf()
   return nbuf;
 }
 
+
 void pm_domain_set_packet_size(const int packet_size)
 {
   if(buf_pos) {
@@ -401,3 +404,4 @@ void pm_domain_set_packet_size(const int packet_size)
   msg_printf(msg_verbose, "Domain::packet_size set to %d\n",
 	     Domain::packet_size);
 }
+

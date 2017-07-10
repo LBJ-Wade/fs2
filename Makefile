@@ -10,7 +10,9 @@ CC      := mpic++ -std=c++11
 CXX     := mpic++ -std=c++11
 
 # Extra compile options
-OPT     := -DDOUBLEPRECISION
+OPT     :=
+#OPT     += -DUSEHDF5
+OPT     += -DDOUBLEPRECISION
 
 #
 # Define library locations if they are not in statndard path
@@ -19,12 +21,17 @@ FFTW3_DIR ?= #e.g. /Users/jkoda/Research/opt/gcc/fftw3
 GSL_DIR   ?= #e.g. /Users/jkoda/Research/opt/gcc/gsl
 HDF5P_DIR ?= # parallel HDF5 library; e.g., brew install hdf5 --with-mpi
 
-DIR_PATH   = $(FFTW3_DIR) $(GSL_DIR) $(HDF5P_DIR)
+DIR_PATH   = $(FFTW3_DIR) $(GSL_DIR)
 
 IDIRS    += $(foreach dir, $(DIR_PATH), $(dir)/include)
 LDIRS    += $(foreach dir, $(DIR_PATH), $(dir)/lib)
 
-LIBS    := m gsl gslcblas hdf5
+LIBS    := m gsl gslcblas
+
+ifdef USE_HDF5
+  DIR_PATH  += $(HDF5P_DIR)
+  LIBS += hdf5
+endif
 
 ifeq (,$(findstring -DDOUBLEPRECISION, $(OPT)))
   # Single precision FFTW
