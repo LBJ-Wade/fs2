@@ -1,5 +1,6 @@
 #include "cosmology.h"
 #include "particle.h"
+#include "fft.h"
 #include "lpt.h"
 #include "py_assert.h"
 #include "py_particles.h"
@@ -23,7 +24,10 @@ PyObject* py_lpt(PyObject* self, PyObject* args)
     (PowerSpectrum *) PyCapsule_GetPointer(py_ps, "_PowerSpectrum");
   py_assert_ptr(ps);
 
-  Particles* particles= new Particles(nc, boxsize);
+  size_t nx= fft_local_nx(nc);
+  size_t np_alloc= (size_t)((1.25*(nx + 1)*nc*nc));
+
+  Particles* particles= new Particles(np_alloc, boxsize);
     
   size_t mem_size= 9*fft_mem_size(nc, 0);
   Mem* const mem= new Mem("LPT", mem_size);

@@ -142,14 +142,14 @@ PyObject* py_particles_asarray(T const * dat,
 //
 PyObject* py_particles_alloc(PyObject* self, PyObject* args)
 {
-  int nc;
+  unsigned long long np;
   double boxsize;
   
-  if(!PyArg_ParseTuple(args, "id", &nc, &boxsize)) {
+  if(!PyArg_ParseTuple(args, "Kd", &np, &boxsize)) {
     return NULL;
   }
 
-  Particles* const particles = new Particles(nc, boxsize);
+  Particles* const particles = new Particles((size_t)np, boxsize);
 
   return PyCapsule_New(particles, "_Particles", py_particles_free);
 }

@@ -16,12 +16,13 @@ class Particles(object):
         np_total [unsigned long]: total number of particles
 
     """
-    def __init__(self, nc=0, boxsize=0.0, **kwargs):
+    def __init__(self, np=10, boxsize=0.0, *, _particles=None):
         # Particles(nc, boxsize) or Particles(_particles=particles)
-        if '_particles' in kwargs:
-            self._particles = kwargs['_particles']
-        else:
-            self._particles = c._particles_alloc(nc, boxsize)
+        if _particles is None:
+            self._particles = c._particles_alloc(np, boxsize)
+        else:            
+            self._particles = _particles
+
 
     def __getitem__(self, index):
         """
@@ -57,6 +58,10 @@ class Particles(object):
         """
         return c._particles_len(self._particles)
 
+    def resize(self, np_local):
+        """Set local number of particles to np_local"""
+        c._particles_reseize(self._particles, np_local)
+        
     def update_np_total(self):
         c._particles_update_np_total(self._particles)
 
