@@ -29,7 +29,11 @@ static inline bool is_leaf(KdTree const * const tree)
   return (tree->iend - tree->ibegin) < KdTree::quota;
 }
 
+
 //void kdtree_construct(std::vector<Cluster>& v, const Float boxsize[]);
 KdTree* kdtree_init(Particles* const particles, const Float boxsize[], const int quota_=32);
+
+KdTree* kdtree_get_root();
+size_t kdtree_get_height();
 
 #endif

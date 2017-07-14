@@ -62,10 +62,6 @@ void fof_find_groups(Particles* const particles,
   grp.clear();
   grp.reserve(n_reserve);
 
-  // nfof[i] is a vector of number of FoF member particles for
-  //nfof.clear();
-  //nfof.reserve(particles->np_allocated);
-
   // Each particles is a group
   const Index n= particles->np_local;
   for(Index i=0; i<n; ++i)
@@ -138,7 +134,7 @@ void link_particles_recursive(const size_t inode, const Index i)
   // is prestine
 
   KdTree const * const tree= kdtree + inode;
-  const int k= kdtree->k;
+  const int k= tree->k;
   Float x= p[i].x[k];
 
   if((x < tree->left  - ll && x + boxsize > tree->right + ll) ||

@@ -19,7 +19,9 @@
 #include "py_fft.h"
 #include "py_config.h"
 #include "py_fof.h"
+#include "py_kdtree.h"
 #include "py_array.h"
+//PyObject* py_kdtree_create_copy(PyObject* self, PyObject* args);
 
 using namespace std;
 
@@ -144,6 +146,12 @@ static PyMethodDef methods[] = {
    "_fof_find_groups(_particles, linking_length, quota"},
   {"_fof_grp", py_fof_grp, METH_VARARGS,
    "_fof_grp()"},
+
+  {"_kdtree_create_copy", py_kdtree_create_copy, METH_VARARGS,
+   "_kdtree_create_copy()"},
+  
+  {"_kdtree_get_height", py_kdtree_get_height, METH_VARARGS,
+   "_kdtree_get_height()"},
 
   {NULL, NULL, 0, NULL}
 };

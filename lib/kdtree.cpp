@@ -101,6 +101,7 @@ void construct_recursive_balanced(vector<T>& v, const size_t inode,
   }
   
   const int k= cut_direction(boxsize3);
+
   boxsize3[k] /= 2;
 
   const size_t imid= ibegin + (iend - ibegin)/2;
@@ -203,6 +204,16 @@ KdTree* kdtree_init(Particles* const particles,
   return kdtree;
 }
 
+KdTree* kdtree_get_root()
+{
+  return kdtree;
+}
+
+size_t kdtree_get_height()
+{
+  return height;
+}
+
 /*
 void traverse_tree_recursive(const size_t inode)
 {
@@ -215,3 +226,4 @@ void traverse_tree_recursive(const size_t inode)
   traverse_tree_recursive(right_child(inode));
 }
 */
+
