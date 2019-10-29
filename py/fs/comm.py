@@ -1,6 +1,5 @@
 import fs._fs as c
 
-
 def this_node():
     """
     Returns:

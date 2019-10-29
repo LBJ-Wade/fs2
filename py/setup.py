@@ -1,26 +1,32 @@
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
+import distutils.sysconfig
 import numpy as np
 import os
 
-#
-# $ make
-#
-# or set directories
-# IDIRS: directories for headders -I
-# LDIRS: directories for libraries -L
-# DIRS:  libraries -lgsl ...
 
-# directories for include -I(idir)
+# Remove the "-Wstrict-prototypes" compiler option, which isn't valid for C++.
+# https://stackoverflow.com/questions/8106258
+# Remove -DNDEBUG option, which deactivate assert()
+cfg_vars = distutils.sysconfig.get_config_vars()
+for key, value in cfg_vars.items():
+    if type(value) == str:
+        cfg_vars[key] = value.replace('-Wstrict-prototypes', '').replace('-g', \
+'').replace('-DNDEBUG', '')
 
+#
+# Includes -I
+#
 idirs = os.environ["IDIRS"]
 if idirs:
     idirs = idirs.split()
 else:
     idirs = []
 
-idirs = ['../lib', np.get_include()] + idirs
+idirs = [np.get_include(), ] + idirs
 
-# directories for libraries -L(dir)
+#
+# Libraries -L
+#
 ldirs = os.environ["LDIRS"]
 
 if ldirs:
@@ -28,23 +34,26 @@ if ldirs:
 else:
     ldirs = []
 
-    
-# external libraries
+# external libraries set in Makefile (m, gsl, fftw)
 libs = os.environ['LIBS'].split()
 print('libs', libs)
 
-lib_files = ['../lib/comm.cpp', '../lib/msg.cpp', '../lib/config.cpp',
-             '../lib/fft.cpp', '../lib/mem.cpp', '../lib/particle.cpp',
-             '../lib/util.cpp', '../lib/power.cpp',
-             '../lib/cosmology.cpp', '../lib/lpt.cpp', '../lib/pm.cpp',
-             '../lib/cola.cpp', '../lib/leapfrog.cpp',
-             '../lib/pm_domain.cpp',
-             '../lib/gadget_file.cpp',
-             '../lib/kdtree.cpp', '../lib/fof.cpp',
+#
+# C++ codes
+#
+lib_files = ['comm.cpp', 'msg.cpp', 'config.cpp',
+             'fft.cpp', 'mem.cpp', 'particle.cpp',
+             'util.cpp', 'power.cpp',
+             'cosmology.cpp', 'lpt.cpp', 'pm.cpp',
+             'cola.cpp', 'leapfrog.cpp',
+             'pm_domain.cpp',
+             'gadget_file.cpp',
+             'kdtree.cpp', 'fof.cpp',
 ]
 
-# '../lib/hdf5_write.cpp',
-
+#
+# Python interface
+#
 py_files = ['py_package.cpp', 'py_msg.cpp', 'py_comm.cpp',
             'py_mem.cpp',
             'py_cosmology.cpp', 'py_power.cpp', 'py_particles.cpp',
@@ -62,16 +71,15 @@ setup(name='fs',
       ext_modules=[
           Extension('fs._fs',
                     lib_files + py_files,
+                    #depends = ['buffer.h', 'mask.h', 'np_array.h',
+                    #],
+                    extra_compile_args = ['-std=c++11'],
                     include_dirs = idirs,
-                    extra_compile_args = [os.environ["OPT"].strip()],
                     library_dirs =  ldirs,
                     libraries = libs,
-                    undef_macros = ['NDEBUG'],
           )
       ],
       packages=['fs'],
+      url='https://github.com/junkoda/fs2',
+      license = "GPL3",
 )
-
-
-# extra_compile_args=["-fopenmp"],
-#                     extra_link_args=["-fopenmp"]

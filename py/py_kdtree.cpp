@@ -7,7 +7,7 @@ PyObject* py_kdtree_create_copy(PyObject* self, PyObject* args)
 {
   // Copy the kdtree to Python data structure
 
-  size_t inode= 0;
+  // size_t inode= 0;
   KdTree const * const kdtree= kdtree_get_root();
   size_t height= kdtree_get_height();
  

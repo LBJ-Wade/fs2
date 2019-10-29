@@ -1,18 +1,18 @@
 import atexit
-import fs.comm
-import fs.cosmology
-import fs.lpt
-import fs.pm
-import fs.cola
-import fs.leapfrog
-import fs.fof
-import fs.msg
-from fs._fs import config_precision
-from fs.particles import Particles
-from fs.power import PowerSpectrum
-from fs.fft import FFT
-from fs.kdtree import KdTree
+from . import comm
+from . import cosmology
+from . import lpt
+from . import pm
+from . import cola
+from . import leapfrog
+from . import fof
+from . import msg
+from .particles import Particles
+from .power import PowerSpectrum
+from .fft import FFT
+from .kdtree import KdTree
 
+#from fs._fs import config_precision
 
 _fs.comm_mpi_init()
 
