@@ -129,8 +129,8 @@ static PyMethodDef methods[] = {
   {"_write_gadget_binary", py_write_gadget_binary, METH_VARARGS,
    "_write_gadget_binary(_particles, filename, use_long_id"},   
 
-  //  {"_hdf5_write_particles", py_hdf5_write_particles, METH_VARARGS,
-  // "_hdf5_write_particles(_particles, filename)"},
+  {"_hdf5_write_particles", py_hdf5_write_particles, METH_VARARGS,
+   "_hdf5_write_particles(_particles, filename)"},
 
   {"_fft_alloc", py_fft_alloc, METH_VARARGS,
    "_fft_alloc(nc)"},

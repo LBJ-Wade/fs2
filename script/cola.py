@@ -30,7 +30,7 @@ fs.cosmology.init(omega_m)
 ps = fs.PowerSpectrum('../data/planck_matterpower.dat')
 
 # Initial condition
-particles = fs.lpt.init(nc, boxsize, a_init, ps, seed)
+particles = fs.lpt.init(nc, boxsize, a_init, ps, seed, 'cola')
 
 fs.pm.init(nc_pm, nc_pm/nc, boxsize)
 

@@ -47,7 +47,7 @@ lib_files = ['comm.cpp', 'msg.cpp', 'config.cpp',
              'cosmology.cpp', 'lpt.cpp', 'pm.cpp',
              'cola.cpp', 'leapfrog.cpp',
              'pm_domain.cpp',
-             'gadget_file.cpp',
+             'gadget_file.cpp', 'hdf5_write.cpp',
              'kdtree.cpp', 'fof.cpp',
 ]
 
@@ -58,7 +58,7 @@ py_files = ['py_package.cpp', 'py_msg.cpp', 'py_comm.cpp',
             'py_mem.cpp',
             'py_cosmology.cpp', 'py_power.cpp', 'py_particles.cpp',
             'py_lpt.cpp', 'py_pm.cpp', 'py_cola.cpp','py_leapfrog.cpp',
-            'py_write.cpp', 'py_fft.cpp', #'py_hdf5_io.cpp',
+            'py_write.cpp', 'py_fft.cpp', 'py_hdf5_io.cpp',
             'py_config.cpp',
             'py_fof.cpp', 'py_array.cpp', 'py_kdtree.cpp']
 
