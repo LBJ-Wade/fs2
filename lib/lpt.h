@@ -10,7 +10,8 @@ void lpt_init(const int nc, const double boxsize, Mem* mem);
 void lpt_free();
 
 void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
-			   const double a, Particles* particles);
+			   const double a, const char kind[],
+			   Particles* particles);
 FFT* lpt_generate_phi(const unsigned long seed, PowerSpectrum* const);
 void lpt_set_offset(Float offset_);
 

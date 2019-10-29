@@ -19,6 +19,29 @@ namespace {
   double Sq(double ai, double af, double aRef);
 }
 
+void cola_set_initial(Particles* const particles, const double a)
+{
+  Particle* const p= particles->p;
+  const int np= particles->np_local;
+
+  const Float da1= cosmology_D_growth(a);
+  const Float da2= cosmology_D2_growth(a, da1);
+    
+  const Float Dv= cosmology_Dv_growth(a, da1);
+  const Float D2v= cosmology_D2v_growth(a, da2);
+
+  for(int i=0; i<np; i++) {
+    p[i].v[0]= p[i].dx1[0]*Dv + p[i].dx2[0]*D2v;
+    p[i].v[1]= p[i].dx1[1]*Dv + p[i].dx2[1]*D2v;
+    p[i].v[2]= p[i].dx1[2]*Dv + p[i].dx2[2]*D2v;
+  }
+
+  particles->a_v= a;
+  
+  msg_printf(msg_info, "Leapfrog (non-cola) initial velocity set at a= %.3f\n", a);
+  msg_printf(msg_debug, "Dv= %e, Dv2= %e\n", Dv, D2v);
+}
+
 void cola_kick(Particles* const particles, const double avel1)
 {
   const double ai=  particles->a_v;  // t - 0.5*dt

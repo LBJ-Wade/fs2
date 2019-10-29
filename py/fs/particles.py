@@ -109,6 +109,10 @@ class Particles(object):
         c._particles_periodic_wrapup(self._particles)
 
     @property
+    def np_local(self):
+        return c._particles_len(self._particles)
+
+    @property
     def np_total(self):
         return c._particles_np_total(self._particles)
 

@@ -26,7 +26,7 @@ namespace {
   size_t nc= 0;
   size_t local_nx;
   size_t local_ix0;
-  Float offset= 0.5f;
+  Float offset= 0.5;
 
   FFT* fft_psi[3];    // Zeldovichi displacement Psi_i
   FFT* fft_psi_ij[6]; // derivative Psi_i,j= dPsi_i/dq_j
@@ -98,8 +98,15 @@ void lpt_free()
 
 
 void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
-			   const double a, Particles* particles)
+			   const double a, const char ckind[],
+			   Particles* particles)
 {
+  //
+  // kind
+  //  "zeldovich" x (1LPT) v (1LPT)
+  //  "2lpt"      x (2LPT) v (2LPT)
+  //  "cola":     x (2LPT) v (0)
+  //
   if(nc == 0 || seedtable == 0) {
     msg_printf(msg_error,
 	       "Error: lpt_init() not called before lpt_set_displacements");
@@ -140,11 +147,34 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
   double nmesh3_inv= 1.0/pow((double)nc, 3.0);
   uint64_t id= (uint64_t) local_ix0*nc*nc + 1;
 
+  //
+  // kind of particle initial condition
+  //
+  msg_printf(msg_verbose, "LPT initial condition: %s\n", ckind);
+  const string kind(ckind);
+  
   const Float D1= cosmology_D_growth(a);
-  const Float D2= cosmology_D2_growth(a, D1);
+  const Float D2= kind == "zeldovich" ? 0.0 : cosmology_D2_growth(a, D1);
 
   msg_printf(msg_verbose, "LPT growth factor for a=%e: D1= %e, D2= %e\n",
 	     a, D1, D2);
+
+  Float Dv, D2v;
+  if(kind == "cola") {
+    Dv= D2v= 0.0;
+  }
+  else if(kind == "zeldovich") {
+    Dv= cosmology_Dv_growth(a, D1);
+    D2v= 0.0;
+  }
+  else if(kind == "2lpt") {
+    Dv= cosmology_Dv_growth(a, D1);
+    D2v= cosmology_D2v_growth(a, D1);
+  }
+  else
+    assert(false);
+  
+
 
   double sum2= 0.0;
 
@@ -163,10 +193,13 @@ void lpt_set_displacements(const unsigned long seed, PowerSpectrum* const ps,
        // psi2 had two inverse Fourier transofroms, giving additional nmesh3
        
        p->x[k]= x[k] + D1*dis + D2*dis2;
+       p->v[k]= Dv*dis + D2v*dis2;
+       
        p->dx1[k]= dis;              // 1LPT extrapolated to a=1
        p->dx2[k]= dis2;             // 2LPT displacement
                                     // multiply by cosmology_D2_growth() for a
-       p->v[k]= 0;                  // velocity in comoving 2LPT
+       //p->v[k]= 0;                  // velocity in comoving 2LPT
+
 
        sum2 += (D1*dis + D2*dis2)*(D1*dis + D2*dis2);
      }

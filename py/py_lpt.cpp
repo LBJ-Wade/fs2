@@ -14,9 +14,9 @@ PyObject* py_lpt(PyObject* self, PyObject* args)
   int nc;
   double a, boxsize;
   unsigned long seed;
+  char const* kind;
 
-
-  if(!PyArg_ParseTuple(args, "iddkO", &nc, &boxsize, &a,  &seed, &py_ps)) {
+  if(!PyArg_ParseTuple(args, "iddkOs", &nc, &boxsize, &a,  &seed, &py_ps, &kind)) {
     return NULL;
   }
 
@@ -33,7 +33,7 @@ PyObject* py_lpt(PyObject* self, PyObject* args)
   Mem* const mem= new Mem("LPT", mem_size);
 
   lpt_init(nc, boxsize, mem);
-  lpt_set_displacements(seed, ps, a, particles);
+  lpt_set_displacements(seed, ps, a, kind, particles);
 
 
   delete mem;

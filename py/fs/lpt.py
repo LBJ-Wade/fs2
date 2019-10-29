@@ -2,7 +2,7 @@ import fs._fs as c
 from fs.particles import Particles
 
 
-def init(nc, boxsize, a, ps, seed):
+def init(nc, boxsize, a, ps, seed, kind):
     """Generate 2LPT displacements and particle positions.
 
     This function generates a random Gaussian initial condition and
@@ -16,12 +16,15 @@ def init(nc, boxsize, a, ps, seed):
         a (float): scale factor at which the positions are computed.
         ps (PowerSpectrum): Linear power spectrum extrapolated to a=1.
         seed (int): random seed for the random Gaussian initial density field
+        kind (str): kind of xv, 'zeldovich', '2lpt', or 'cola'
+                    cola sets v=0
 
     Returns:
         An instance of class Particles.
     """
 
-    return Particles(_particles=c._lpt(nc, boxsize, a, seed, ps._ps))
+    return Particles(_particles=c._lpt(nc, boxsize, a, seed, ps._ps,
+                                       kind.lower()))
 
 
 def set_offset(offset):
