@@ -1,3 +1,4 @@
+#include <vector>
 #include <cstdio>
 #include <cmath>
 #include <cassert>
@@ -12,6 +13,8 @@
 #include "msg.h"
 #include "cola.h"
 #include "cosmology.h"
+
+using namespace std;
 
 namespace {
   constexpr double nLPT= -2.5f;
@@ -123,6 +126,27 @@ void cola_drift(Particles* const particles, const double apos1)
   particles->a_x= af;
 }
 
+vector<Float> cola_velocity(Particles const * const particles)
+{
+  // Convert COLA 2LPT subtracted velocity to usual velocity
+  const size_t np= particles->np_local;
+  vector<Float> v(3*np);
+
+  const double a= particles->a_x;
+  const double D1= cosmology_D_growth(a);
+  const Float  Dv= cosmology_Dv_growth(a, D1);
+  const Float  D2v= cosmology_D2v_growth(a, D1);
+
+  Particle const * const p= particles->p;  
+  for(size_t i=0; i<np; ++i) {
+    for(size_t k=0; k<3; ++k) {
+      v[3*i + k]= p[i].v[k] + Dv*p[i].dx1[k] + D2v*p[i].dx2[k];
+    }
+  }
+
+  return v;
+}
+
 namespace {
   
 double fun (double a, void * params) {
@@ -153,5 +177,5 @@ double Sq(double ai, double af, double av) {
      
   return result/pow(av, nLPT);
 }
-
-}
+  
+} // unnamed namespace

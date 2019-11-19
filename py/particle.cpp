@@ -11,7 +11,7 @@
 using namespace std;
 
 Particles::Particles(const size_t np_alloc, const double boxsize_) :
-  np_local(0)
+  a_f(0.0), np_local(0), np_total(0), boxsize(boxsize_)
 {
   //size_t nx= fft_local_nx(nc);
   //size_t np_alloc= (size_t)((1.25*(nx + 1)*nc*nc));
@@ -21,9 +21,6 @@ Particles::Particles(const size_t np_alloc, const double boxsize_) :
 
   force= (Float3*) calloc(3*np_alloc, sizeof(Float)); assert(force);
   np_allocated= np_alloc;
-  boxsize= boxsize_;
-  np_local= 0;
-  np_total= 0;
   
   msg_printf(msg_verbose, "%lu Mbytes allocated for %lu particles\n",
 	     mbytes(np_alloc*sizeof(Particle)), np_alloc);

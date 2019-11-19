@@ -13,9 +13,9 @@ OPT     :=
 #
 # Define library locations if they are not in statndard path
 #
-FFTW3_DIR ?= /opt/fftw3 #e.g. /Users/jkoda/Research/opt/gcc/fftw3
+FFTW3_DIR ?= #/opt/fftw3 #e.g. /Users/jkoda/Research/opt/gcc/fftw3
 GSL_DIR   ?= #e.g. /Users/jkoda/Research/opt/gcc/gsl
-HDF5P_DIR ?= /opt/hdf5-parallel # parallel HDF5 library; e.g., brew install hdf5 --with-mpi
+HDF5P_DIR ?= # parallel HDF5 library; e.g., brew install hdf5 --with-mpi
 
 DIR_PATH   = $(FFTW3_DIR) $(GSL_DIR) $(HDF5P_DIR)
 

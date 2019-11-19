@@ -7,6 +7,7 @@
 #include "config.h"
 #include "msg.h"
 #include "comm.h"
+#include "cola.h"
 #include "cosmology.h"
 #include "hdf5_io.h"
 
@@ -32,7 +33,8 @@ void hdf5_write_particles(const char filename[],
   // which specifies which data (position, velocity, ..) are writen
   //  i: id
   //  x: position
-  //  v: velocity
+  //  v: velocity  [internal velocity, i.e., for cola without 2LPT velocity]
+  //  c: cola velocity
   //  f: force
   //  1: 1LPT displacements (at a=1)
   //  2: 2LPT displacements (at a=1)
@@ -86,11 +88,22 @@ void hdf5_write_particles(const char filename[],
   }
 
   if(*var == 'v') {
-    msg_printf(msg_verbose, "writing velocities\n");
+    msg_printf(msg_verbose, "writing raw velocities\n");
     write_data_table(file, "v", np, 3, stride,
 		     FLOAT_MEM_TYPE, FLOAT_SAVE_TYPE, p->v);
     ++var;
   }
+
+  if(*var == 'c') {
+    msg_printf(msg_verbose, "writing cola adjusted velocities\n");
+    vector<Float> v= cola_velocity(particles);
+
+    
+    write_data_table(file, "v", np, 3, 3,
+		     FLOAT_MEM_TYPE, FLOAT_SAVE_TYPE, &v.front());
+    ++var;
+  }
+
 
   if(*var == 'f') {
     msg_printf(msg_verbose, "writing forces\n");

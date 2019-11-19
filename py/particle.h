@@ -30,7 +30,7 @@ class Particles {
   
   Particle* p;
   std::vector<Particle>* pv;
-  double a_x, a_v;
+  double a_x, a_v, a_f;
   Float3* force;
 
   size_t np_local, np_allocated;

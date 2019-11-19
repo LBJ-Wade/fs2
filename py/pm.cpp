@@ -308,6 +308,9 @@ void pm_compute_force(Particles* const particles)
   // Compute density mesh, force mesh, forces on particles
   // Raises: AssertionError
 
+  if(particles->a_f == particles-> a_x)
+    return;
+
   if(status != PmStatus::density_done) {
     msg_printf(msg_error, "Error: PM density not ready.");
     throw RuntimeError();
@@ -327,6 +330,9 @@ void pm_compute_force(Particles* const particles)
       pm_domain_buffer_positions(), pm_domain_buffer_np(), axis,
       pm_domain_buffer_forces());
   }
+
+  // Force is computed at time a_x
+  particles->a_f = particles->a_x;
 
   status= PmStatus::force_done;
 }
